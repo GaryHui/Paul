@@ -587,6 +587,11 @@ input {
   }
 }
 
+.octopus-lane[data-direction="center"] .crawler {
+  animation: none;
+  transform: translateX(0) rotate(0deg) scale(0.86);
+}
+
 .prediction-copy {
   padding: 0 24px 20px;
   color: #dbe9ef;

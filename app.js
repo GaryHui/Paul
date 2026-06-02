@@ -803,12 +803,13 @@ function renderPK() {
   const official = officialPrediction(match);
   const officialPick = officialPickCode(official);
   const finalResult = officialResult(match);
-  const leftWon = officialPick === resolved.aCode;
-  const rightWon = officialPick === resolved.bCode;
+  const leftWon = Boolean(official && resolved.aCode && officialPick === resolved.aCode);
+  const rightWon = Boolean(official && resolved.bCode && officialPick === resolved.bCode);
   const mode = matchMode(match);
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
+  const shouldCrawl = leftWon || rightWon;
   const crawlerAsset = "assets/real-paul-side-cutout.png";
 
   document.getElementById("pkPanel").dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
@@ -825,7 +826,7 @@ function renderPK() {
   }
   crawler.style.animation = "none";
   crawler.offsetHeight;
-  crawler.style.animation = "";
+  crawler.style.animation = shouldCrawl ? "" : "none";
 
   if (official) {
     const pickName = officialPick === "DRAW" ? "Draw" : teams[officialPick]?.name || official.analysis?.winnerName || "N/A";
