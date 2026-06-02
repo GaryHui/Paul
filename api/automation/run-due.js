@@ -1,4 +1,5 @@
 const { callPaul, loadSnapshot } = require("../_lib/paul");
+const { attachAuditProof } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
 const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
@@ -68,11 +69,11 @@ module.exports = async function handler(req, res) {
       const shouldPredict = force || (now >= predictAt && now < matchTime);
       if (shouldPredict && !predictions[sourceMatch.id]) {
         try {
-          const record = {
+          const record = await attachAuditProof(sourceMatch, {
             matchId: sourceMatch.id,
             generatedAt: now.toISOString(),
             ...await callPaul(sourceMatch)
-          };
+          });
           predictions[sourceMatch.id] = record;
           await setPrediction(sourceMatch.id, record);
           events.push({ type: "prediction", matchId: sourceMatch.id, status: "ok" });

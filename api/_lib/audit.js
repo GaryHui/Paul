@@ -1,0 +1,185 @@
+const crypto = require("crypto");
+const { getAuditLog, setAuditEntry } = require("./store");
+
+const proofVersion = "paul-proof-v1";
+
+function stableStringify(value) {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  return `{${Object.keys(value)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+    .join(",")}}`;
+}
+
+function sha256(text) {
+  return crypto.createHash("sha256").update(text).digest("hex");
+}
+
+function kickoffAt(match) {
+  const date = new Date(`${match.date} 20:00:00 GMT+0000`);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function compactPrediction(analysis = {}) {
+  return {
+    winnerCode: analysis.winnerCode || analysis.winner || null,
+    winnerName: analysis.winnerName || null,
+    confidence: analysis.confidence || null,
+    predictedScore: analysis.predictedScore || analysis.score || null,
+    probabilities: analysis.probabilities || null,
+    upsetRisk: analysis.upsetRisk || null,
+    reasoning: analysis.reasoning || null,
+    evidenceUsed: analysis.evidenceUsed || null
+  };
+}
+
+function buildProofPayload(match, record, nonce) {
+  return {
+    version: proofVersion,
+    matchId: match.id,
+    round: match.round,
+    match: `${match.teamA.name} vs ${match.teamB.name}`,
+    teams: {
+      home: { code: match.teamA.code, name: match.teamA.name },
+      away: { code: match.teamB.code, name: match.teamB.name }
+    },
+    kickoffAt: kickoffAt(match),
+    lockedAt: record.generatedAt,
+    model: record.model || "PAUL",
+    prediction: compactPrediction(record.analysis),
+    nonce
+  };
+}
+
+function createAuditEntry(match, record) {
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const payload = buildProofPayload(match, record, nonce);
+  const canonical = stableStringify(payload);
+  const hash = sha256(canonical);
+  const isBeforeKickoff = payload.kickoffAt ? new Date(payload.lockedAt).getTime() < new Date(payload.kickoffAt).getTime() : null;
+  return {
+    id: `${match.id}:${hash.slice(0, 16)}`,
+    version: proofVersion,
+    matchId: match.id,
+    round: match.round,
+    match: payload.match,
+    lockedAt: payload.lockedAt,
+    kickoffAt: payload.kickoffAt,
+    isBeforeKickoff,
+    hash,
+    algorithm: "sha256",
+    canonical,
+    payload,
+    externalProof: null,
+    createdAt: new Date().toISOString()
+  };
+}
+
+function githubConfig() {
+  const token = process.env.GITHUB_AUDIT_TOKEN || process.env.GITHUB_TOKEN;
+  const repo = process.env.GITHUB_AUDIT_REPO || process.env.GITHUB_REPOSITORY || "GaryHui/Paul";
+  const branch = process.env.GITHUB_AUDIT_BRANCH || "main";
+  const path = process.env.GITHUB_AUDIT_PATH || "data/audit-log.json";
+  return { token, repo, branch, path };
+}
+
+async function publishAuditToGitHub(entry) {
+  const { token, repo, branch, path } = githubConfig();
+  if (!token || !repo) return null;
+  const apiBase = `https://api.github.com/repos/${repo}/contents/${encodeURIComponent(path).replace(/%2F/g, "/")}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "User-Agent": "paul-proof-audit"
+  };
+
+  let sha = null;
+  let log = [];
+  const current = await fetch(`${apiBase}?ref=${encodeURIComponent(branch)}`, { headers });
+  if (current.ok) {
+    const data = await current.json();
+    sha = data.sha;
+    try {
+      log = JSON.parse(Buffer.from(data.content || "", "base64").toString("utf8"));
+      if (!Array.isArray(log)) log = [];
+    } catch {
+      log = [];
+    }
+  } else if (current.status !== 404) {
+    throw new Error(`GitHub audit read failed: ${current.status}`);
+  }
+
+  if (!log.some((item) => item.hash === entry.hash)) {
+    log.push({
+      id: entry.id,
+      matchId: entry.matchId,
+      match: entry.match,
+      lockedAt: entry.lockedAt,
+      kickoffAt: entry.kickoffAt,
+      hash: entry.hash,
+      algorithm: entry.algorithm,
+      isBeforeKickoff: entry.isBeforeKickoff
+    });
+  }
+
+  const body = {
+    message: `Audit PAUL prediction proof for match ${entry.matchId}`,
+    content: Buffer.from(`${JSON.stringify(log, null, 2)}\n`).toString("base64"),
+    branch
+  };
+  if (sha) body.sha = sha;
+
+  const response = await fetch(apiBase, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`GitHub audit write failed: ${response.status} ${text.slice(0, 200)}`);
+  }
+  const data = await response.json();
+  return {
+    provider: "github",
+    committedAt: new Date().toISOString(),
+    commitSha: data.commit?.sha || null,
+    commitUrl: data.commit?.html_url || null,
+    fileUrl: data.content?.html_url || null
+  };
+}
+
+async function attachAuditProof(match, record) {
+  if (record.proof?.hash) return record;
+  const entry = createAuditEntry(match, record);
+  try {
+    entry.externalProof = await publishAuditToGitHub(entry);
+  } catch (error) {
+    entry.externalProof = { provider: "github", error: error.message };
+  }
+  await setAuditEntry(entry);
+  return {
+    ...record,
+    proof: {
+      id: entry.id,
+      hash: entry.hash,
+      algorithm: entry.algorithm,
+      lockedAt: entry.lockedAt,
+      kickoffAt: entry.kickoffAt,
+      isBeforeKickoff: entry.isBeforeKickoff,
+      externalProof: entry.externalProof
+    }
+  };
+}
+
+async function auditSnapshot() {
+  const entries = await getAuditLog();
+  return Object.values(entries).sort((a, b) => new Date(b.lockedAt) - new Date(a.lockedAt));
+}
+
+module.exports = {
+  attachAuditProof,
+  auditSnapshot,
+  sha256,
+  stableStringify
+};

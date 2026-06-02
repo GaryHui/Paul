@@ -1019,6 +1019,76 @@ async function loadAutomationStatus() {
   }
 }
 
+function shortHash(hash) {
+  return hash ? `${hash.slice(0, 14)}...${hash.slice(-10)}` : "N/A";
+}
+
+function formatProofTime(value) {
+  if (!value) return "N/A";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function renderProofs(entries) {
+  const grid = document.getElementById("proofGrid");
+  if (!grid) return;
+  if (!entries.length) {
+    grid.innerHTML = `
+      <article class="proof-card">
+        <h3>No locked proofs yet</h3>
+        <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
+      </article>
+    `;
+    return;
+  }
+
+  grid.innerHTML = entries
+    .map((entry) => {
+      const external = entry.externalProof?.commitUrl
+        ? `<a href="${entry.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
+        : entry.externalProof?.error
+          ? `<span>GitHub proof pending</span>`
+          : `<span>KV proof only</span>`;
+      return `
+        <article class="proof-card">
+          <div class="proof-card__top">
+            <span class="winner-pill">${entry.verified ? "Hash verified" : "Hash mismatch"}</span>
+            <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? "Before kickoff" : "Check time"}</span>
+          </div>
+          <h3>#${entry.matchId} ${entry.match}</h3>
+          <dl>
+            <div><dt>Locked</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
+            <div><dt>Kickoff</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
+            <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
+            <div><dt>External proof</dt><dd>${external}</dd></div>
+          </dl>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function loadAuditProofs() {
+  try {
+    const response = await fetch("/api/audit");
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Failed to load proof records.");
+    renderProofs(data.entries || []);
+  } catch (error) {
+    renderProofs([]);
+    const grid = document.getElementById("proofGrid");
+    if (grid) {
+      grid.innerHTML = `
+        <article class="proof-card">
+          <h3>Proof service unavailable</h3>
+          <p>${error.message}</p>
+        </article>
+      `;
+    }
+  }
+}
+
 async function runDueAutomation() {
   const button = document.getElementById("runAutomationButton");
   const statusText = document.getElementById("automationStatus");
@@ -1038,6 +1108,7 @@ async function runDueAutomation() {
     const errors = data.events.filter((event) => event.status === "error").length;
     statusText.textContent = `Automation complete: ${okEvents} updates, ${errors} errors.`;
     await loadAutomationStatus();
+    await loadAuditProofs();
   } catch (error) {
     statusText.textContent = error.message;
   } finally {
@@ -1089,6 +1160,7 @@ function init() {
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
+  loadAuditProofs();
   window.setInterval(() => {
     renderMatchList();
     renderPK();

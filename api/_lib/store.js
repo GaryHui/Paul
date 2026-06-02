@@ -1,5 +1,6 @@
 const predictionKey = "paul:predictions:v2";
 const resultKey = "paul:results:v1";
+const auditKey = "paul:audit:v1";
 
 function storeConfig() {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -71,10 +72,32 @@ async function setResult(matchId, record) {
   return true;
 }
 
+async function getAuditLog() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", auditKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+async function setAuditEntry(entry) {
+  if (!isSharedStoreConfigured()) return false;
+  const log = await getAuditLog();
+  log[entry.id] = entry;
+  await redisCommand(["SET", auditKey, JSON.stringify(log)]);
+  return true;
+}
+
 module.exports = {
+  getAuditLog,
   getPredictions,
   getResults,
   isSharedStoreConfigured,
+  setAuditEntry,
   setPrediction,
   setResult
 };

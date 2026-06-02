@@ -1,4 +1,5 @@
 const { callPaul } = require("./_lib/paul");
+const { attachAuditProof } = require("./_lib/audit");
 const { getPredictions, isSharedStoreConfigured, setPrediction } = require("./_lib/store");
 
 module.exports = async function handler(req, res) {
@@ -14,13 +15,13 @@ module.exports = async function handler(req, res) {
       return;
     }
     const result = await callPaul(payload);
-    const record = {
+    const record = await attachAuditProof(payload, {
       matchId: payload.id,
       generatedAt: new Date().toISOString(),
       model: result.model || "PAUL",
       evidence: result.evidence,
       analysis: result.analysis
-    };
+    });
     const persisted = await setPrediction(payload.id, record);
     res.status(200).json({ ...record, persisted, sharedStoreConfigured: isSharedStoreConfigured() });
   } catch (error) {

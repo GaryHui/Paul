@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
+const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches } = require("../_lib/bracket");
 const { getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
@@ -10,11 +11,13 @@ module.exports = async function handler(req, res) {
   const results = await getResults();
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
+  const auditEntries = await auditSnapshot();
   const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
   const first = firstResolved ? collectPredictionEvidence(firstResolved) : null;
   res.status(200).json({
     totalMatches: snapshot.matches.length,
     predictionCount: Object.keys(predictions).length,
+    auditCount: auditEntries.length,
     resultCount: Object.keys(results).length,
     nextPrediction: nextPredictionDue(snapshot.matches, predictions, results),
     accuracy: accuracySnapshot(predictions, results),

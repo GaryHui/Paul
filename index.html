@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-12" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-13" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -18,6 +18,7 @@
         <div class="nav__links">
           <a href="#matches">Predictions</a>
           <a href="#automation">Automation</a>
+          <a href="#proof">Proof</a>
           <a href="#groups">Groups</a>
         </div>
       </nav>
@@ -135,6 +136,23 @@
         </div>
       </section>
 
+      <section class="proof band" id="proof">
+        <div class="section-head">
+          <p class="eyebrow">Proof of Prediction</p>
+          <h2>Every PAUL pick gets a public hash before kickoff.</h2>
+          <p>
+            When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256.
+            The proof record shows the lock time, kickoff time, verification hash, and optional GitHub commit timestamp.
+          </p>
+        </div>
+        <div class="proof-grid" id="proofGrid">
+          <article class="proof-card">
+            <h3>No locked proofs yet</h3>
+            <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
+          </article>
+        </div>
+      </section>
+
       <section class="groups band" id="groups">
         <div class="section-head">
           <p class="eyebrow">48-Team Field</p>
@@ -145,6 +163,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-12"></script>
+    <script src="app.js?v=paul-ai-13"></script>
   </body>
 </html>
