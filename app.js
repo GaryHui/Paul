@@ -1095,11 +1095,16 @@ function renderVerifyReport(data) {
   const report = document.getElementById("verifyReport");
   if (!report) return;
   const checks = Object.entries(data.checks || {});
+  const groups = data.trace?.groups || {};
+  const rounds = data.trace?.rounds || {};
+  const knockoutRounds = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
   report.innerHTML = `
     <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
       <strong>${String(data.status || "unknown").toUpperCase()}</strong>
       <span>Results provider: ${data.provider?.name || "none"} (${data.provider?.configured ? "configured" : "not configured"})</span>
     </div>
+    <p class="verify-note">${data.trace?.explanation || "Dry-run uses synthetic results to validate mechanics."}</p>
+    <h3 class="verify-title">System Checks</h3>
     <div class="verify-checks">
       ${checks
         .map(([key, value]) => `
@@ -1110,7 +1115,45 @@ function renderVerifyReport(data) {
         `)
         .join("")}
     </div>
-    <pre>${JSON.stringify(data.sample || {}, null, 2)}</pre>
+    <h3 class="verify-title">Group Tables</h3>
+    <div class="verify-groups">
+      ${Object.entries(groups)
+        .map(([group, rows]) => `
+          <article class="verify-group">
+            <h4>Group ${group}</h4>
+            <table>
+              <thead><tr><th>Team</th><th>Pts</th><th>GD</th><th>GF</th></tr></thead>
+              <tbody>
+                ${rows
+                  .map((row) => `<tr><td>${row.name}</td><td>${row.points}</td><td>${row.gd}</td><td>${row.gf}</td></tr>`)
+                  .join("")}
+              </tbody>
+            </table>
+          </article>
+        `)
+        .join("")}
+    </div>
+    <h3 class="verify-title">Knockout Trace</h3>
+    <div class="verify-rounds">
+      ${knockoutRounds
+        .map((round) => `
+          <article class="verify-round">
+            <h4>${round}</h4>
+            ${(rounds[round] || [])
+              .map((match) => `
+                <div class="verify-match">
+                  <span>#${match.id}</span>
+                  <strong>${match.home} ${match.score} ${match.away}</strong>
+                  <em>Winner: ${match.winner}</em>
+                </div>
+              `)
+              .join("")}
+          </article>
+        `)
+        .join("")}
+    </div>
+    <h3 class="verify-title">Proof Sample</h3>
+    <pre>${JSON.stringify(data.sample?.proof || {}, null, 2)}</pre>
   `;
 }
 
