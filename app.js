@@ -501,7 +501,7 @@ function renderPK() {
   const rightWon = officialPick === match.bCode;
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
-  const crawlX = leftWon ? "-72%" : rightWon ? "72%" : "0%";
+  const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
   const crawlerAsset = leftWon
     ? "assets/real-paul-crawl-left.gif"
     : rightWon

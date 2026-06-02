@@ -331,11 +331,22 @@ input {
 
 .pk-stage {
   display: grid;
-  grid-template-columns: minmax(170px, 1fr) minmax(170px, 260px) minmax(170px, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "lane lane"
+    "left right";
   gap: 18px;
-  align-items: center;
+  align-items: stretch;
   padding: 24px;
-  min-height: 320px;
+  min-height: 520px;
+}
+
+.team-side--left {
+  grid-area: left;
+}
+
+.team-side--right {
+  grid-area: right;
 }
 
 .team-side {
@@ -468,8 +479,9 @@ input {
 
 .octopus-lane {
   --crawl-x: 0%;
+  grid-area: lane;
   position: relative;
-  min-height: 230px;
+  min-height: clamp(250px, 28vw, 360px);
   display: grid;
   place-items: center;
   overflow: visible;
@@ -487,7 +499,7 @@ input {
 .crawler {
   position: relative;
   z-index: 2;
-  width: clamp(190px, 25vw, 310px);
+  width: min(520px, 76vw);
   aspect-ratio: 1.49;
   object-fit: contain;
   border: 0;
