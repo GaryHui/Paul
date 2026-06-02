@@ -63,10 +63,10 @@ const teams = {
 const groupOrder = "ABCDEFGHIJKL".split("");
 const roundOptions = ["All", "Group Stage"];
 const roundLabels = {
-  All: "全部",
-  "Group Stage": "小组赛"
+  All: "All",
+  "Group Stage": "Group Stage"
 };
-const groupLabels = { All: "全部" };
+const groupLabels = { All: "All" };
 const groupDates = {
   A: ["Jun 11", "Jun 11", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
   B: ["Jun 12", "Jun 13", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
@@ -264,7 +264,7 @@ let automationState = {
   results: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 }
 };
-const storedPredictionKey = "paul.manualPredictions.v1";
+const storedPredictionKey = "paul.manualPredictions.v2";
 
 function loadStoredPredictions() {
   try {
@@ -299,6 +299,29 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
     .filter(Boolean)
     .filter((item) => new Date(item.dueAt) >= now)
     .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))[0] || null;
+}
+
+function matchKickoffTime(match) {
+  return new Date(`${match.date} 20:00:00 GMT+0000`);
+}
+
+function compactDuration(ms) {
+  const totalMinutes = Math.max(0, Math.ceil(ms / 60000));
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function matchCountdown(match, now = new Date()) {
+  const kickoff = matchKickoffTime(match);
+  if (Number.isNaN(kickoff.getTime())) return "Kickoff time TBA";
+  const diff = kickoff.getTime() - now.getTime();
+  if (diff > 0) return `Starts in ${compactDuration(diff)}`;
+  if (diff > -130 * 60000) return "Live now";
+  return "Full time window passed";
 }
 
 const flagIds = {
@@ -420,7 +443,7 @@ function teamLocaleMarkup(code) {
   if (!locale) return "";
   return `
     <p class="local-language">
-      <strong>本国语言：</strong>
+      <strong>Local language:</strong>
       <span>${locale.language}</span>
       <em>${locale.phrase}</em>
     </p>
@@ -434,10 +457,10 @@ function teamMarkup(code) {
       ${flagImage(code)}
       <div>
         <div class="team-name">${team.name}</div>
-        <div class="team-code">${code} · ${team.group} 组</div>
+        <div class="team-code">${code} · Group ${team.group}</div>
       </div>
     </div>
-    <p class="language"><strong>国家语言：</strong><br>${team.languages}</p>
+    <p class="language"><strong>Primary languages:</strong><br>${team.languages}</p>
   `;
 }
 
@@ -464,23 +487,23 @@ function predictionStatus(match) {
   const record = officialPrediction(match);
   const result = officialResult(match);
   if (result?.status === "final" && record) {
-    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? "命中" : "未命中";
+    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? "Correct" : "Missed";
   }
-  if (result?.status === "final") return "已完赛";
-  if (record) return "已锁定";
-  return "待预测";
+  if (result?.status === "final") return "Final";
+  if (record) return "Locked";
+  return "Pending";
 }
 
 function resultLabel(match) {
   const record = officialPrediction(match);
-  if (!record) return "待预测";
+  if (!record) return "Pending";
   const pick = officialPickCode(record);
-  if (!pick || pick === "DRAW") return "平局";
-  return teams[pick]?.name || record.analysis.winnerName || "已锁定";
+  if (!pick || pick === "DRAW") return "Draw";
+  return teams[pick]?.name || record.analysis.winnerName || "Locked";
 }
 
 function updateChampionLabel() {
-  document.getElementById("championName").textContent = "待小组赛结束";
+  document.getElementById("championName").textContent = "Awaiting groups";
 }
 
 function renderMatchList() {
@@ -504,6 +527,7 @@ function renderMatchList() {
             <span>${teams[match.aCode].name} vs ${teams[match.bCode].name}</span>
           </span>
           <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
+          <span class="match-countdown">${matchCountdown(match)}</span>
         </span>
         <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
       </button>
@@ -513,7 +537,7 @@ function renderMatchList() {
   if (!filtered.length) {
     list.innerHTML = `
       <div class="empty-list">
-        32 强之后的对阵需要等小组赛真实赛果和官方排表出来后再显示。
+        Knockout fixtures will appear only after real group-stage results and the official bracket are available.
       </div>
     `;
   }
@@ -529,7 +553,6 @@ function renderMatchList() {
 
 function renderPK() {
   const match = tournament.matches.find((item) => item.id === activeMatchId);
-  const pred = match.prediction;
   const official = officialPrediction(match);
   const officialPick = officialPickCode(official);
   const finalResult = officialResult(match);
@@ -540,8 +563,10 @@ function renderPK() {
   const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
   const crawlerAsset = "assets/real-paul-side-cutout.png";
 
-  document.getElementById("pkMeta").textContent = `第 ${match.id} 场 · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
-  document.getElementById("pkConfidence").textContent = official ? `正式预测信心 ${official.analysis?.confidence || "未说明"}%` : "正式预测待锁定";
+  document.getElementById("pkMeta").textContent = `Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
+  document.getElementById("pkConfidence").textContent = official
+    ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${matchCountdown(match)}`
+    : `Official prediction pending · ${matchCountdown(match)}`;
   document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode) + teamLocaleMarkup(match.aCode);
   document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode) + teamLocaleMarkup(match.bCode);
   lane.style.setProperty("--crawl-x", crawlX);
@@ -554,53 +579,53 @@ function renderPK() {
   crawler.style.animation = "";
 
   if (official) {
-    const pickName = officialPick === "DRAW" ? "平局" : teams[officialPick]?.name || official.analysis?.winnerName || "未说明";
-    const verdict = officialPick === "DRAW" ? "保罗正式预测这场可能打平" : `保罗正式爬向 ${teams[officialPick]?.flag || ""} ${pickName}`;
+    const pickName = officialPick === "DRAW" ? "Draw" : teams[officialPick]?.name || official.analysis?.winnerName || "N/A";
+    const verdict = officialPick === "DRAW" ? "PAUL officially predicts a draw" : `PAUL officially crawls toward ${pickName}`;
     const resultCopy = finalResult?.status === "final"
-      ? `赛果：${teams[match.aCode].name} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[match.bCode].name}，状态：${predictionStatus(match)}。`
-      : "赛果尚未同步，比赛结束后会自动校验命中率。";
+      ? `Final score: ${teams[match.aCode].name} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[match.bCode].name}. Status: ${predictionStatus(match)}.`
+      : "Final score has not synced yet. Accuracy will update after full time.";
     document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>${verdict}</strong> · 正式预测比分：<strong>${official.analysis?.predictedScore || official.analysis?.score || "未说明"}</strong>。</p>
-      <p>${official.analysis?.reasoning || "PAUL 已锁定预测，但没有返回详细说明。"}</p>
+      <p><strong>${verdict}</strong> · Predicted score: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
+      <p>${official.analysis?.reasoning || "PAUL has locked this pick without a detailed explanation."}</p>
       <p>${resultCopy}</p>
     `;
   } else {
     document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>这场比赛还没有进入正式预测窗口。</strong> 系统会在赛前 24 小时自动调用 PAUL，锁定保罗最终选择。</p>
-      <p>当前不会展示任何模拟预测。你可以配置 DASHSCOPE_API_KEY 后等待自动任务，或手动点击“询问 PAUL”生成真实 AI 分析。签表位置：${match.slot}。</p>
+      <p><strong>Official PAUL prediction is not locked yet.</strong></p>
+      <p class="countdown-detail">Kickoff countdown: <strong>${matchCountdown(match)}</strong></p>
     `;
   }
 
   document.getElementById("modelGrid").innerHTML = official
     ? `
       <article class="model-card">
-        <h3>PAUL 正式预测</h3>
-        <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "未说明"}%</div>
-        <p>${official.analysis?.reasoning || "PAUL 已返回正式预测。"}</p>
+        <h3>Official PAUL Pick</h3>
+        <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
+        <p>${official.analysis?.reasoning || "PAUL has returned an official prediction."}</p>
       </article>
       <article class="model-card">
-        <h3>预测比分</h3>
-        <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "未说明"}</div>
-        <p>生成时间：${new Date(official.generatedAt).toLocaleString()}</p>
+        <h3>Predicted Score</h3>
+        <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
+        <p>Generated at ${new Date(official.generatedAt).toLocaleString()}</p>
       </article>
       <article class="model-card">
-        <h3>冷门风险</h3>
-        <div class="vote">${official.analysis?.upsetRisk || "未说明"}</div>
-        <p>比赛结束后会用真实比分自动校验。</p>
+        <h3>Upset Risk</h3>
+        <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
+        <p>Final scores will verify this pick after the match.</p>
       </article>
     `
     : `
       <article class="model-card model-card--wide">
-        <h3>等待真实 AI 预测</h3>
-        <div class="vote">未锁定</div>
-        <p>这里不再显示模拟参考。正式内容只来自 PAUL 自动预测或手动 PAUL 分析。</p>
+        <h3>Awaiting Official PAUL Prediction</h3>
+        <div class="vote">Not locked</div>
+        <p>No simulated reference is shown before the official lock.</p>
       </article>
     `;
 
   const qwenResult = document.getElementById("qwenResult");
   if (qwenResult) {
     qwenResult.className = "qwen-result";
-    qwenResult.textContent = "让 PAUL 对当前比赛给出一份实时第二意见。";
+    qwenResult.textContent = "";
   }
 }
 
@@ -650,7 +675,7 @@ async function askQwen() {
 
   button.disabled = true;
   result.className = "qwen-result is-loading";
-  result.textContent = "PAUL 正在读取这场对阵...";
+  result.textContent = "PAUL is reading this matchup...";
 
   try {
     const response = await fetch("/api/qwen-predict", {
@@ -661,20 +686,20 @@ async function askQwen() {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || "PAUL 请求失败。");
+      throw new Error(data.error || "PAUL request failed.");
     }
 
     const analysis = data.analysis || {};
-    const winnerName = analysis.winnerName || analysis.winner || "暂未判断";
-    const confidence = analysis.confidence ? `${analysis.confidence}%` : "未说明";
-    const score = analysis.predictedScore || analysis.score || "未说明";
-    const upsetRisk = analysis.upsetRisk || "普通";
-    const reasoning = analysis.reasoning || "PAUL 没有返回分析文本。";
+    const winnerName = analysis.winnerName || analysis.winner || "No decision yet";
+    const confidence = analysis.confidence ? `${analysis.confidence}%` : "N/A";
+    const score = analysis.predictedScore || analysis.score || "N/A";
+    const upsetRisk = analysis.upsetRisk || "Normal";
+    const reasoning = analysis.reasoning || "PAUL did not return analysis text.";
 
     result.className = "qwen-result";
     result.innerHTML = `
-      <p><strong>PAUL 选择：</strong>${winnerName} · 信心 ${confidence} · 比分 ${score}</p>
-      <p><strong>冷门风险：</strong>${upsetRisk}</p>
+      <p><strong>PAUL pick:</strong> ${winnerName} · confidence ${confidence} · score ${score}</p>
+      <p><strong>Upset risk:</strong> ${upsetRisk}</p>
       <p>${reasoning}</p>
     `;
 
@@ -710,10 +735,10 @@ async function syncAutomationSnapshot() {
 }
 
 function formatNextPrediction(nextPrediction) {
-  if (!nextPrediction) return "暂无";
-  if (!nextPrediction.dueAt) return `${nextPrediction.label} · 待赛程时间确认`;
+  if (!nextPrediction) return "None";
+  if (!nextPrediction.dueAt) return `${nextPrediction.label} · Time pending`;
   const dueAt = new Date(nextPrediction.dueAt);
-  if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · 待赛程时间确认`;
+  if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · Time pending`;
   return `${nextPrediction.label} · ${dueAt.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`;
 }
 
@@ -722,12 +747,9 @@ async function loadAutomationStatus() {
   try {
     const response = await fetch("/api/automation/status");
     const status = await response.json();
-    if (!response.ok) throw new Error(status.error || "读取自动化状态失败。");
+    if (!response.ok) throw new Error(status.error || "Failed to load automation status.");
 
-    const mergedPredictions = {
-      ...loadStoredPredictions(),
-      ...(status.predictions || {})
-    };
+    const mergedPredictions = status.predictions || {};
     const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 24) || status.nextPrediction;
 
     document.getElementById("autoPredicted").textContent = Object.keys(mergedPredictions).length;
@@ -743,24 +765,13 @@ async function loadAutomationStatus() {
     renderMatchList();
     renderPK();
 
-    const qwenState = status.hasQwenKey ? "PAUL AI 已就绪" : "PAUL AI 未配置";
-    const resultState = status.hasResultsApi ? "赛果 API 已就绪" : "赛果 API 未配置";
+    const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
+    const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
     const readiness = status.dataReadiness || {};
-    const oddsState = readiness.marketOdds ? "赔率数据已导入" : "缺少赔率数据";
-    const ratingState = readiness.teamRatings ? "球队评分已导入" : "缺少球队评分";
-    statusText.textContent = `${qwenState}；${oddsState}；${ratingState}；${resultState}；已载入 ${status.totalMatches || 0} 场赛程。`;
+    const oddsState = readiness.marketOdds ? "market odds loaded" : "market odds missing";
+    const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
+    statusText.textContent = `${qwenState}; ${oddsState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
-    const storedPredictions = loadStoredPredictions();
-    if (Object.keys(storedPredictions).length) {
-      automationState = {
-        ...automationState,
-        predictions: storedPredictions
-      };
-      document.getElementById("autoPredicted").textContent = Object.keys(storedPredictions).length;
-      document.getElementById("autoNext").textContent = formatNextPrediction(nextPredictionFromMatches(storedPredictions));
-      renderMatchList();
-      renderPK();
-    }
     statusText.textContent = error.message;
   }
 }
@@ -771,7 +782,7 @@ async function runDueAutomation() {
   if (!button || !statusText) return;
 
   button.disabled = true;
-  statusText.textContent = "正在运行到期预测和赛果同步任务...";
+  statusText.textContent = "Running due prediction and result sync tasks...";
   try {
     const response = await fetch("/api/automation/run-due", {
       method: "POST",
@@ -779,10 +790,10 @@ async function runDueAutomation() {
       body: JSON.stringify({})
     });
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "自动化任务运行失败。");
+    if (!response.ok) throw new Error(data.error || "Automation task failed.");
     const okEvents = data.events.filter((event) => event.status === "ok").length;
     const errors = data.events.filter((event) => event.status === "error").length;
-    statusText.textContent = `自动化任务完成：${okEvents} 条更新，${errors} 条错误。`;
+    statusText.textContent = `Automation complete: ${okEvents} updates, ${errors} errors.`;
     await loadAutomationStatus();
   } catch (error) {
     statusText.textContent = error.message;
@@ -800,7 +811,7 @@ function renderGroups() {
         .sort((a, b) => a[1].pos - b[1].pos);
       return `
         <article class="group-card">
-          <h3>${group} 组</h3>
+          <h3>Group ${group}</h3>
           ${groupTeams
             .map(([code, team]) => `
               <div class="team-row">
@@ -820,7 +831,7 @@ function populateFilters() {
   const roundFilter = document.getElementById("roundFilter");
   const groupFilter = document.getElementById("groupFilter");
   roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabels[round] || round}</option>`).join("");
-  groupFilter.innerHTML = ["All", ...groupOrder].map((group) => `<option value="${group}">${groupLabels[group] || `${group} 组`}</option>`).join("");
+  groupFilter.innerHTML = ["All", ...groupOrder].map((group) => `<option value="${group}">${groupLabels[group] || `Group ${group}`}</option>`).join("");
   roundFilter.addEventListener("change", renderMatchList);
   groupFilter.addEventListener("change", renderMatchList);
   document.getElementById("searchBox").addEventListener("input", renderMatchList);
@@ -835,6 +846,10 @@ function init() {
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
+  window.setInterval(() => {
+    renderMatchList();
+    renderPK();
+  }, 60000);
 }
 
 init();

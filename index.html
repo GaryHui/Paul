@@ -3,34 +3,34 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>保罗 2026 AI 章鱼预测</title>
+    <title>PAUL 2026 AI Octopus Predictions</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-10" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-11" />
   </head>
   <body>
     <header class="hero" id="top">
       <img class="hero__image" src="assets/ai-octopus-oracle.png" alt="AI octopus oracle for football prediction" />
       <div class="hero__shade"></div>
       <nav class="nav" aria-label="Primary navigation">
-        <a class="brand" href="#top">保罗 2026</a>
+        <a class="brand" href="#top">PAUL 2026</a>
         <div class="nav__links">
-          <a href="#matches">预测</a>
-          <a href="#origin">故事</a>
-          <a href="#groups">分组</a>
+          <a href="#matches">Predictions</a>
+          <a href="#automation">Automation</a>
+          <a href="#groups">Groups</a>
         </div>
       </nav>
       <section class="hero__content">
-        <p class="eyebrow">2026 国际足联世界杯 AI 预测实验室</p>
-        <h1>AI 章鱼保罗先锁定 72 场小组赛预测。</h1>
+        <p class="eyebrow">2026 FIFA World Cup AI Prediction Lab</p>
+        <h1>AI Octopus PAUL locks group-stage predictions before kickoff.</h1>
         <p class="lede">
-          当前只展示已经明确对阵的小组赛。正式预测等到比赛前 24 小时再由 PAUL AI 生成。
-          一旦锁定，保罗会爬向预测获胜方的国旗；赛后自动统计命中率。
+          Only confirmed group-stage fixtures are shown for now. Official PAUL picks are generated automatically 24 hours before each match.
+          Once locked, PAUL crawls toward the predicted winner's flag; after the match, accuracy is tracked from final scores.
         </p>
         <div class="hero__actions">
-          <a class="button button--primary" href="#matches">打开预测台</a>
-          <a class="button button--ghost" href="#groups">查看 48 队</a>
+          <a class="button button--primary" href="#matches">Open Predictor</a>
+          <a class="button button--ghost" href="#groups">View 48 Teams</a>
         </div>
       </section>
     </header>
@@ -39,43 +39,44 @@
       <section class="stats band" aria-label="Tournament stats">
         <div>
           <strong>48</strong>
-          <span>参赛球队</span>
+          <span>Qualified teams</span>
         </div>
         <div>
           <strong>72</strong>
-          <span>当前开放小组赛</span>
+          <span>Open group-stage matches</span>
         </div>
         <div>
           <strong>AI</strong>
-          <span>PAUL 正式预测</span>
+          <span>Official PAUL picks</span>
         </div>
         <div>
-          <strong id="championName">待排表</strong>
-          <span>淘汰赛阶段</span>
+          <strong id="championName">Pending</strong>
+          <span>Knockout stage</span>
         </div>
       </section>
 
       <section class="console" id="matches">
         <div class="section-head">
-          <p class="eyebrow">PK 预测台</p>
-          <h2>每一场对阵，每一次正式锁定</h2>
+          <p class="eyebrow">PK Predictor</p>
+          <h2>Every fixture, one official PAUL choice.</h2>
           <p>
-            选择一场比赛打开 PK 页面。未到赛前 24 小时会显示“待预测”；锁定后才显示保罗正式选择。
+            Select a match to open the PK page. Before the 24-hour prediction window, the match stays pending.
+            After PAUL locks a pick, the octopus animation moves toward the chosen flag.
           </p>
         </div>
 
         <div class="toolbar" role="search">
           <label>
-            轮次
+            Round
             <select id="roundFilter"></select>
           </label>
           <label>
-            小组
+            Group
             <select id="groupFilter"></select>
           </label>
           <label class="search">
-            搜索
-            <input id="searchBox" type="search" placeholder="球队、国家、比赛编号..." />
+            Search
+            <input id="searchBox" type="search" placeholder="Team, country, match number..." />
           </label>
         </div>
 
@@ -84,7 +85,7 @@
 
           <section class="pk-panel" id="pkPanel" aria-live="polite">
             <div class="pk-topline">
-              <span id="pkMeta">请选择一场比赛</span>
+              <span id="pkMeta">Select a match</span>
               <span id="pkConfidence"></span>
             </div>
             <div class="pk-stage">
@@ -97,94 +98,53 @@
             </div>
             <div class="prediction-copy" id="predictionCopy"></div>
             <div class="model-grid" id="modelGrid"></div>
-            <div class="qwen-panel">
-              <div>
-                <p class="eyebrow">PAUL 实时分析</p>
-                <h3>让 PAUL 复盘这场 PK</h3>
-                <p>
-                  通过本地代理调用 DashScope API Key，浏览器不会保存密钥。
-                </p>
-              </div>
-              <button class="button button--primary" id="qwenButton" type="button">询问 PAUL</button>
-              <div class="qwen-result" id="qwenResult">在本地服务设置 DASHSCOPE_API_KEY 后，可让 PAUL 给出实时模型意见。</div>
-            </div>
           </section>
         </div>
       </section>
 
       <section class="automation band" id="automation">
         <div class="section-head">
-          <p class="eyebrow">自动预测引擎</p>
-          <h2>赛前 24 小时自动预测，赛后统计命中率</h2>
+          <p class="eyebrow">Automation Engine</p>
+          <h2>Automatic predictions 24 hours before kickoff, then accuracy after full time.</h2>
           <p>
-            本地服务可以在每场比赛前 24 小时锁定 PAUL 预测，赛后同步最终比分，并持续统计保罗猜对了多少场。
+            The shared prediction service locks official PAUL picks before each match, syncs final scores after the match,
+            and keeps the public accuracy record consistent for every visitor.
           </p>
         </div>
         <div class="automation-grid">
           <div>
             <strong id="autoPredicted">0</strong>
-            <span>已锁定预测</span>
+            <span>Locked predictions</span>
           </div>
           <div>
             <strong id="autoResults">0</strong>
-            <span>已同步赛果</span>
+            <span>Synced results</span>
           </div>
           <div>
             <strong id="autoAccuracy">0%</strong>
-            <span>预测命中率</span>
+            <span>Prediction accuracy</span>
           </div>
           <div>
-            <strong id="autoNext">等待中</strong>
-            <span>下一次赛前预测</span>
+            <strong id="autoNext">Pending</strong>
+            <span>Next scheduled pick</span>
           </div>
         </div>
         <div class="automation-actions">
-          <button class="button button--primary" id="runAutomationButton" type="button">立即运行到期任务</button>
-          <span id="automationStatus">正在读取自动化状态...</span>
+          <button class="button button--primary" id="runAutomationButton" type="button">Run Due Tasks</button>
+          <span id="automationStatus">Loading automation status...</span>
         </div>
-      </section>
-
-      <section class="origin band" id="origin">
-        <div class="section-head">
-          <p class="eyebrow">保罗起源</p>
-          <h2>这套仪式始于 2008 年</h2>
-          <p>
-            那一年，奥地利和瑞士合办的欧洲杯拉开大幕，德国从普通民众到默克尔都进入了足球狂欢。奥博豪森海洋馆也想蹭一波热度，于是保罗的饲养员灵光一闪：不如让这只章鱼来预测胜负。
-          </p>
-        </div>
-        <div class="origin-ritual">
-          <article>
-            <span>1</span>
-            <h3>两个玻璃箱</h3>
-            <p>每场比赛前，饲养员会准备两个透明玻璃箱，分别贴上对阵双方的国旗。</p>
-          </article>
-          <article>
-            <span>2</span>
-            <h3>各放一颗贻贝</h3>
-            <p>两个箱子里都放上保罗最喜欢吃的贻贝，让预测变成一场小小的喂食仪式。</p>
-          </article>
-          <article>
-            <span>3</span>
-            <h3>保罗做出选择</h3>
-            <p>保罗先钻进哪个箱子吃贝贝，就代表它预测哪个国家会赢。</p>
-          </article>
-        </div>
-        <p class="origin-note">
-          这个网站保留了那种仪式感：两面国旗，一只保罗，一个赛前选择。玻璃箱变成了赛前 24 小时锁定的模型预测，但小小的悬念还在。
-        </p>
       </section>
 
       <section class="groups band" id="groups">
         <div class="section-head">
-          <p class="eyebrow">48 队看板</p>
-          <h2>A-L 小组</h2>
-          <p>分组信息会与各国常用语言一起显示在 PK 页面中。</p>
+          <p class="eyebrow">48-Team Field</p>
+          <h2>Groups A-L</h2>
+          <p>Each team card includes its flag, group, and local-language line for the PK page.</p>
         </div>
         <div class="group-grid" id="groupGrid"></div>
       </section>
-
     </main>
 
-    <script src="app.js?v=paul-ai-10"></script>
+    <script src="app.js?v=paul-ai-11"></script>
   </body>
 </html>

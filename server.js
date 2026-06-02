@@ -269,29 +269,29 @@ function collectPredictionEvidence(match) {
 function buildQwenPrompt(payload, evidence) {
   const needsSearch = !evidence.hasPrimaryEvidence;
   return [
-    "你是一个世界杯赛前预测校准器，不是闲聊评论员。",
+    "You are PAUL AI, an AI octopus for pre-match FIFA World Cup predictions.",
     needsSearch
-      ? "本地 evidence 缺少赔率/Elo 等文件。你必须先联网搜索两队近期公开资料，再基于搜索到的资料分析。"
-      : "必须基于 evidence 里的真实数据源输出预测；不要凭空编造伤停、阵容、近期战绩或赔率。",
+      ? "Local odds/Elo evidence is missing. Use web search to find recent public information before making the prediction."
+      : "Base the prediction on the real evidence object first. Do not invent injuries, lineups, recent results, or odds.",
     needsSearch
-      ? "优先搜索：两队近期战绩、FIFA/Elo排名、伤停与阵容新闻、赔率或市场预测、赛地和休息天数。"
-      : "市场赔率和统计模型是主依据，你只能做小幅校准。若证据不足，请在 reasoning 中明确说明。",
-    "需要判断是否存在黑马信号：低估、伤停错配、赛程压力、战术克制、心理和小组形势。",
-    "返回严格 JSON：winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed。",
-    "probabilities 必须包含 home/draw/away，数值为 0-100。reasoning、upsetRisk、evidenceUsed 用中文。",
-    "evidenceUsed 必须列出你实际使用的数据或搜索信息来源名称。不要编造不存在的具体链接。",
+      ? "Prioritize recent form, FIFA/Elo ranking, injury and lineup news, odds or market forecasts, venue, travel, and rest days."
+      : "Market odds and statistical models are the main anchor. Make only calibrated adjustments and mention evidence gaps in reasoning.",
+    "Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
+    "Return strict JSON with these keys: winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed.",
+    "probabilities must include home/draw/away as numbers from 0 to 100. Write reasoning, upsetRisk, and evidenceUsed in English.",
+    "evidenceUsed must list the data or public information sources actually used. Do not invent exact links.",
     "",
-    `比赛：${payload.id} / ${payload.round} / ${payload.date} / ${payload.venue}`,
-    `球队A：${payload.teamA.code} ${payload.teamA.name}`,
-    `球队B：${payload.teamB.code} ${payload.teamB.name}`,
-    `证据包：${JSON.stringify(evidence)}`
+    `Match: ${payload.id} / ${payload.round} / ${payload.date} / ${payload.venue}`,
+    `Team A: ${payload.teamA.code} ${payload.teamA.name}`,
+    `Team B: ${payload.teamB.code} ${payload.teamB.name}`,
+    `Evidence package: ${JSON.stringify(evidence)}`
   ].join("\n");
 }
 
 async function callQwenAnalysis(payload, evidence = collectPredictionEvidence(payload)) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
-    const error = new Error("缺少 DASHSCOPE_API_KEY。请先在启动 server.js 的终端设置它。");
+    const error = new Error("PAUL AI is not connected: missing DASHSCOPE_API_KEY.");
     error.status = 400;
     throw error;
   }
@@ -303,7 +303,7 @@ async function callQwenAnalysis(payload, evidence = collectPredictionEvidence(pa
     messages: [
       {
         role: "system",
-        content: "你只返回紧凑 JSON，不要 markdown。"
+        content: "Return compact JSON only. Do not use markdown."
       },
       {
         role: "user",

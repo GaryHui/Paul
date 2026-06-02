@@ -63,9 +63,9 @@ function collectPredictionEvidence(match) {
   const formB = findTeamRecord(allForm, match.teamB.code);
   const hasPrimaryEvidence = Boolean(marketProb || (ratingA?.elo && ratingB?.elo));
   const missing = [];
-  if (!marketProb) missing.push("市场赔率");
-  if (!(ratingA?.elo && ratingB?.elo)) missing.push("真实 Elo/球队评分");
-  if (!(formA && formB)) missing.push("近期战绩");
+  if (!marketProb) missing.push("market odds");
+  if (!(ratingA?.elo && ratingB?.elo)) missing.push("real Elo or team ratings");
+  if (!(formA && formB)) missing.push("recent form");
   return {
     matchId: match.id,
     generatedAt: new Date().toISOString(),
@@ -80,26 +80,26 @@ function collectPredictionEvidence(match) {
 function buildPrompt(payload, evidence) {
   const needsSearch = !evidence.hasPrimaryEvidence;
   return [
-    "你是 PAUL AI，一只用于世界杯赛前预测的 AI 章鱼。",
+    "You are PAUL AI, an AI octopus for pre-match FIFA World Cup predictions.",
     needsSearch
-      ? "本地缺少赔率/Elo 等数据。你必须启用联网搜索，查找两队近期公开资料后再分析。"
-      : "必须基于 evidence 中的真实数据源输出预测，并可联网补充最新信息。",
-    "重点寻找黑马信号：被低估、伤停错配、赛程压力、战术克制、心理因素、小组形势、赛地气候。",
-    "不要输出投注建议。不要编造不存在的具体链接。",
-    "返回严格 JSON：winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed。",
-    "probabilities 包含 home/draw/away，数值为 0-100。中文输出 reasoning、upsetRisk、evidenceUsed。",
+      ? "Local odds/Elo evidence is missing. Use web search to find recent public information before making the prediction."
+      : "Base the prediction on the real evidence object first, and use web search only to supplement the latest context.",
+    "Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
+    "Do not provide betting advice. Do not invent exact links, injuries, lineups, odds, or recent results that are not supported by evidence.",
+    "Return strict JSON with these keys: winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed.",
+    "probabilities must include home/draw/away as numbers from 0 to 100. Write reasoning, upsetRisk, and evidenceUsed in English.",
     "",
-    `比赛：${payload.id} / ${payload.round} / ${payload.date} / ${payload.venue}`,
-    `球队A：${payload.teamA.code} ${payload.teamA.name}`,
-    `球队B：${payload.teamB.code} ${payload.teamB.name}`,
-    `证据包：${JSON.stringify(evidence)}`
+    `Match: ${payload.id} / ${payload.round} / ${payload.date} / ${payload.venue}`,
+    `Team A: ${payload.teamA.code} ${payload.teamA.name}`,
+    `Team B: ${payload.teamB.code} ${payload.teamB.name}`,
+    `Evidence package: ${JSON.stringify(evidence)}`
   ].join("\n");
 }
 
 async function callPaul(payload) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
-    const error = new Error("PAUL AI 未配置：缺少 DASHSCOPE_API_KEY。");
+    const error = new Error("PAUL AI is not connected: missing DASHSCOPE_API_KEY.");
     error.status = 400;
     throw error;
   }
@@ -109,7 +109,7 @@ async function callPaul(payload) {
   const requestBody = {
     model: qwenModel,
     messages: [
-      { role: "system", content: "你只返回紧凑 JSON，不要 markdown。" },
+      { role: "system", content: "Return compact JSON only. Do not use markdown." },
       { role: "user", content: buildPrompt(payload, evidence) }
     ],
     temperature: 0.35,

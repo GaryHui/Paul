@@ -1,4 +1,4 @@
-const predictionKey = "paul:predictions:v1";
+const predictionKey = "paul:predictions:v2";
 
 function storeConfig() {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
