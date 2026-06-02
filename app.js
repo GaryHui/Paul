@@ -1192,6 +1192,40 @@ function renderVerifyReport(data) {
   `;
 }
 
+function renderResultsHealth(data) {
+  const report = document.getElementById("resultsHealthReport");
+  if (!report) return;
+  const checks = data.checks || [];
+  report.innerHTML = `
+    <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
+      <strong>RESULT SOURCES ${String(data.status || "unknown").toUpperCase()}</strong>
+      <span>${data.providerName || "none"} · production writes: ${data.writesProductionData ? "yes" : "no"}</span>
+    </div>
+    <div class="verify-health-grid">
+      ${checks
+        .map((check) => `
+          <article class="verify-health-card ${check.ok ? "is-pass" : "is-fail"}">
+            <span>${check.ok ? "PASS" : check.skipped ? "SKIP" : "FAIL"}</span>
+            <h3>${check.provider}</h3>
+            <p>${check.reason || check.error || `HTTP ${check.status || "N/A"} · ${check.elapsedMs ?? "N/A"}ms`}</p>
+            ${check.matchCount !== undefined ? `<p>Matches returned: <strong>${check.matchCount}</strong></p>` : ""}
+          </article>
+        `)
+        .join("")}
+    </div>
+    <div class="verify-safe-check ${data.safeBeforeKickoff ? "is-pass" : "is-fail"}">
+      <strong>${data.safeBeforeKickoff ? "PASS" : "FAIL"}</strong>
+      <span>Before kickoff safety: ${data.firstPlayable?.label || "N/A"} returns ${data.firstMatchResult ? "a result" : "null"}, so unfinished 0-0 scores ${data.safeBeforeKickoff ? "will not be saved" : "may be saved"}.</span>
+    </div>
+    <pre>${JSON.stringify({
+      generatedAt: data.generatedAt,
+      providers: data.providers,
+      firstPlayable: data.firstPlayable,
+      safeBeforeKickoff: data.safeBeforeKickoff
+    }, null, 2)}</pre>
+  `;
+}
+
 function verifyTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("verify") || params.get("verify_token") || "";
@@ -1255,6 +1289,38 @@ async function runDryVerification() {
   } catch (error) {
     status.textContent = error.message;
     renderVerifyReport({ status: "fail", checks: { dryRunRequest: false }, sample: { error: error.message } });
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function runResultsHealthCheck() {
+  const button = document.getElementById("runResultsHealthButton");
+  const status = document.getElementById("verifyStatus");
+  if (!button || !status) return;
+  const token = currentVerifyToken();
+  if (!token) {
+    status.textContent = "Enter the owner verify token first.";
+    return;
+  }
+  button.disabled = true;
+  status.textContent = "Checking result providers...";
+  try {
+    try {
+      sessionStorage.setItem("paul.verifyToken", token);
+    } catch {
+      // Session storage is optional.
+    }
+    const response = await fetch("/api/test/results-health", {
+      headers: { "X-Verify-Token": token }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Result source check failed.");
+    renderResultsHealth(data);
+    status.textContent = "Result source check complete. Production data was not modified.";
+  } catch (error) {
+    status.textContent = error.message;
+    renderResultsHealth({ status: "fail", checks: [{ provider: "request", ok: false, error: error.message }], writesProductionData: false });
   } finally {
     button.disabled = false;
   }
@@ -1331,6 +1397,7 @@ function init() {
   document.getElementById("qwenButton")?.addEventListener("click", askQwen);
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   document.getElementById("runVerifyButton")?.addEventListener("click", runDryVerification);
+  document.getElementById("runResultsHealthButton")?.addEventListener("click", runResultsHealthCheck);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();

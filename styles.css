@@ -892,6 +892,62 @@ input {
   overflow-wrap: anywhere;
 }
 
+.verify-health-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.verify-health-card,
+.verify-safe-check {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10202a;
+  padding: 12px;
+}
+
+.verify-health-card.is-pass,
+.verify-safe-check.is-pass {
+  border-color: rgba(62, 230, 163, 0.42);
+}
+
+.verify-health-card.is-fail,
+.verify-safe-check.is-fail {
+  border-color: rgba(255, 93, 108, 0.48);
+}
+
+.verify-health-card span,
+.verify-safe-check strong {
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.verify-health-card.is-fail span,
+.verify-safe-check.is-fail strong {
+  color: var(--red);
+}
+
+.verify-health-card h3 {
+  margin: 6px 0;
+  color: #e8f3f8;
+  font-size: 17px;
+}
+
+.verify-health-card p,
+.verify-safe-check span {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.verify-safe-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+
 .verify-report pre {
   margin: 12px 0 0;
   max-height: 340px;
@@ -1122,7 +1178,8 @@ input {
   .origin-ritual,
   .method-grid,
   .verify-groups,
-  .verify-checks {
+  .verify-checks,
+  .verify-health-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1168,6 +1225,7 @@ input {
   .method-grid,
   .verify-groups,
   .verify-checks,
+  .verify-health-grid,
   .model-grid,
   .qwen-panel {
     grid-template-columns: 1fr;

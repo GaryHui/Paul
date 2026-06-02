@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-18" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-19" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -157,7 +157,7 @@
         <div class="section-head">
           <p class="eyebrow">Dry-Run Verification</p>
           <h2>Test the whole pipeline before the tournament starts.</h2>
-          <p>This private simulation uses synthetic results and a test proof. It does not write production predictions, results, or audit records.</p>
+          <p>This private area checks result providers, full bracket simulation, and proof hashing. It never writes production predictions, results, or audit records.</p>
         </div>
         <div class="verify-actions">
           <label class="verify-token">
@@ -165,8 +165,10 @@
             <input id="verifyTokenInput" type="password" autocomplete="off" placeholder="Owner token" />
           </label>
           <button class="button button--primary" id="runVerifyButton" type="button">Run Dry Test</button>
+          <button class="button button--ghost" id="runResultsHealthButton" type="button">Check Result Sources</button>
           <span id="verifyStatus">Private owner verification is locked.</span>
         </div>
+        <div class="verify-report" id="resultsHealthReport"></div>
         <div class="verify-report" id="verifyReport"></div>
       </section>
 
@@ -180,6 +182,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-16"></script>
+    <script src="app.js?v=paul-ai-19"></script>
   </body>
 </html>
