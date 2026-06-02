@@ -521,13 +521,14 @@ function modeClass(match) {
 }
 
 function compactDuration(ms) {
-  const totalMinutes = Math.max(0, Math.ceil(ms / 60000));
-  const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor((totalMinutes % 1440) / 60);
-  const minutes = totalMinutes % 60;
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const pad = (value) => String(value).padStart(2, "0");
+  if (days > 0) return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
 function matchCountdown(match, now = new Date()) {
@@ -537,6 +538,18 @@ function matchCountdown(match, now = new Date()) {
   if (diff > 0) return `Starts in ${compactDuration(diff)}`;
   if (diff > -130 * 60000) return "Live now";
   return "Full time window passed";
+}
+
+function countdownMarkup(match) {
+  return `<span data-countdown-match="${match.id}">${matchCountdown(match)}</span>`;
+}
+
+function refreshCountdowns() {
+  const now = new Date();
+  document.querySelectorAll("[data-countdown-match]").forEach((element) => {
+    const match = tournament.matches.find((item) => String(item.id) === String(element.dataset.countdownMatch));
+    if (match) element.textContent = matchCountdown(match, now);
+  });
 }
 
 const flagIds = {
@@ -772,7 +785,7 @@ function renderMatchList() {
             <span>${aLabel} vs ${bLabel}</span>
           </span>
           <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
-          <span class="match-countdown">${matchCountdown(match)}</span>
+          <span class="match-countdown">${countdownMarkup(match)}</span>
           <span class="mode-pill ${modeClass(match)}">${matchMode(match)}</span>
         </span>
         <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
@@ -815,9 +828,9 @@ function renderPK() {
 
   document.getElementById("pkPanel").dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
   document.getElementById("pkMeta").textContent = `${mode} · Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
-  document.getElementById("pkConfidence").textContent = official
-    ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${matchCountdown(match)}`
-    : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${matchCountdown(match)}`;
+  document.getElementById("pkConfidence").innerHTML = official
+    ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
+    : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${countdownMarkup(match)}`;
   document.getElementById("leftTeam").innerHTML = resolved.aCode ? teamMarkup(resolved.aCode) + teamLocaleMarkup(resolved.aCode) : slotMarkup(slotLabel(match, "a"));
   document.getElementById("rightTeam").innerHTML = resolved.bCode ? teamMarkup(resolved.bCode) + teamLocaleMarkup(resolved.bCode) : slotMarkup(slotLabel(match, "b"));
   lane.style.setProperty("--crawl-x", crawlX);
@@ -849,7 +862,7 @@ function renderPK() {
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${resolved.aCode && resolved.bCode ? "Official PAUL prediction is not locked yet." : "This bracket slot is not resolved yet."}</strong></p>
       <p>${pendingCopy}</p>
-      <p class="countdown-detail">Kickoff countdown: <strong>${matchCountdown(match)}</strong></p>
+      <p class="countdown-detail">Kickoff countdown: <strong>${countdownMarkup(match)}</strong></p>
     `;
   }
 
@@ -1104,6 +1117,71 @@ function publicProofJson(entry) {
   }, null, 2);
 }
 
+async function demoProofJson() {
+  const match = tournament.matches[0];
+  const kickoff = matchKickoffTime(match);
+  const lockedAt = new Date(kickoff.getTime() - 24 * 60 * 60 * 1000).toISOString();
+  const kickoffAt = kickoff.toISOString();
+  const payload = {
+    version: "paul-proof-v2",
+    matchId: match.id,
+    round: match.round,
+    match: `${teams[match.aCode].name} vs ${teams[match.bCode].name}`,
+    teams: {
+      home: { code: match.aCode, name: teams[match.aCode].name },
+      away: { code: match.bCode, name: teams[match.bCode].name }
+    },
+    kickoffAt,
+    lockedAt,
+    model: "PAUL-DEMO",
+    prediction: {
+      winnerCode: match.aCode,
+      winnerName: teams[match.aCode].name,
+      confidence: 57,
+      predictedScore: "2-1",
+      probabilities: { home: 48, draw: 27, away: 25 },
+      upsetRisk: "Demo only",
+      reasoning: "Synthetic browser-only proof used to test public verification before real predictions exist.",
+      evidenceUsed: ["demo odds snapshot", "demo proof verifier"]
+    },
+    evidence: {
+      generatedAt: lockedAt,
+      hasPrimaryEvidence: true,
+      missing: [],
+      market: {
+        source: "demo",
+        provider: "browser demo",
+        eventId: "demo-match-1",
+        updatedAt: lockedAt,
+        bookmakerCount: 3,
+        sampleBookmakers: ["DemoBook A", "DemoBook B", "DemoBook C"],
+        odds: { home: 2.05, draw: 3.55, away: 3.9 },
+        probabilities: { home: 0.437, draw: 0.253, away: 0.23 }
+      },
+      ratings: null,
+      form: null,
+      searchFallback: false
+    },
+    nonce: "demo-proof-not-a-real-prediction"
+  };
+  const canonical = stableStringify(payload);
+  const hash = await sha256Hex(canonical);
+  return JSON.stringify({
+    id: `${match.id}:${hash.slice(0, 16)}:demo`,
+    version: "paul-proof-v2",
+    matchId: match.id,
+    match: payload.match,
+    round: match.round,
+    lockedAt,
+    kickoffAt,
+    algorithm: "sha256",
+    hash,
+    canonical,
+    payload,
+    externalProof: { provider: "demo", note: "Browser-only sample. Not stored, not official." }
+  }, null, 2);
+}
+
 async function copyText(value) {
   if (navigator.clipboard?.writeText) {
     await navigator.clipboard.writeText(value);
@@ -1118,6 +1196,12 @@ async function copyText(value) {
   textarea.select();
   document.execCommand("copy");
   textarea.remove();
+}
+
+async function loadDemoProof() {
+  setProofVerifierInput(await demoProofJson());
+  const status = document.getElementById("copyProofStatus");
+  if (status) status.textContent = "Demo proof loaded. Click Verify Proof.";
 }
 
 function setProofVerifierInput(value) {
@@ -1243,7 +1327,7 @@ async function verifyProofInput() {
       ? `<a href="${parsed.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
       : parsed?.externalProof?.error
         ? "GitHub proof pending"
-        : "No external timestamp in this proof JSON";
+        : parsed?.externalProof?.note || "No external timestamp in this proof JSON";
 
     result.innerHTML = `
       <div class="proof-result-grid">
@@ -1558,15 +1642,13 @@ function init() {
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   document.getElementById("runVerifyButton")?.addEventListener("click", runDryVerification);
   document.getElementById("runResultsHealthButton")?.addEventListener("click", runResultsHealthCheck);
+  document.getElementById("loadDemoProofButton")?.addEventListener("click", loadDemoProof);
   document.getElementById("verifyProofButton")?.addEventListener("click", verifyProofInput);
   document.getElementById("clearProofButton")?.addEventListener("click", clearProofVerifier);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();
-  window.setInterval(() => {
-    renderMatchList();
-    renderPK();
-  }, 60000);
+  window.setInterval(refreshCountdowns, 1000);
 }
 
 init();
