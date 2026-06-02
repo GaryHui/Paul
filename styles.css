@@ -441,6 +441,27 @@ input {
   flex: 0 0 auto;
 }
 
+.slot-badge,
+.flag-frame--slot {
+  display: inline-grid;
+  place-items: center;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.slot-badge {
+  width: 58px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.flag-frame--slot {
+  box-shadow: none;
+}
+
 .team-name {
   font-size: clamp(22px, 2.1vw, 32px);
   font-weight: 900;

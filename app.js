@@ -61,7 +61,7 @@ const teams = {
 };
 
 const groupOrder = "ABCDEFGHIJKL".split("");
-const roundOptions = ["All", "Group Stage"];
+const roundOptions = ["All", "Group Stage", "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
 const roundLabels = {
   All: "All",
   "Group Stage": "Group Stage"
@@ -204,6 +204,64 @@ function buildGroupMatches() {
   return matches;
 }
 
+function rankSlot(group, rank) {
+  const rankName = rank === 1 ? "winner" : rank === 2 ? "runner-up" : "third place";
+  return { type: "groupRank", group, rank, label: `Group ${group} ${rankName}` };
+}
+
+function bestThirdSlot(groups) {
+  return { type: "bestThird", groups, label: `Best 3rd place (${groups.join("/")})` };
+}
+
+function winnerSlot(matchId) {
+  return { type: "winner", matchId, label: `Winner Match ${matchId}` };
+}
+
+function loserSlot(matchId) {
+  return { type: "loser", matchId, label: `Loser Match ${matchId}` };
+}
+
+function knockoutMatch(id, round, date, venue, leftSlot, rightSlot) {
+  return { id, round, date, venue, aSlot: leftSlot, bSlot: rightSlot, slot: round };
+}
+
+function buildKnockoutMatches() {
+  return [
+    knockoutMatch(73, "Round of 32", "Jun 28, 2026", "Los Angeles / Inglewood", rankSlot("A", 2), rankSlot("B", 2)),
+    knockoutMatch(74, "Round of 32", "Jun 29, 2026", "Boston / Foxborough", rankSlot("E", 1), bestThirdSlot(["A", "B", "C", "D", "F"])),
+    knockoutMatch(75, "Round of 32", "Jun 29, 2026", "Monterrey / Guadalupe", rankSlot("F", 1), rankSlot("C", 2)),
+    knockoutMatch(76, "Round of 32", "Jun 29, 2026", "Houston", rankSlot("C", 1), rankSlot("F", 2)),
+    knockoutMatch(77, "Round of 32", "Jun 30, 2026", "New York-New Jersey", rankSlot("I", 1), bestThirdSlot(["C", "D", "F", "G", "H"])),
+    knockoutMatch(78, "Round of 32", "Jun 30, 2026", "Dallas / Arlington", rankSlot("E", 2), rankSlot("I", 2)),
+    knockoutMatch(79, "Round of 32", "Jun 30, 2026", "Mexico City", rankSlot("A", 1), bestThirdSlot(["C", "E", "F", "H", "I"])),
+    knockoutMatch(80, "Round of 32", "Jul 1, 2026", "Atlanta", rankSlot("L", 1), bestThirdSlot(["E", "H", "I", "J", "K"])),
+    knockoutMatch(81, "Round of 32", "Jul 1, 2026", "San Francisco Bay Area", rankSlot("D", 1), bestThirdSlot(["B", "E", "F", "I", "J"])),
+    knockoutMatch(82, "Round of 32", "Jul 1, 2026", "Seattle", rankSlot("G", 1), bestThirdSlot(["A", "E", "H", "I", "J"])),
+    knockoutMatch(83, "Round of 32", "Jul 2, 2026", "Toronto", rankSlot("K", 2), rankSlot("L", 2)),
+    knockoutMatch(84, "Round of 32", "Jul 2, 2026", "Los Angeles / Inglewood", rankSlot("H", 1), rankSlot("J", 2)),
+    knockoutMatch(85, "Round of 32", "Jul 2, 2026", "Vancouver", rankSlot("B", 1), bestThirdSlot(["E", "F", "G", "I", "J"])),
+    knockoutMatch(86, "Round of 32", "Jul 3, 2026", "Miami", rankSlot("J", 1), rankSlot("H", 2)),
+    knockoutMatch(87, "Round of 32", "Jul 3, 2026", "Kansas City", rankSlot("K", 1), bestThirdSlot(["D", "E", "I", "J", "L"])),
+    knockoutMatch(88, "Round of 32", "Jul 3, 2026", "Dallas / Arlington", rankSlot("D", 2), rankSlot("G", 2)),
+    knockoutMatch(89, "Round of 16", "Jul 4, 2026", "Philadelphia", winnerSlot(74), winnerSlot(77)),
+    knockoutMatch(90, "Round of 16", "Jul 4, 2026", "Houston", winnerSlot(73), winnerSlot(75)),
+    knockoutMatch(91, "Round of 16", "Jul 5, 2026", "New York-New Jersey", winnerSlot(76), winnerSlot(78)),
+    knockoutMatch(92, "Round of 16", "Jul 5, 2026", "Mexico City", winnerSlot(79), winnerSlot(80)),
+    knockoutMatch(93, "Round of 16", "Jul 6, 2026", "Dallas / Arlington", winnerSlot(83), winnerSlot(84)),
+    knockoutMatch(94, "Round of 16", "Jul 6, 2026", "Seattle", winnerSlot(81), winnerSlot(82)),
+    knockoutMatch(95, "Round of 16", "Jul 7, 2026", "Atlanta", winnerSlot(86), winnerSlot(88)),
+    knockoutMatch(96, "Round of 16", "Jul 7, 2026", "Vancouver", winnerSlot(85), winnerSlot(87)),
+    knockoutMatch(97, "Quarterfinal", "Jul 9, 2026", "Boston / Foxborough", winnerSlot(89), winnerSlot(90)),
+    knockoutMatch(98, "Quarterfinal", "Jul 10, 2026", "Los Angeles / Inglewood", winnerSlot(93), winnerSlot(94)),
+    knockoutMatch(99, "Quarterfinal", "Jul 11, 2026", "Miami", winnerSlot(91), winnerSlot(92)),
+    knockoutMatch(100, "Quarterfinal", "Jul 11, 2026", "Kansas City", winnerSlot(95), winnerSlot(96)),
+    knockoutMatch(101, "Semifinal", "Jul 14, 2026", "Dallas / Arlington", winnerSlot(97), winnerSlot(98)),
+    knockoutMatch(102, "Semifinal", "Jul 15, 2026", "Atlanta", winnerSlot(99), winnerSlot(100)),
+    knockoutMatch(103, "Third Place", "Jul 18, 2026", "Miami", loserSlot(101), loserSlot(102)),
+    knockoutMatch(104, "Final", "Jul 19, 2026", "New York-New Jersey", winnerSlot(101), winnerSlot(102))
+  ];
+}
+
 function standingsFrom(matches) {
   const table = {};
   Object.keys(teams).forEach((code) => {
@@ -247,14 +305,148 @@ function standingsFrom(matches) {
   return byGroup;
 }
 
+function completedGroupMatches(group) {
+  return tournament.matches.filter((match) => match.round === "Group Stage" && match.group === group && officialResult(match)?.status === "final");
+}
+
+function actualStandingsFromResults() {
+  const table = {};
+  Object.keys(teams).forEach((code) => {
+    table[code] = { code, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+  });
+
+  tournament.matches
+    .filter((match) => match.round === "Group Stage")
+    .forEach((match) => {
+      const result = officialResult(match);
+      if (result?.status !== "final") return;
+      const a = table[match.aCode];
+      const b = table[match.bCode];
+      const aGoals = Number(result.homeScore);
+      const bGoals = Number(result.awayScore);
+      a.p += 1;
+      b.p += 1;
+      a.gf += aGoals;
+      a.ga += bGoals;
+      b.gf += bGoals;
+      b.ga += aGoals;
+      if (aGoals === bGoals) {
+        a.d += 1;
+        b.d += 1;
+        a.pts += 1;
+        b.pts += 1;
+      } else if (aGoals > bGoals) {
+        a.w += 1;
+        b.l += 1;
+        a.pts += 3;
+      } else {
+        b.w += 1;
+        a.l += 1;
+        b.pts += 3;
+      }
+      a.gd = a.gf - a.ga;
+      b.gd = b.gf - b.ga;
+    });
+
+  const byGroup = {};
+  groupOrder.forEach((group) => {
+    byGroup[group] = Object.values(table)
+      .filter((row) => teams[row.code].group === group)
+      .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power);
+  });
+  return byGroup;
+}
+
+function groupIsComplete(group) {
+  return completedGroupMatches(group).length === 6;
+}
+
+function allGroupsComplete() {
+  return groupOrder.every((group) => groupIsComplete(group));
+}
+
+function bestThirdTeams(standings) {
+  if (!allGroupsComplete()) return [];
+  return groupOrder
+    .map((group) => standings[group]?.[2])
+    .filter(Boolean)
+    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power)
+    .slice(0, 8);
+}
+
+function thirdPlaceAssignments(standings) {
+  const pool = bestThirdTeams(standings);
+  const used = new Set();
+  const assignments = {};
+  tournament.matches
+    .filter((match) => match.round === "Round of 32")
+    .forEach((match) => {
+      [match.aSlot, match.bSlot].filter((slot) => slot?.type === "bestThird").forEach((slot) => {
+        const key = slot.label;
+        if (assignments[key]) return;
+        const chosen = pool.find((row) => slot.groups.includes(teams[row.code].group) && !used.has(row.code));
+        if (chosen) {
+          assignments[key] = chosen.code;
+          used.add(chosen.code);
+        }
+      });
+    });
+  return assignments;
+}
+
+function knockoutWinnerCode(match, wantLoser = false) {
+  const result = officialResult(match);
+  if (result?.status !== "final") return null;
+  if (Number(result.homeScore) === Number(result.awayScore)) {
+    return wantLoser ? result.loserCode || null : result.winnerCode || null;
+  }
+  const winner = Number(result.homeScore) > Number(result.awayScore) ? resolvedTeamCode(match, "a") : resolvedTeamCode(match, "b");
+  const loser = Number(result.homeScore) > Number(result.awayScore) ? resolvedTeamCode(match, "b") : resolvedTeamCode(match, "a");
+  return wantLoser ? loser : winner;
+}
+
+function resolveSlot(slot) {
+  if (!slot) return null;
+  const standings = actualStandingsFromResults();
+  if (slot.type === "groupRank") {
+    if (!groupIsComplete(slot.group)) return null;
+    return standings[slot.group]?.[slot.rank - 1]?.code || null;
+  }
+  if (slot.type === "bestThird") {
+    return thirdPlaceAssignments(standings)[slot.label] || null;
+  }
+  if (slot.type === "winner" || slot.type === "loser") {
+    const source = tournament.matches.find((match) => match.id === slot.matchId);
+    return source ? knockoutWinnerCode(source, slot.type === "loser") : null;
+  }
+  return null;
+}
+
+function resolvedTeamCode(match, side) {
+  if (side === "a") return match.aCode || resolveSlot(match.aSlot);
+  return match.bCode || resolveSlot(match.bSlot);
+}
+
+function resolvedTeams(match) {
+  return {
+    aCode: resolvedTeamCode(match, "a"),
+    bCode: resolvedTeamCode(match, "b")
+  };
+}
+
+function slotLabel(match, side) {
+  return side === "a" ? match.aSlot?.label || teams[match.aCode]?.name || "TBD" : match.bSlot?.label || teams[match.bCode]?.name || "TBD";
+}
+
 function buildTournament() {
   const groupMatches = buildGroupMatches().map((match) => ({
     ...match,
     prediction: predict(match.aCode, match.bCode, "Group Stage")
   }));
+  const knockoutMatches = buildKnockoutMatches();
   const standings = standingsFrom(groupMatches);
 
-  return { matches: groupMatches, standings, bestThird: [] };
+  return { matches: [...groupMatches, ...knockoutMatches], standings, bestThird: [] };
 }
 
 const tournament = buildTournament();
@@ -288,11 +480,13 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
   return tournament.matches
     .map((match) => {
       if (predictions[match.id]) return null;
+      const resolved = resolvedTeams(match);
+      if (!resolved.aCode || !resolved.bCode) return null;
       const matchTime = new Date(`${match.date} 20:00:00 GMT+0000`);
       if (Number.isNaN(matchTime.getTime())) return null;
       return {
         id: match.id,
-        label: `${teams[match.aCode].name} vs ${teams[match.bCode].name}`,
+        label: `${teams[resolved.aCode].name} vs ${teams[resolved.bCode].name}`,
         dueAt: new Date(matchTime.getTime() - leadHours * 60 * 60 * 1000).toISOString()
       };
     })
@@ -464,6 +658,19 @@ function teamMarkup(code) {
   `;
 }
 
+function slotMarkup(label) {
+  return `
+    <div class="team-card-heading">
+      <span class="flag-frame flag-frame--slot">TBD</span>
+      <div>
+        <div class="team-name">${label}</div>
+        <div class="team-code">Awaiting official result</div>
+      </div>
+    </div>
+    <p class="language"><strong>Bracket status:</strong><br>This slot will be filled automatically after earlier results are synced.</p>
+  `;
+}
+
 function officialPrediction(match) {
   return automationState.predictions?.[match.id] || null;
 }
@@ -474,6 +681,7 @@ function officialResult(match) {
 
 function resultWinner(result) {
   if (!result) return null;
+  if (result.winnerCode) return result.winnerCode;
   if (Number(result.homeScore) === Number(result.awayScore)) return "DRAW";
   return Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode;
 }
@@ -495,6 +703,12 @@ function predictionStatus(match) {
 }
 
 function resultLabel(match) {
+  const result = officialResult(match);
+  if (result?.status === "final") {
+    const winner = result.winnerCode || resultWinner(result);
+    const winnerName = winner === "DRAW" ? "Draw" : teams[winner]?.name || "Final";
+    return `${winnerName} ${result.homeScore}-${result.awayScore}`;
+  }
   const record = officialPrediction(match);
   if (!record) return "Pending";
   const pick = officialPickCode(record);
@@ -513,25 +727,36 @@ function renderMatchList() {
   const list = document.getElementById("matchList");
 
   const filtered = tournament.matches.filter((match) => {
-    const haystack = `${match.id} ${match.round} ${match.group} ${teams[match.aCode].name} ${teams[match.bCode].name} ${match.venue}`.toLowerCase();
+    const resolved = resolvedTeams(match);
+    const aLabel = resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
+    const bLabel = resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
+    const haystack = `${match.id} ${match.round} ${match.group || ""} ${aLabel} ${bLabel} ${match.venue}`.toLowerCase();
     return (round === "All" || match.round === round) && (group === "All" || match.group === group) && (!query || haystack.includes(query));
   });
 
   list.innerHTML = filtered
-    .map((match) => `
-      <button class="match-card ${match.id === activeMatchId ? "is-active" : ""}" data-id="${match.id}">
+    .map((match) => {
+      const resolved = resolvedTeams(match);
+      const aLabel = resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
+      const bLabel = resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
+      const flags = resolved.aCode && resolved.bCode
+        ? `${flagImage(resolved.aCode, "flag-frame match-flag")} ${flagImage(resolved.bCode, "flag-frame match-flag")}`
+        : `<span class="slot-badge">TBD</span>`;
+      return `
+        <button class="match-card ${match.id === activeMatchId ? "is-active" : ""}" data-id="${match.id}">
           <span class="match-no">#${match.id}</span>
         <span>
           <span class="match-title">
-            <span class="match-flags">${flagImage(match.aCode, "flag-frame match-flag")} ${flagImage(match.bCode, "flag-frame match-flag")}</span>
-            <span>${teams[match.aCode].name} vs ${teams[match.bCode].name}</span>
+            <span class="match-flags">${flags}</span>
+            <span>${aLabel} vs ${bLabel}</span>
           </span>
           <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
           <span class="match-countdown">${matchCountdown(match)}</span>
         </span>
         <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
       </button>
-    `)
+    `;
+    })
     .join("");
 
   if (!filtered.length) {
@@ -553,11 +778,12 @@ function renderMatchList() {
 
 function renderPK() {
   const match = tournament.matches.find((item) => item.id === activeMatchId);
+  const resolved = resolvedTeams(match);
   const official = officialPrediction(match);
   const officialPick = officialPickCode(official);
   const finalResult = officialResult(match);
-  const leftWon = officialPick === match.aCode;
-  const rightWon = officialPick === match.bCode;
+  const leftWon = officialPick === resolved.aCode;
+  const rightWon = officialPick === resolved.bCode;
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
@@ -566,9 +792,9 @@ function renderPK() {
   document.getElementById("pkMeta").textContent = `Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
   document.getElementById("pkConfidence").textContent = official
     ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${matchCountdown(match)}`
-    : `Official prediction pending · ${matchCountdown(match)}`;
-  document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode) + teamLocaleMarkup(match.aCode);
-  document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode) + teamLocaleMarkup(match.bCode);
+    : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${matchCountdown(match)}`;
+  document.getElementById("leftTeam").innerHTML = resolved.aCode ? teamMarkup(resolved.aCode) + teamLocaleMarkup(resolved.aCode) : slotMarkup(slotLabel(match, "a"));
+  document.getElementById("rightTeam").innerHTML = resolved.bCode ? teamMarkup(resolved.bCode) + teamLocaleMarkup(resolved.bCode) : slotMarkup(slotLabel(match, "b"));
   lane.style.setProperty("--crawl-x", crawlX);
   lane.dataset.direction = leftWon ? "left" : rightWon ? "right" : "center";
   if (!crawler.getAttribute("src")?.includes(crawlerAsset)) {
@@ -582,7 +808,7 @@ function renderPK() {
     const pickName = officialPick === "DRAW" ? "Draw" : teams[officialPick]?.name || official.analysis?.winnerName || "N/A";
     const verdict = officialPick === "DRAW" ? "PAUL officially predicts a draw" : `PAUL officially crawls toward ${pickName}`;
     const resultCopy = finalResult?.status === "final"
-      ? `Final score: ${teams[match.aCode].name} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[match.bCode].name}. Status: ${predictionStatus(match)}.`
+      ? `Final score: ${teams[resolved.aCode]?.name || slotLabel(match, "a")} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[resolved.bCode]?.name || slotLabel(match, "b")}. Status: ${predictionStatus(match)}.`
       : "Final score has not synced yet. Accuracy will update after full time.";
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${verdict}</strong> · Predicted score: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
@@ -591,7 +817,7 @@ function renderPK() {
     `;
   } else {
     document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>Official PAUL prediction is not locked yet.</strong></p>
+      <p><strong>${resolved.aCode && resolved.bCode ? "Official PAUL prediction is not locked yet." : "This bracket slot is not resolved yet."}</strong></p>
       <p class="countdown-detail">Kickoff countdown: <strong>${matchCountdown(match)}</strong></p>
     `;
   }
@@ -617,8 +843,8 @@ function renderPK() {
     : `
       <article class="model-card model-card--wide">
         <h3>Awaiting Official PAUL Prediction</h3>
-        <div class="vote">Not locked</div>
-        <p>No simulated reference is shown before the official lock.</p>
+        <div class="vote">${resolved.aCode && resolved.bCode ? "Not locked" : "Waiting for bracket results"}</div>
+        <p>${resolved.aCode && resolved.bCode ? "No simulated reference is shown before the official lock." : "This match will become predictable after the earlier winners are known."}</p>
       </article>
     `;
 
@@ -630,7 +856,9 @@ function renderPK() {
 }
 
 function qwenPayload(match) {
-  const prediction = match.prediction;
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode) return null;
+  const prediction = match.prediction || predict(resolved.aCode, resolved.bCode, match.round);
   const makeTeam = (code) => ({
     code,
     name: teams[code].name,
@@ -649,11 +877,11 @@ function qwenPayload(match) {
     date: match.date,
     venue: match.venue,
     slot: match.slot,
-    teamA: makeTeam(match.aCode),
-    teamB: makeTeam(match.bCode),
+    teamA: makeTeam(resolved.aCode),
+    teamB: makeTeam(resolved.bCode),
     localPrediction: {
       winnerCode: prediction.winner,
-      winnerName: prediction.winner === "DRAW" ? "平局" : teams[prediction.winner].name,
+      winnerName: prediction.winner === "DRAW" ? "Draw" : teams[prediction.winner].name,
       score: prediction.score,
       confidence: prediction.confidence,
       votes: prediction.votes.map((vote) => ({
@@ -672,6 +900,12 @@ async function askQwen() {
   const button = document.getElementById("qwenButton");
   const result = document.getElementById("qwenResult");
   if (!match || !button || !result) return;
+  const payload = qwenPayload(match);
+  if (!payload) {
+    result.className = "qwen-result is-error";
+    result.textContent = "This bracket slot is not resolved yet.";
+    return;
+  }
 
   button.disabled = true;
   result.className = "qwen-result is-loading";
@@ -681,7 +915,7 @@ async function askQwen() {
     const response = await fetch("/api/qwen-predict", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(qwenPayload(match))
+      body: JSON.stringify(payload)
     });
     const data = await response.json();
 
@@ -722,7 +956,16 @@ async function askQwen() {
 }
 
 async function syncAutomationSnapshot() {
-  const matches = tournament.matches.map((match) => qwenPayload(match));
+  const matches = tournament.matches.map((match) => qwenPayload(match) || {
+    id: match.id,
+    round: match.round,
+    group: match.group,
+    date: match.date,
+    venue: match.venue,
+    slot: match.slot,
+    aSlot: match.aSlot,
+    bSlot: match.bSlot
+  });
   try {
     await fetch("/api/automation/snapshot", {
       method: "POST",

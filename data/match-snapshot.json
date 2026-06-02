@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-02T07:59:03.095Z",
+  "updatedAt": "2026-06-02T09:58:48.783Z",
   "matches": [
     {
       "id": 1,
@@ -1526,7 +1526,7 @@
       },
       "localPrediction": {
         "winnerCode": "DRAW",
-        "winnerName": "平局",
+        "winnerName": "Draw",
         "score": "1-1",
         "confidence": 52,
         "votes": [
@@ -3086,7 +3086,7 @@
       },
       "localPrediction": {
         "winnerCode": "DRAW",
-        "winnerName": "平局",
+        "winnerName": "Draw",
         "score": "1-1",
         "confidence": 52,
         "votes": [
@@ -4679,6 +4679,622 @@
             "reason": "内置强度评分 + 固定冷门扰动"
           }
         ]
+      }
+    },
+    {
+      "id": 73,
+      "round": "Round of 32",
+      "date": "Jun 28, 2026",
+      "venue": "Los Angeles / Inglewood",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "A",
+        "rank": 2,
+        "label": "Group A runner-up"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "B",
+        "rank": 2,
+        "label": "Group B runner-up"
+      }
+    },
+    {
+      "id": 74,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Boston / Foxborough",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "E",
+        "rank": 1,
+        "label": "Group E winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "A",
+          "B",
+          "C",
+          "D",
+          "F"
+        ],
+        "label": "Best 3rd place (A/B/C/D/F)"
+      }
+    },
+    {
+      "id": 75,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Monterrey / Guadalupe",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "F",
+        "rank": 1,
+        "label": "Group F winner"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "C",
+        "rank": 2,
+        "label": "Group C runner-up"
+      }
+    },
+    {
+      "id": 76,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Houston",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "C",
+        "rank": 1,
+        "label": "Group C winner"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "F",
+        "rank": 2,
+        "label": "Group F runner-up"
+      }
+    },
+    {
+      "id": 77,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "I",
+        "rank": 1,
+        "label": "Group I winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "C",
+          "D",
+          "F",
+          "G",
+          "H"
+        ],
+        "label": "Best 3rd place (C/D/F/G/H)"
+      }
+    },
+    {
+      "id": 78,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "Dallas / Arlington",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "E",
+        "rank": 2,
+        "label": "Group E runner-up"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "I",
+        "rank": 2,
+        "label": "Group I runner-up"
+      }
+    },
+    {
+      "id": 79,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "Mexico City",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "A",
+        "rank": 1,
+        "label": "Group A winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "C",
+          "E",
+          "F",
+          "H",
+          "I"
+        ],
+        "label": "Best 3rd place (C/E/F/H/I)"
+      }
+    },
+    {
+      "id": 80,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "Atlanta",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "L",
+        "rank": 1,
+        "label": "Group L winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "E",
+          "H",
+          "I",
+          "J",
+          "K"
+        ],
+        "label": "Best 3rd place (E/H/I/J/K)"
+      }
+    },
+    {
+      "id": 81,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "San Francisco Bay Area",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "D",
+        "rank": 1,
+        "label": "Group D winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "B",
+          "E",
+          "F",
+          "I",
+          "J"
+        ],
+        "label": "Best 3rd place (B/E/F/I/J)"
+      }
+    },
+    {
+      "id": 82,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "Seattle",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "G",
+        "rank": 1,
+        "label": "Group G winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "A",
+          "E",
+          "H",
+          "I",
+          "J"
+        ],
+        "label": "Best 3rd place (A/E/H/I/J)"
+      }
+    },
+    {
+      "id": 83,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Toronto",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "K",
+        "rank": 2,
+        "label": "Group K runner-up"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "L",
+        "rank": 2,
+        "label": "Group L runner-up"
+      }
+    },
+    {
+      "id": 84,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Los Angeles / Inglewood",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "H",
+        "rank": 1,
+        "label": "Group H winner"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "J",
+        "rank": 2,
+        "label": "Group J runner-up"
+      }
+    },
+    {
+      "id": 85,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Vancouver",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "B",
+        "rank": 1,
+        "label": "Group B winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "E",
+          "F",
+          "G",
+          "I",
+          "J"
+        ],
+        "label": "Best 3rd place (E/F/G/I/J)"
+      }
+    },
+    {
+      "id": 86,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Miami",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "J",
+        "rank": 1,
+        "label": "Group J winner"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "H",
+        "rank": 2,
+        "label": "Group H runner-up"
+      }
+    },
+    {
+      "id": 87,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Kansas City",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "K",
+        "rank": 1,
+        "label": "Group K winner"
+      },
+      "bSlot": {
+        "type": "bestThird",
+        "groups": [
+          "D",
+          "E",
+          "I",
+          "J",
+          "L"
+        ],
+        "label": "Best 3rd place (D/E/I/J/L)"
+      }
+    },
+    {
+      "id": 88,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Dallas / Arlington",
+      "slot": "Round of 32",
+      "aSlot": {
+        "type": "groupRank",
+        "group": "D",
+        "rank": 2,
+        "label": "Group D runner-up"
+      },
+      "bSlot": {
+        "type": "groupRank",
+        "group": "G",
+        "rank": 2,
+        "label": "Group G runner-up"
+      }
+    },
+    {
+      "id": 89,
+      "round": "Round of 16",
+      "date": "Jul 4, 2026",
+      "venue": "Philadelphia",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 74,
+        "label": "Winner Match 74"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 77,
+        "label": "Winner Match 77"
+      }
+    },
+    {
+      "id": 90,
+      "round": "Round of 16",
+      "date": "Jul 4, 2026",
+      "venue": "Houston",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 73,
+        "label": "Winner Match 73"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 75,
+        "label": "Winner Match 75"
+      }
+    },
+    {
+      "id": 91,
+      "round": "Round of 16",
+      "date": "Jul 5, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 76,
+        "label": "Winner Match 76"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 78,
+        "label": "Winner Match 78"
+      }
+    },
+    {
+      "id": 92,
+      "round": "Round of 16",
+      "date": "Jul 5, 2026",
+      "venue": "Mexico City",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 79,
+        "label": "Winner Match 79"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 80,
+        "label": "Winner Match 80"
+      }
+    },
+    {
+      "id": 93,
+      "round": "Round of 16",
+      "date": "Jul 6, 2026",
+      "venue": "Dallas / Arlington",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 83,
+        "label": "Winner Match 83"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 84,
+        "label": "Winner Match 84"
+      }
+    },
+    {
+      "id": 94,
+      "round": "Round of 16",
+      "date": "Jul 6, 2026",
+      "venue": "Seattle",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 81,
+        "label": "Winner Match 81"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 82,
+        "label": "Winner Match 82"
+      }
+    },
+    {
+      "id": 95,
+      "round": "Round of 16",
+      "date": "Jul 7, 2026",
+      "venue": "Atlanta",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 86,
+        "label": "Winner Match 86"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 88,
+        "label": "Winner Match 88"
+      }
+    },
+    {
+      "id": 96,
+      "round": "Round of 16",
+      "date": "Jul 7, 2026",
+      "venue": "Vancouver",
+      "slot": "Round of 16",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 85,
+        "label": "Winner Match 85"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 87,
+        "label": "Winner Match 87"
+      }
+    },
+    {
+      "id": 97,
+      "round": "Quarterfinal",
+      "date": "Jul 9, 2026",
+      "venue": "Boston / Foxborough",
+      "slot": "Quarterfinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 89,
+        "label": "Winner Match 89"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 90,
+        "label": "Winner Match 90"
+      }
+    },
+    {
+      "id": 98,
+      "round": "Quarterfinal",
+      "date": "Jul 10, 2026",
+      "venue": "Los Angeles / Inglewood",
+      "slot": "Quarterfinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 93,
+        "label": "Winner Match 93"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 94,
+        "label": "Winner Match 94"
+      }
+    },
+    {
+      "id": 99,
+      "round": "Quarterfinal",
+      "date": "Jul 11, 2026",
+      "venue": "Miami",
+      "slot": "Quarterfinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 91,
+        "label": "Winner Match 91"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 92,
+        "label": "Winner Match 92"
+      }
+    },
+    {
+      "id": 100,
+      "round": "Quarterfinal",
+      "date": "Jul 11, 2026",
+      "venue": "Kansas City",
+      "slot": "Quarterfinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 95,
+        "label": "Winner Match 95"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 96,
+        "label": "Winner Match 96"
+      }
+    },
+    {
+      "id": 101,
+      "round": "Semifinal",
+      "date": "Jul 14, 2026",
+      "venue": "Dallas / Arlington",
+      "slot": "Semifinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 97,
+        "label": "Winner Match 97"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 98,
+        "label": "Winner Match 98"
+      }
+    },
+    {
+      "id": 102,
+      "round": "Semifinal",
+      "date": "Jul 15, 2026",
+      "venue": "Atlanta",
+      "slot": "Semifinal",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 99,
+        "label": "Winner Match 99"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 100,
+        "label": "Winner Match 100"
+      }
+    },
+    {
+      "id": 103,
+      "round": "Third Place",
+      "date": "Jul 18, 2026",
+      "venue": "Miami",
+      "slot": "Third Place",
+      "aSlot": {
+        "type": "loser",
+        "matchId": 101,
+        "label": "Loser Match 101"
+      },
+      "bSlot": {
+        "type": "loser",
+        "matchId": 102,
+        "label": "Loser Match 102"
+      }
+    },
+    {
+      "id": 104,
+      "round": "Final",
+      "date": "Jul 19, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "Final",
+      "aSlot": {
+        "type": "winner",
+        "matchId": 101,
+        "label": "Winner Match 101"
+      },
+      "bSlot": {
+        "type": "winner",
+        "matchId": 102,
+        "label": "Winner Match 102"
       }
     }
   ]

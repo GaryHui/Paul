@@ -1,4 +1,5 @@
 const predictionKey = "paul:predictions:v2";
+const resultKey = "paul:results:v1";
 
 function storeConfig() {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -50,8 +51,30 @@ async function setPrediction(matchId, record) {
   return true;
 }
 
+async function getResults() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", resultKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+async function setResult(matchId, record) {
+  if (!isSharedStoreConfigured()) return false;
+  const results = await getResults();
+  results[matchId] = record;
+  await redisCommand(["SET", resultKey, JSON.stringify(results)]);
+  return true;
+}
+
 module.exports = {
   getPredictions,
+  getResults,
   isSharedStoreConfigured,
-  setPrediction
+  setPrediction,
+  setResult
 };

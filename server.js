@@ -1,6 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const { resolveMatches } = require("./api/_lib/bracket");
 
 const root = __dirname;
 const dataDir = path.join(root, "data");
@@ -396,11 +397,11 @@ function accuracySnapshot(predictions, results) {
   };
 }
 
-function nextPredictionDue(matches, predictions, now = new Date()) {
-  return matches
+function nextPredictionDue(matches, predictions, results = {}, now = new Date()) {
+  return resolveMatches(matches, results)
     .map((match) => {
       const matchTime = parseMatchTime(match);
-      if (!matchTime || predictions[match.id]) return null;
+      if (!matchTime || predictions[match.id] || !match.teamA?.code || !match.teamB?.code) return null;
       return {
         id: match.id,
         label: `${match.teamA.name} vs ${match.teamB.name}`,
@@ -414,7 +415,7 @@ function nextPredictionDue(matches, predictions, now = new Date()) {
 
 async function fetchMatchResult(match) {
   const baseUrl = process.env.RESULTS_API_URL;
-  if (!baseUrl) return null;
+  if (!baseUrl || !match.teamA?.code || !match.teamB?.code) return null;
   const url = new URL(baseUrl);
   url.searchParams.set("matchId", match.id);
   const headers = {};
@@ -442,9 +443,14 @@ async function runDueAutomation({ force = false } = {}) {
   const now = new Date();
   const events = [];
 
-  for (const match of matches) {
+  for (const match of resolveMatches(matches, results)) {
     const matchTime = parseMatchTime(match);
-    if (!matchTime) continue;
+    if (!matchTime || !match.teamA?.code || !match.teamB?.code) {
+      if (match.round !== "Group Stage") {
+        events.push({ type: "bracket", matchId: match.id, status: "waiting", reason: "slot not resolved" });
+      }
+      continue;
+    }
     const predictAt = new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000);
     const shouldPredict = force || (now >= predictAt && now < matchTime);
 
@@ -496,14 +502,20 @@ function dataReadiness(matches) {
 }
 
 function buildAutomationStatus(matches, predictions, results) {
+  const resolvedMatches = resolveMatches(matches, results);
   return {
     totalMatches: matches.length,
     predictionCount: Object.keys(predictions).length,
     resultCount: Object.keys(results).length,
-    nextPrediction: nextPredictionDue(matches, predictions),
+    nextPrediction: nextPredictionDue(matches, predictions, results),
     accuracy: accuracySnapshot(predictions, results),
     predictions,
     results,
+    resolvedMatches: resolvedMatches.map((match) => ({
+      id: match.id,
+      teamA: match.teamA || null,
+      teamB: match.teamB || null
+    })),
     dataReadiness: dataReadiness(matches),
     predictionLeadHours,
     resultSyncDelayHours,

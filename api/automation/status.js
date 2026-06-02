@@ -1,44 +1,30 @@
 const fs = require("fs");
 const path = require("path");
 const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
-const { getPredictions, isSharedStoreConfigured } = require("../_lib/store");
-
-const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
-
-function parseMatchTime(match) {
-  const date = new Date(`${match.date} 20:00:00 GMT+0000`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function nextPredictionDue(matches, predictions, now = new Date()) {
-  return matches
-    .map((match) => {
-      const matchTime = parseMatchTime(match);
-      if (!matchTime || predictions[match.id]) return null;
-      return {
-        id: match.id,
-        label: `${match.teamA.name} vs ${match.teamB.name}`,
-        dueAt: new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000).toISOString()
-      };
-    })
-    .filter(Boolean)
-    .filter((item) => new Date(item.dueAt) >= now)
-    .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))[0] || null;
-}
+const { accuracySnapshot, nextPredictionDue, resolveMatches } = require("../_lib/bracket");
+const { getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
 module.exports = async function handler(req, res) {
   const snapshot = loadSnapshot();
   const predictions = await getPredictions();
+  const results = await getResults();
   const dataDir = path.join(__dirname, "..", "..", "data");
-  const first = snapshot.matches[0] ? collectPredictionEvidence(snapshot.matches[0]) : null;
+  const resolvedMatches = resolveMatches(snapshot.matches, results);
+  const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
+  const first = firstResolved ? collectPredictionEvidence(firstResolved) : null;
   res.status(200).json({
     totalMatches: snapshot.matches.length,
     predictionCount: Object.keys(predictions).length,
-    resultCount: 0,
-    nextPrediction: nextPredictionDue(snapshot.matches, predictions),
-    accuracy: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
+    resultCount: Object.keys(results).length,
+    nextPrediction: nextPredictionDue(snapshot.matches, predictions, results),
+    accuracy: accuracySnapshot(predictions, results),
     predictions,
-    results: {},
+    results,
+    resolvedMatches: resolvedMatches.map((match) => ({
+      id: match.id,
+      teamA: match.teamA || null,
+      teamB: match.teamB || null
+    })),
     dataReadiness: {
       marketOdds: fs.existsSync(path.join(dataDir, "market-odds.json")),
       teamRatings: fs.existsSync(path.join(dataDir, "team-ratings.json")),

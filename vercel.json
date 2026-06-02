@@ -1,6 +1,12 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/automation/run-due",
+      "schedule": "0 8 * * *"
+    }
+  ],
   "builds": [
     {
       "src": "api/**/*.js",
