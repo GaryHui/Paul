@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>保罗 2026 AI 章鱼预测</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-1" />
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <img class="hero__image" src="assets/real-paul-reference.png" alt="Real octopus Paul reference, front side and back views" />
+      <div class="hero__shade"></div>
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="brand" href="#top">保罗 2026</a>
+        <div class="nav__links">
+          <a href="#matches">预测</a>
+          <a href="#origin">故事</a>
+          <a href="#groups">分组</a>
+          <a href="#method">方法</a>
+        </div>
+      </nav>
+      <section class="hero__content">
+        <p class="eyebrow">2026 国际足联世界杯 AI 预测实验室</p>
+        <h1>AI 章鱼保罗将在赛前锁定 104 场预测。</h1>
+        <p class="lede">
+          赛程先展示，正式预测等到比赛前 24 小时再由 PAUL AI 和统计模型生成。
+          一旦锁定，保罗会爬向预测获胜方的国旗；赛后自动统计命中率。
+        </p>
+        <div class="hero__actions">
+          <a class="button button--primary" href="#matches">打开预测台</a>
+          <a class="button button--ghost" href="#groups">查看 48 队</a>
+        </div>
+      </section>
+    </header>
+
+    <main>
+      <section class="stats band" aria-label="Tournament stats">
+        <div>
+          <strong>48</strong>
+          <span>参赛球队</span>
+        </div>
+        <div>
+          <strong>104</strong>
+          <span>赛程比赛</span>
+        </div>
+        <div>
+          <strong>AI</strong>
+          <span>PAUL 正式预测</span>
+        </div>
+        <div>
+          <strong id="championName">加载中</strong>
+          <span>当前预测冠军</span>
+        </div>
+      </section>
+
+      <section class="console" id="matches">
+        <div class="section-head">
+          <p class="eyebrow">PK 预测台</p>
+          <h2>每一场对阵，每一次正式锁定</h2>
+          <p>
+            选择一场比赛打开 PK 页面。未到赛前 24 小时会显示“待预测”；锁定后才显示保罗正式选择。
+          </p>
+        </div>
+
+        <div class="toolbar" role="search">
+          <label>
+            轮次
+            <select id="roundFilter"></select>
+          </label>
+          <label>
+            小组
+            <select id="groupFilter"></select>
+          </label>
+          <label class="search">
+            搜索
+            <input id="searchBox" type="search" placeholder="球队、国家、比赛编号..." />
+          </label>
+        </div>
+
+        <div class="layout">
+          <aside class="match-list" id="matchList" aria-label="Predicted matches"></aside>
+
+          <section class="pk-panel" id="pkPanel" aria-live="polite">
+            <div class="pk-topline">
+              <span id="pkMeta">请选择一场比赛</span>
+              <span id="pkConfidence"></span>
+            </div>
+            <div class="pk-stage">
+              <article class="team-side team-side--left" id="leftTeam"></article>
+              <div class="octopus-lane" id="octopusLane">
+                <div class="lane-line"></div>
+                <img class="crawler" id="crawler" src="assets/real-paul-side.png" alt="Real Paul octopus crawling toward a predicted flag" />
+              </div>
+              <article class="team-side team-side--right" id="rightTeam"></article>
+            </div>
+            <div class="prediction-copy" id="predictionCopy"></div>
+            <div class="model-grid" id="modelGrid"></div>
+            <div class="qwen-panel">
+              <div>
+                <p class="eyebrow">PAUL 实时分析</p>
+                <h3>让 PAUL 复盘这场 PK</h3>
+                <p>
+                  通过本地代理调用 DashScope API Key，浏览器不会保存密钥。
+                </p>
+              </div>
+              <button class="button button--primary" id="qwenButton" type="button">询问 PAUL</button>
+              <div class="qwen-result" id="qwenResult">在本地服务设置 DASHSCOPE_API_KEY 后，可让 PAUL 给出实时模型意见。</div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="automation band" id="automation">
+        <div class="section-head">
+          <p class="eyebrow">自动预测引擎</p>
+          <h2>赛前 24 小时自动预测，赛后统计命中率</h2>
+          <p>
+            本地服务可以在每场比赛前 24 小时锁定 PAUL 预测，赛后同步最终比分，并持续统计保罗猜对了多少场。
+          </p>
+        </div>
+        <div class="automation-grid">
+          <div>
+            <strong id="autoPredicted">0</strong>
+            <span>已锁定预测</span>
+          </div>
+          <div>
+            <strong id="autoResults">0</strong>
+            <span>已同步赛果</span>
+          </div>
+          <div>
+            <strong id="autoAccuracy">0%</strong>
+            <span>预测命中率</span>
+          </div>
+          <div>
+            <strong id="autoNext">等待中</strong>
+            <span>下一次赛前预测</span>
+          </div>
+        </div>
+        <div class="automation-actions">
+          <button class="button button--primary" id="runAutomationButton" type="button">立即运行到期任务</button>
+          <span id="automationStatus">正在读取自动化状态...</span>
+        </div>
+      </section>
+
+      <section class="origin band" id="origin">
+        <div class="section-head">
+          <p class="eyebrow">保罗起源</p>
+          <h2>这套仪式始于 2008 年</h2>
+          <p>
+            那一年，奥地利和瑞士合办的欧洲杯拉开大幕，德国从普通民众到默克尔都进入了足球狂欢。奥博豪森海洋馆也想蹭一波热度，于是保罗的饲养员灵光一闪：不如让这只章鱼来预测胜负。
+          </p>
+        </div>
+        <div class="origin-ritual">
+          <article>
+            <span>1</span>
+            <h3>两个玻璃箱</h3>
+            <p>每场比赛前，饲养员会准备两个透明玻璃箱，分别贴上对阵双方的国旗。</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>各放一颗贻贝</h3>
+            <p>两个箱子里都放上保罗最喜欢吃的贻贝，让预测变成一场小小的喂食仪式。</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>保罗做出选择</h3>
+            <p>保罗先钻进哪个箱子吃贝贝，就代表它预测哪个国家会赢。</p>
+          </article>
+        </div>
+        <p class="origin-note">
+          这个网站保留了那种仪式感：两面国旗，一只保罗，一个赛前选择。玻璃箱变成了赛前 24 小时锁定的模型预测，但小小的悬念还在。
+        </p>
+      </section>
+
+      <section class="groups band" id="groups">
+        <div class="section-head">
+          <p class="eyebrow">48 队看板</p>
+          <h2>A-L 小组</h2>
+          <p>分组信息会与各国常用语言一起显示在 PK 页面中。</p>
+        </div>
+        <div class="group-grid" id="groupGrid"></div>
+      </section>
+
+      <section class="paul-reference band" id="paul">
+        <div class="section-head">
+          <p class="eyebrow">真实保罗参考图</p>
+          <h2>使用你上传的保罗图片制作</h2>
+          <p>PK 动画使用这张图里的侧面视角，完整参考图则保留正面、侧面和背面三种形态。</p>
+        </div>
+        <figure class="reference-frame">
+          <img src="assets/real-paul-reference.png" alt="Real Paul octopus front, side, and back reference" />
+        </figure>
+      </section>
+
+      <section class="method" id="method">
+        <div class="section-head">
+          <p class="eyebrow">预测方法</p>
+          <h2>赔率 + 评分 + 比分模型，再交给 PAUL 校准</h2>
+        </div>
+        <div class="method-grid">
+          <article>
+            <h3>市场赔率</h3>
+            <p>优先使用 1X2 赔率转换后的隐含概率，作为最重要的赛前基线。</p>
+          </article>
+          <article>
+            <h3>Elo / SPI</h3>
+            <p>导入真实球队评分后，计算双方强弱差，作为第二层概率来源。</p>
+          </article>
+          <article>
+            <h3>Poisson 比分</h3>
+            <p>有 attack/defense 数据时估算期望进球，并推导可能比分和胜平负概率。</p>
+          </article>
+          <article>
+            <h3>PAUL 校准</h3>
+            <p>PAUL 基于证据包和联网搜索做判断，输出中文解释、黑马信号和最终选择。</p>
+          </article>
+        </div>
+        <p class="sources">
+          赛程与分组参考 FIFA 2026 世界杯赛程页、AP 参赛队分组列表和当期赛程汇总。正式预测会在赛前 24 小时锁定，并在赛后根据真实比分统计命中率。所有预测仅供娱乐展示，不构成投注建议。
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js?v=paul-ai-1"></script>
+  </body>
+</html>

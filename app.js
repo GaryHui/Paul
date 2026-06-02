@@ -1,0 +1,736 @@
+const teams = {
+  MEX: { name: "Mexico", flag: "🇲🇽", group: "A", pos: 1, languages: "Spanish", power: 80, attack: 79, defense: 78, form: 6, confed: "CONCACAF" },
+  RSA: { name: "South Africa", flag: "🇿🇦", group: "A", pos: 2, languages: "Zulu, Xhosa, Afrikaans, English + official languages", power: 68, attack: 67, defense: 69, form: 3, confed: "CAF" },
+  KOR: { name: "Korea Republic", flag: "🇰🇷", group: "A", pos: 3, languages: "Korean", power: 78, attack: 78, defense: 76, form: 5, confed: "AFC" },
+  CZE: { name: "Czechia", flag: "🇨🇿", group: "A", pos: 4, languages: "Czech", power: 76, attack: 75, defense: 77, form: 4, confed: "UEFA" },
+
+  CAN: { name: "Canada", flag: "🇨🇦", group: "B", pos: 1, languages: "English, French", power: 77, attack: 78, defense: 74, form: 5, confed: "CONCACAF" },
+  BIH: { name: "Bosnia and Herzegovina", flag: "🇧🇦", group: "B", pos: 2, languages: "Bosnian, Croatian, Serbian", power: 73, attack: 73, defense: 72, form: 4, confed: "UEFA" },
+  QAT: { name: "Qatar", flag: "🇶🇦", group: "B", pos: 3, languages: "Arabic", power: 70, attack: 70, defense: 69, form: 3, confed: "AFC" },
+  SUI: { name: "Switzerland", flag: "🇨🇭", group: "B", pos: 4, languages: "German, French, Italian, Romansh", power: 82, attack: 80, defense: 84, form: 6, confed: "UEFA" },
+
+  BRA: { name: "Brazil", flag: "🇧🇷", group: "C", pos: 1, languages: "Portuguese", power: 91, attack: 92, defense: 87, form: 7, confed: "CONMEBOL" },
+  MAR: { name: "Morocco", flag: "🇲🇦", group: "C", pos: 2, languages: "Arabic, Amazigh", power: 84, attack: 82, defense: 86, form: 7, confed: "CAF" },
+  HAI: { name: "Haiti", flag: "🇭🇹", group: "C", pos: 3, languages: "Haitian Creole, French", power: 64, attack: 64, defense: 62, form: 3, confed: "CONCACAF" },
+  SCO: { name: "Scotland", flag: "🏴", group: "C", pos: 4, languages: "English, Scots, Scottish Gaelic", power: 75, attack: 73, defense: 76, form: 4, confed: "UEFA" },
+
+  USA: { name: "United States", flag: "🇺🇸", group: "D", pos: 1, languages: "English", power: 81, attack: 82, defense: 78, form: 6, confed: "CONCACAF" },
+  PAR: { name: "Paraguay", flag: "🇵🇾", group: "D", pos: 2, languages: "Spanish, Guarani", power: 75, attack: 73, defense: 77, form: 4, confed: "CONMEBOL" },
+  AUS: { name: "Australia", flag: "🇦🇺", group: "D", pos: 3, languages: "English", power: 74, attack: 73, defense: 75, form: 4, confed: "AFC" },
+  TUR: { name: "Turkiye", flag: "🇹🇷", group: "D", pos: 4, languages: "Turkish", power: 79, attack: 81, defense: 76, form: 5, confed: "UEFA" },
+
+  GER: { name: "Germany", flag: "🇩🇪", group: "E", pos: 1, languages: "German", power: 89, attack: 88, defense: 86, form: 7, confed: "UEFA" },
+  CUW: { name: "Curacao", flag: "🇨🇼", group: "E", pos: 2, languages: "Papiamentu, Dutch, English", power: 63, attack: 63, defense: 62, form: 4, confed: "CONCACAF" },
+  CIV: { name: "Cote d'Ivoire", flag: "🇨🇮", group: "E", pos: 3, languages: "French", power: 78, attack: 79, defense: 76, form: 6, confed: "CAF" },
+  ECU: { name: "Ecuador", flag: "🇪🇨", group: "E", pos: 4, languages: "Spanish, Kichwa, Shuar", power: 82, attack: 80, defense: 83, form: 6, confed: "CONMEBOL" },
+
+  NED: { name: "Netherlands", flag: "🇳🇱", group: "F", pos: 1, languages: "Dutch", power: 88, attack: 87, defense: 87, form: 7, confed: "UEFA" },
+  JPN: { name: "Japan", flag: "🇯🇵", group: "F", pos: 2, languages: "Japanese", power: 83, attack: 84, defense: 81, form: 7, confed: "AFC" },
+  SWE: { name: "Sweden", flag: "🇸🇪", group: "F", pos: 3, languages: "Swedish", power: 77, attack: 76, defense: 78, form: 4, confed: "UEFA" },
+  TUN: { name: "Tunisia", flag: "🇹🇳", group: "F", pos: 4, languages: "Arabic", power: 72, attack: 70, defense: 74, form: 4, confed: "CAF" },
+
+  BEL: { name: "Belgium", flag: "🇧🇪", group: "G", pos: 1, languages: "Dutch, French, German", power: 85, attack: 86, defense: 82, form: 6, confed: "UEFA" },
+  EGY: { name: "Egypt", flag: "🇪🇬", group: "G", pos: 2, languages: "Arabic", power: 77, attack: 78, defense: 75, form: 5, confed: "CAF" },
+  IRN: { name: "IR Iran", flag: "🇮🇷", group: "G", pos: 3, languages: "Persian", power: 76, attack: 75, defense: 77, form: 5, confed: "AFC" },
+  NZL: { name: "New Zealand", flag: "🇳🇿", group: "G", pos: 4, languages: "English, Maori, New Zealand Sign Language", power: 67, attack: 66, defense: 68, form: 4, confed: "OFC" },
+
+  ESP: { name: "Spain", flag: "🇪🇸", group: "H", pos: 1, languages: "Spanish", power: 92, attack: 91, defense: 90, form: 8, confed: "UEFA" },
+  CPV: { name: "Cape Verde", flag: "🇨🇻", group: "H", pos: 2, languages: "Portuguese, Cape Verdean Creole", power: 69, attack: 70, defense: 67, form: 5, confed: "CAF" },
+  KSA: { name: "Saudi Arabia", flag: "🇸🇦", group: "H", pos: 3, languages: "Arabic", power: 71, attack: 70, defense: 71, form: 4, confed: "AFC" },
+  URU: { name: "Uruguay", flag: "🇺🇾", group: "H", pos: 4, languages: "Spanish", power: 86, attack: 85, defense: 86, form: 7, confed: "CONMEBOL" },
+
+  FRA: { name: "France", flag: "🇫🇷", group: "I", pos: 1, languages: "French", power: 93, attack: 94, defense: 90, form: 8, confed: "UEFA" },
+  SEN: { name: "Senegal", flag: "🇸🇳", group: "I", pos: 2, languages: "French, Wolof", power: 80, attack: 79, defense: 81, form: 6, confed: "CAF" },
+  IRQ: { name: "Iraq", flag: "🇮🇶", group: "I", pos: 3, languages: "Arabic, Kurdish", power: 68, attack: 68, defense: 67, form: 5, confed: "AFC" },
+  NOR: { name: "Norway", flag: "🇳🇴", group: "I", pos: 4, languages: "Norwegian", power: 82, attack: 86, defense: 77, form: 6, confed: "UEFA" },
+
+  ARG: { name: "Argentina", flag: "🇦🇷", group: "J", pos: 1, languages: "Spanish", power: 94, attack: 93, defense: 91, form: 9, confed: "CONMEBOL" },
+  ALG: { name: "Algeria", flag: "🇩🇿", group: "J", pos: 2, languages: "Arabic, Tamazight", power: 76, attack: 77, defense: 74, form: 5, confed: "CAF" },
+  AUT: { name: "Austria", flag: "🇦🇹", group: "J", pos: 3, languages: "German", power: 81, attack: 80, defense: 81, form: 6, confed: "UEFA" },
+  JOR: { name: "Jordan", flag: "🇯🇴", group: "J", pos: 4, languages: "Arabic", power: 66, attack: 66, defense: 65, form: 4, confed: "AFC" },
+
+  POR: { name: "Portugal", flag: "🇵🇹", group: "K", pos: 1, languages: "Portuguese", power: 90, attack: 91, defense: 86, form: 8, confed: "UEFA" },
+  COD: { name: "DR Congo", flag: "🇨🇩", group: "K", pos: 2, languages: "French, Lingala, Kikongo, Swahili, Tshiluba", power: 72, attack: 73, defense: 71, form: 5, confed: "CAF" },
+  UZB: { name: "Uzbekistan", flag: "🇺🇿", group: "K", pos: 3, languages: "Uzbek", power: 70, attack: 69, defense: 71, form: 5, confed: "AFC" },
+  COL: { name: "Colombia", flag: "🇨🇴", group: "K", pos: 4, languages: "Spanish", power: 84, attack: 84, defense: 82, form: 7, confed: "CONMEBOL" },
+
+  ENG: { name: "England", flag: "🏴", group: "L", pos: 1, languages: "English", power: 90, attack: 90, defense: 88, form: 7, confed: "UEFA" },
+  CRO: { name: "Croatia", flag: "🇭🇷", group: "L", pos: 2, languages: "Croatian", power: 83, attack: 81, defense: 84, form: 6, confed: "UEFA" },
+  GHA: { name: "Ghana", flag: "🇬🇭", group: "L", pos: 3, languages: "English, Akan, Ewe, Ga, Dagbani", power: 75, attack: 76, defense: 73, form: 4, confed: "CAF" },
+  PAN: { name: "Panama", flag: "🇵🇦", group: "L", pos: 4, languages: "Spanish", power: 69, attack: 68, defense: 69, form: 4, confed: "CONCACAF" }
+};
+
+const groupOrder = "ABCDEFGHIJKL".split("");
+const roundOptions = ["All", "Group Stage", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third-place Play-off", "Final"];
+const roundLabels = {
+  All: "全部",
+  "Group Stage": "小组赛",
+  "Round of 32": "32 强",
+  "Round of 16": "16 强",
+  "Quarter-finals": "四分之一决赛",
+  "Semi-finals": "半决赛",
+  "Third-place Play-off": "三四名决赛",
+  Final: "决赛"
+};
+const groupLabels = { All: "全部", Knockout: "淘汰赛" };
+const groupDates = {
+  A: ["Jun 11", "Jun 11", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
+  B: ["Jun 12", "Jun 13", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
+  C: ["Jun 13", "Jun 13", "Jun 19", "Jun 19", "Jun 24", "Jun 24"],
+  D: ["Jun 12", "Jun 13", "Jun 19", "Jun 19", "Jun 25", "Jun 25"],
+  E: ["Jun 14", "Jun 14", "Jun 20", "Jun 20", "Jun 25", "Jun 25"],
+  F: ["Jun 14", "Jun 14", "Jun 20", "Jun 20", "Jun 25", "Jun 25"],
+  G: ["Jun 15", "Jun 15", "Jun 21", "Jun 21", "Jun 26", "Jun 26"],
+  H: ["Jun 15", "Jun 15", "Jun 21", "Jun 21", "Jun 26", "Jun 26"],
+  I: ["Jun 16", "Jun 16", "Jun 22", "Jun 22", "Jun 26", "Jun 26"],
+  J: ["Jun 16", "Jun 16", "Jun 22", "Jun 22", "Jun 27", "Jun 27"],
+  K: ["Jun 17", "Jun 17", "Jun 23", "Jun 23", "Jun 27", "Jun 27"],
+  L: ["Jun 17", "Jun 17", "Jun 23", "Jun 23", "Jun 27", "Jun 27"]
+};
+
+const cityRoute = {
+  A: "Mexico City / Guadalajara / Atlanta",
+  B: "Toronto / Bay Area / Los Angeles",
+  C: "New York-New Jersey / Boston / Miami",
+  D: "Los Angeles / Vancouver / Seattle",
+  E: "Philadelphia / Houston / New York-New Jersey",
+  F: "Dallas / Monterrey / Kansas City",
+  G: "Seattle / Los Angeles / Vancouver",
+  H: "Atlanta / Miami / Houston",
+  I: "New York-New Jersey / Boston / Toronto",
+  J: "Kansas City / Bay Area / Dallas",
+  K: "Houston / Mexico City / Miami",
+  L: "Dallas / Toronto / Philadelphia"
+};
+
+const pairPattern = [[1, 2], [3, 4], [4, 2], [1, 3], [4, 1], [2, 3]];
+const modelNames = ["EloPulse", "FormNet", "TacticalLens", "OracleSynth"];
+
+function teamByGroupPos(group, pos) {
+  return Object.entries(teams).find(([, team]) => team.group === group && team.pos === pos)?.[0];
+}
+
+function hashText(text) {
+  return [...text].reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) % 9973, 17);
+}
+
+function logistic(x) {
+  return 1 / (1 + Math.exp(-x / 11));
+}
+
+function modelVote(model, aCode, bCode, round) {
+  const a = teams[aCode];
+  const b = teams[bCode];
+  const homeBoost = ["MEX", "CAN", "USA"].includes(aCode) ? 1.8 : ["MEX", "CAN", "USA"].includes(bCode) ? -1.8 : 0;
+  const knockoutBoost = round === "Group Stage" ? 0 : 1.25;
+  let diff = a.power - b.power + homeBoost;
+  let reason = "内置 power 评分 + 东道主地区加成";
+
+  if (model === "FormNet") {
+    diff = (a.attack - b.defense) * 0.65 + (a.form - b.form) * 1.9 + (a.power - b.power) * 0.55;
+    reason = "内置 attack/defense/form 评分组合";
+  }
+  if (model === "TacticalLens") {
+    diff = (a.defense - b.defense) * 0.8 + (a.power - b.power) * 0.62 + knockoutBoost * (a.confed === "UEFA" || a.confed === "CONMEBOL" ? 1 : 0) - knockoutBoost * (b.confed === "UEFA" || b.confed === "CONMEBOL" ? 1 : 0);
+    reason = "内置 defense/power 评分 + 淘汰赛稳定性权重";
+  }
+  if (model === "OracleSynth") {
+    const noise = ((hashText(`${aCode}-${bCode}-${round}`) % 15) - 7) * 0.65;
+    diff = (a.power - b.power) * 0.72 + (a.form - b.form) + noise;
+    reason = "内置强度评分 + 固定冷门扰动";
+  }
+
+  const confidence = Math.round((logistic(Math.abs(diff)) * 52 + 38));
+  return {
+    model,
+    pick: diff >= 0 ? aCode : bCode,
+    confidence: Math.min(92, Math.max(51, confidence)),
+    reason
+  };
+}
+
+function predict(aCode, bCode, round) {
+  const votes = modelNames.map((model) => modelVote(model, aCode, bCode, round));
+  const tallies = votes.reduce((acc, vote) => {
+    acc[vote.pick] = (acc[vote.pick] || 0) + vote.confidence;
+    return acc;
+  }, {});
+  const rawDiff = (tallies[aCode] || 0) - (tallies[bCode] || 0);
+  const a = teams[aCode];
+  const b = teams[bCode];
+  const allowDraw = round === "Group Stage";
+  const drawZone = allowDraw && Math.abs(rawDiff) < 28;
+  const winner = drawZone ? "DRAW" : rawDiff >= 0 ? aCode : bCode;
+  const confidence = drawZone ? 52 : Math.min(94, Math.round(58 + Math.abs(rawDiff) / 8));
+  const goalBase = round === "Group Stage" ? 1 : 1.2;
+  let aGoals = Math.max(0, Math.round(goalBase + (a.attack - b.defense) / 18 + ((hashText(aCode + bCode + round) % 3) - 1) * 0.35));
+  let bGoals = Math.max(0, Math.round(goalBase + (b.attack - a.defense) / 18 + ((hashText(bCode + aCode + round) % 3) - 1) * 0.35));
+
+  if (winner === "DRAW") {
+    const drawGoals = Math.max(0, Math.min(2, Math.round((aGoals + bGoals) / 2)));
+    aGoals = drawGoals;
+    bGoals = drawGoals;
+  } else if (winner === aCode && aGoals <= bGoals) {
+    aGoals = bGoals + 1;
+  } else if (winner === bCode && bGoals <= aGoals) {
+    bGoals = aGoals + 1;
+  }
+
+  return {
+    aCode,
+    bCode,
+    winner,
+    score: `${aGoals}-${bGoals}`,
+    aGoals,
+    bGoals,
+    confidence,
+    votes
+  };
+}
+
+function buildGroupMatches() {
+  const matches = [];
+  let id = 1;
+  groupOrder.forEach((group) => {
+    pairPattern.forEach(([left, right], idx) => {
+      const aCode = teamByGroupPos(group, left);
+      const bCode = teamByGroupPos(group, right);
+      matches.push({
+        id: id++,
+        round: "Group Stage",
+        group,
+        date: `${groupDates[group][idx]}, 2026`,
+        venue: cityRoute[group],
+        aCode,
+        bCode,
+        slot: `Group ${group}`
+      });
+    });
+  });
+  return matches;
+}
+
+function standingsFrom(matches) {
+  const table = {};
+  Object.keys(teams).forEach((code) => {
+    table[code] = { code, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+  });
+
+  matches.forEach((match) => {
+    const pred = match.prediction;
+    const a = table[match.aCode];
+    const b = table[match.bCode];
+    a.p += 1;
+    b.p += 1;
+    a.gf += pred.aGoals;
+    a.ga += pred.bGoals;
+    b.gf += pred.bGoals;
+    b.ga += pred.aGoals;
+    if (pred.winner === "DRAW") {
+      a.d += 1;
+      b.d += 1;
+      a.pts += 1;
+      b.pts += 1;
+    } else if (pred.winner === match.aCode) {
+      a.w += 1;
+      b.l += 1;
+      a.pts += 3;
+    } else {
+      b.w += 1;
+      a.l += 1;
+      b.pts += 3;
+    }
+    a.gd = a.gf - a.ga;
+    b.gd = b.gf - b.ga;
+  });
+
+  const byGroup = {};
+  groupOrder.forEach((group) => {
+    byGroup[group] = Object.values(table)
+      .filter((row) => teams[row.code].group === group)
+      .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power);
+  });
+  return byGroup;
+}
+
+function buildTournament() {
+  const groupMatches = buildGroupMatches().map((match) => ({
+    ...match,
+    prediction: predict(match.aCode, match.bCode, "Group Stage")
+  }));
+  const standings = standingsFrom(groupMatches);
+  const usedThird = new Set();
+  const bestThird = groupOrder
+    .map((group) => standings[group][2])
+    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power)
+    .slice(0, 8);
+
+  function slot(label) {
+    if (label.startsWith("W")) return label;
+    if (label.startsWith("L")) return label;
+    const place = label[0];
+    if (place === "1" || place === "2") {
+      return standings[label[1]][Number(place) - 1].code;
+    }
+    if (place === "3") {
+      const eligible = label.slice(1).split("");
+      const chosen = bestThird.find((row) => eligible.includes(teams[row.code].group) && !usedThird.has(row.code)) || bestThird.find((row) => !usedThird.has(row.code));
+      usedThird.add(chosen.code);
+      return chosen.code;
+    }
+    return label;
+  }
+
+  const knockoutTemplates = [
+    [73, "Round of 32", "Jun 28, 2026", "Los Angeles", "2A", "2B"],
+    [74, "Round of 32", "Jun 29, 2026", "Boston", "1E", "3ABCDF"],
+    [75, "Round of 32", "Jun 29, 2026", "Monterrey", "1F", "2C"],
+    [76, "Round of 32", "Jun 29, 2026", "Houston", "1C", "2F"],
+    [77, "Round of 32", "Jun 30, 2026", "New York-New Jersey", "1I", "3CDFGH"],
+    [78, "Round of 32", "Jun 30, 2026", "Dallas", "2E", "2I"],
+    [79, "Round of 32", "Jun 30, 2026", "Mexico City", "1A", "3CEFHI"],
+    [80, "Round of 32", "Jul 1, 2026", "Atlanta", "1L", "3EHIJK"],
+    [81, "Round of 32", "Jul 1, 2026", "San Francisco Bay Area", "1D", "3BEFIJ"],
+    [82, "Round of 32", "Jul 1, 2026", "Seattle", "1G", "3AEHIJ"],
+    [83, "Round of 32", "Jul 2, 2026", "Toronto", "2K", "2L"],
+    [84, "Round of 32", "Jul 2, 2026", "Los Angeles", "1H", "2J"],
+    [85, "Round of 32", "Jul 2, 2026", "Vancouver", "1B", "3EFGIJ"],
+    [86, "Round of 32", "Jul 3, 2026", "Miami", "1J", "2H"],
+    [87, "Round of 32", "Jul 3, 2026", "Kansas City", "1K", "3DEIJL"],
+    [88, "Round of 32", "Jul 3, 2026", "Dallas", "2D", "2G"],
+    [89, "Round of 16", "Jul 4, 2026", "Philadelphia", "W74", "W77"],
+    [90, "Round of 16", "Jul 4, 2026", "Houston", "W73", "W75"],
+    [91, "Round of 16", "Jul 5, 2026", "New York-New Jersey", "W76", "W78"],
+    [92, "Round of 16", "Jul 5, 2026", "Mexico City", "W79", "W80"],
+    [93, "Round of 16", "Jul 6, 2026", "Dallas", "W83", "W84"],
+    [94, "Round of 16", "Jul 6, 2026", "Seattle", "W81", "W82"],
+    [95, "Round of 16", "Jul 7, 2026", "Atlanta", "W86", "W88"],
+    [96, "Round of 16", "Jul 7, 2026", "Vancouver", "W85", "W87"],
+    [97, "Quarter-finals", "Jul 9, 2026", "Boston", "W89", "W90"],
+    [98, "Quarter-finals", "Jul 10, 2026", "Los Angeles", "W93", "W94"],
+    [99, "Quarter-finals", "Jul 11, 2026", "Miami", "W91", "W92"],
+    [100, "Quarter-finals", "Jul 11, 2026", "Kansas City", "W95", "W96"],
+    [101, "Semi-finals", "Jul 14, 2026", "Dallas", "W97", "W98"],
+    [102, "Semi-finals", "Jul 15, 2026", "Atlanta", "W99", "W100"],
+    [103, "Third-place Play-off", "Jul 18, 2026", "Miami", "L101", "L102"],
+    [104, "Final", "Jul 19, 2026", "New York-New Jersey", "W101", "W102"]
+  ];
+
+  const knockout = [];
+  const matchIndex = {};
+  groupMatches.forEach((match) => {
+    matchIndex[match.id] = match;
+  });
+
+  knockoutTemplates.forEach(([id, round, date, venue, leftSlot, rightSlot]) => {
+    const resolve = (value) => {
+      if (value.startsWith("W")) return matchIndex[value.slice(1)].prediction.winner;
+      if (value.startsWith("L")) {
+        const source = matchIndex[value.slice(1)];
+        return source.prediction.winner === source.aCode ? source.bCode : source.aCode;
+      }
+      return slot(value);
+    };
+    const aCode = resolve(leftSlot);
+    const bCode = resolve(rightSlot);
+    const match = {
+      id,
+      round,
+      group: "Knockout",
+      date,
+      venue,
+      aCode,
+      bCode,
+      slot: `${leftSlot} vs ${rightSlot}`,
+      prediction: predict(aCode, bCode, round)
+    };
+    knockout.push(match);
+    matchIndex[id] = match;
+  });
+
+  return { matches: [...groupMatches, ...knockout], standings, bestThird };
+}
+
+const tournament = buildTournament();
+let activeMatchId = 104;
+let automationState = {
+  predictions: {},
+  results: {},
+  accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 }
+};
+
+function teamMarkup(code) {
+  const team = teams[code];
+  return `
+    <div>
+      <div class="flag" aria-hidden="true">${team.flag}</div>
+      <div class="team-name">${team.name}</div>
+      <div class="team-code">${code} · ${team.group} 组</div>
+    </div>
+    <p class="language"><strong>国家语言：</strong><br>${team.languages}</p>
+  `;
+}
+
+function officialPrediction(match) {
+  return automationState.predictions?.[match.id] || null;
+}
+
+function officialResult(match) {
+  return automationState.results?.[match.id] || null;
+}
+
+function resultWinner(result) {
+  if (!result) return null;
+  if (Number(result.homeScore) === Number(result.awayScore)) return "DRAW";
+  return Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode;
+}
+
+function officialPickCode(record) {
+  if (!record?.analysis) return null;
+  return record.analysis.winnerCode || record.analysis.winner || null;
+}
+
+function predictionStatus(match) {
+  const record = officialPrediction(match);
+  const result = officialResult(match);
+  if (result?.status === "final" && record) {
+    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? "命中" : "未命中";
+  }
+  if (result?.status === "final") return "已完赛";
+  if (record) return "已锁定";
+  return "待预测";
+}
+
+function resultLabel(match) {
+  const record = officialPrediction(match);
+  if (!record) return "待预测";
+  const pick = officialPickCode(record);
+  if (!pick || pick === "DRAW") return "平局";
+  return teams[pick]?.name || record.analysis.winnerName || "已锁定";
+}
+
+function updateChampionLabel() {
+  const finalPrediction = officialPrediction(tournament.matches.find((match) => match.id === 104));
+  const pick = officialPickCode(finalPrediction);
+  const label = pick && pick !== "DRAW" ? teams[pick]?.name || finalPrediction.analysis?.winnerName : "待正式预测";
+  document.getElementById("championName").textContent = label;
+}
+
+function renderMatchList() {
+  const round = document.getElementById("roundFilter").value;
+  const group = document.getElementById("groupFilter").value;
+  const query = document.getElementById("searchBox").value.trim().toLowerCase();
+  const list = document.getElementById("matchList");
+
+  const filtered = tournament.matches.filter((match) => {
+    const haystack = `${match.id} ${match.round} ${match.group} ${teams[match.aCode].name} ${teams[match.bCode].name} ${match.venue}`.toLowerCase();
+    return (round === "All" || match.round === round) && (group === "All" || match.group === group) && (!query || haystack.includes(query));
+  });
+
+  list.innerHTML = filtered
+    .map((match) => `
+      <button class="match-card ${match.id === activeMatchId ? "is-active" : ""}" data-id="${match.id}">
+          <span class="match-no">#${match.id}</span>
+        <span>
+          <span class="match-title">${teams[match.aCode].flag} ${teams[match.aCode].name} vs ${teams[match.bCode].flag} ${teams[match.bCode].name}</span>
+          <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
+        </span>
+        <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
+      </button>
+    `)
+    .join("");
+
+  list.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeMatchId = Number(button.dataset.id);
+      renderMatchList();
+      renderPK();
+    });
+  });
+}
+
+function renderPK() {
+  const match = tournament.matches.find((item) => item.id === activeMatchId);
+  const pred = match.prediction;
+  const official = officialPrediction(match);
+  const officialPick = officialPickCode(official);
+  const finalResult = officialResult(match);
+  const leftWon = officialPick === match.aCode;
+  const rightWon = officialPick === match.bCode;
+  const lane = document.getElementById("octopusLane");
+  const crawler = document.getElementById("crawler");
+  const crawlX = leftWon ? "-72%" : rightWon ? "72%" : "0%";
+
+  document.getElementById("pkMeta").textContent = `第 ${match.id} 场 · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
+  document.getElementById("pkConfidence").textContent = official ? `正式预测信心 ${official.analysis?.confidence || "未说明"}%` : "正式预测待锁定";
+  document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode);
+  document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode);
+  lane.style.setProperty("--crawl-x", crawlX);
+  crawler.style.animation = "none";
+  crawler.offsetHeight;
+  crawler.style.animation = "";
+
+  if (official) {
+    const pickName = officialPick === "DRAW" ? "平局" : teams[officialPick]?.name || official.analysis?.winnerName || "未说明";
+    const verdict = officialPick === "DRAW" ? "保罗正式预测这场可能打平" : `保罗正式爬向 ${teams[officialPick]?.flag || ""} ${pickName}`;
+    const resultCopy = finalResult?.status === "final"
+      ? `赛果：${teams[match.aCode].name} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[match.bCode].name}，状态：${predictionStatus(match)}。`
+      : "赛果尚未同步，比赛结束后会自动校验命中率。";
+    document.getElementById("predictionCopy").innerHTML = `
+      <p><strong>${verdict}</strong> · 正式预测比分：<strong>${official.analysis?.predictedScore || official.analysis?.score || "未说明"}</strong>。</p>
+      <p>${official.analysis?.reasoning || "PAUL 已锁定预测，但没有返回详细说明。"}</p>
+      <p>${resultCopy}</p>
+    `;
+  } else {
+    document.getElementById("predictionCopy").innerHTML = `
+      <p><strong>这场比赛还没有进入正式预测窗口。</strong> 系统会在赛前 24 小时自动调用 PAUL，锁定保罗最终选择。</p>
+      <p>当前不会展示任何模拟预测。你可以配置 DASHSCOPE_API_KEY 后等待自动任务，或手动点击“询问 PAUL”生成真实 AI 分析。签表位置：${match.slot}。</p>
+    `;
+  }
+
+  document.getElementById("modelGrid").innerHTML = official
+    ? `
+      <article class="model-card">
+        <h3>PAUL 正式预测</h3>
+        <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "未说明"}%</div>
+        <p>${official.analysis?.reasoning || "PAUL 已返回正式预测。"}</p>
+      </article>
+      <article class="model-card">
+        <h3>预测比分</h3>
+        <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "未说明"}</div>
+        <p>生成时间：${new Date(official.generatedAt).toLocaleString()}</p>
+      </article>
+      <article class="model-card">
+        <h3>冷门风险</h3>
+        <div class="vote">${official.analysis?.upsetRisk || "未说明"}</div>
+        <p>比赛结束后会用真实比分自动校验。</p>
+      </article>
+    `
+    : `
+      <article class="model-card model-card--wide">
+        <h3>等待真实 AI 预测</h3>
+        <div class="vote">未锁定</div>
+        <p>这里不再显示模拟参考。正式内容只来自 PAUL 自动预测或手动 PAUL 分析。</p>
+      </article>
+    `;
+
+  const qwenResult = document.getElementById("qwenResult");
+  if (qwenResult) {
+    qwenResult.className = "qwen-result";
+    qwenResult.textContent = "让 PAUL 对当前比赛给出一份实时第二意见。";
+  }
+}
+
+function qwenPayload(match) {
+  const prediction = match.prediction;
+  const makeTeam = (code) => ({
+    code,
+    name: teams[code].name,
+    group: teams[code].group,
+    languages: teams[code].languages,
+    power: teams[code].power,
+    attack: teams[code].attack,
+    defense: teams[code].defense,
+    form: teams[code].form,
+    confed: teams[code].confed
+  });
+
+  return {
+    id: match.id,
+    round: match.round,
+    date: match.date,
+    venue: match.venue,
+    slot: match.slot,
+    teamA: makeTeam(match.aCode),
+    teamB: makeTeam(match.bCode),
+    localPrediction: {
+      winnerCode: prediction.winner,
+      winnerName: prediction.winner === "DRAW" ? "平局" : teams[prediction.winner].name,
+      score: prediction.score,
+      confidence: prediction.confidence,
+      votes: prediction.votes.map((vote) => ({
+        model: vote.model,
+        pickCode: vote.pick,
+        pickName: teams[vote.pick].name,
+        confidence: vote.confidence,
+        reason: vote.reason
+      }))
+    }
+  };
+}
+
+async function askQwen() {
+  const match = tournament.matches.find((item) => item.id === activeMatchId);
+  const button = document.getElementById("qwenButton");
+  const result = document.getElementById("qwenResult");
+  if (!match || !button || !result) return;
+
+  button.disabled = true;
+  result.className = "qwen-result is-loading";
+  result.textContent = "PAUL 正在读取这场对阵...";
+
+  try {
+    const response = await fetch("/api/qwen-predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(qwenPayload(match))
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "PAUL 请求失败。");
+    }
+
+    const analysis = data.analysis || {};
+    const winnerName = analysis.winnerName || analysis.winner || "暂未判断";
+    const confidence = analysis.confidence ? `${analysis.confidence}%` : "未说明";
+    const score = analysis.predictedScore || analysis.score || "未说明";
+    const upsetRisk = analysis.upsetRisk || "普通";
+    const reasoning = analysis.reasoning || "PAUL 没有返回分析文本。";
+
+    result.className = "qwen-result";
+    result.innerHTML = `
+      <p><strong>PAUL 选择：</strong>${winnerName} · 信心 ${confidence} · 比分 ${score}</p>
+      <p><strong>冷门风险：</strong>${upsetRisk}</p>
+      <p>${reasoning}</p>
+    `;
+
+    automationState.predictions[match.id] = {
+      matchId: match.id,
+      generatedAt: new Date().toISOString(),
+      model: "PAUL",
+      analysis
+    };
+    renderMatchList();
+    renderPK();
+  } catch (error) {
+    result.className = "qwen-result is-error";
+    result.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function syncAutomationSnapshot() {
+  const matches = tournament.matches.map((match) => qwenPayload(match));
+  try {
+    await fetch("/api/automation/snapshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matches })
+    });
+  } catch {
+    // The static-only mode still works without the local automation server.
+  }
+}
+
+function formatNextPrediction(nextPrediction) {
+  if (!nextPrediction) return "暂无";
+  const dueAt = new Date(nextPrediction.dueAt);
+  return `${nextPrediction.label} · ${dueAt.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`;
+}
+
+async function loadAutomationStatus() {
+  const statusText = document.getElementById("automationStatus");
+  try {
+    const response = await fetch("/api/automation/status");
+    const status = await response.json();
+    if (!response.ok) throw new Error(status.error || "读取自动化状态失败。");
+
+    document.getElementById("autoPredicted").textContent = status.predictionCount || 0;
+    document.getElementById("autoResults").textContent = status.resultCount || 0;
+    document.getElementById("autoAccuracy").textContent = `${status.accuracy?.accuracy || 0}%`;
+    document.getElementById("autoNext").textContent = formatNextPrediction(status.nextPrediction);
+    automationState = {
+      predictions: status.predictions || {},
+      results: status.results || {},
+      accuracy: status.accuracy || automationState.accuracy
+    };
+    updateChampionLabel();
+    renderMatchList();
+    renderPK();
+
+    const qwenState = status.hasQwenKey ? "PAUL AI 已就绪" : "PAUL AI 未配置";
+    const resultState = status.hasResultsApi ? "赛果 API 已就绪" : "赛果 API 未配置";
+    const readiness = status.dataReadiness || {};
+    const oddsState = readiness.marketOdds ? "赔率数据已导入" : "缺少赔率数据";
+    const ratingState = readiness.teamRatings ? "球队评分已导入" : "缺少球队评分";
+    statusText.textContent = `${qwenState}；${oddsState}；${ratingState}；${resultState}；已载入 ${status.totalMatches || 0} 场赛程。`;
+  } catch (error) {
+    statusText.textContent = error.message;
+  }
+}
+
+async function runDueAutomation() {
+  const button = document.getElementById("runAutomationButton");
+  const statusText = document.getElementById("automationStatus");
+  if (!button || !statusText) return;
+
+  button.disabled = true;
+  statusText.textContent = "正在运行到期预测和赛果同步任务...";
+  try {
+    const response = await fetch("/api/automation/run-due", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "自动化任务运行失败。");
+    const okEvents = data.events.filter((event) => event.status === "ok").length;
+    const errors = data.events.filter((event) => event.status === "error").length;
+    statusText.textContent = `自动化任务完成：${okEvents} 条更新，${errors} 条错误。`;
+    await loadAutomationStatus();
+  } catch (error) {
+    statusText.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderGroups() {
+  const grid = document.getElementById("groupGrid");
+  grid.innerHTML = groupOrder
+    .map((group) => {
+      const groupTeams = Object.entries(teams)
+        .filter(([, team]) => team.group === group)
+        .sort((a, b) => a[1].pos - b[1].pos);
+      return `
+        <article class="group-card">
+          <h3>${group} 组</h3>
+          ${groupTeams
+            .map(([code, team]) => `
+              <div class="team-row">
+                <span>${team.flag}</span>
+                <strong>${team.name}</strong>
+                <span>${code}</span>
+              </div>
+            `)
+            .join("")}
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function populateFilters() {
+  const roundFilter = document.getElementById("roundFilter");
+  const groupFilter = document.getElementById("groupFilter");
+  roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabels[round] || round}</option>`).join("");
+  groupFilter.innerHTML = ["All", ...groupOrder, "Knockout"].map((group) => `<option value="${group}">${groupLabels[group] || `${group} 组`}</option>`).join("");
+  roundFilter.addEventListener("change", renderMatchList);
+  groupFilter.addEventListener("change", renderMatchList);
+  document.getElementById("searchBox").addEventListener("input", renderMatchList);
+}
+
+function init() {
+  populateFilters();
+  renderGroups();
+  renderMatchList();
+  renderPK();
+  document.getElementById("qwenButton")?.addEventListener("click", askQwen);
+  document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
+  updateChampionLabel();
+  syncAutomationSnapshot().then(loadAutomationStatus);
+}
+
+init();

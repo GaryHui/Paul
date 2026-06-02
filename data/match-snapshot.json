@@ -1,0 +1,6765 @@
+{
+  "updatedAt": "2026-06-02T06:33:32.566Z",
+  "matches": [
+    {
+      "id": 1,
+      "round": "Group Stage",
+      "date": "Jun 11, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "RSA",
+        "name": "South Africa",
+        "group": "A",
+        "languages": "Zulu, Xhosa, Afrikaans, English + official languages",
+        "power": 68,
+        "attack": 67,
+        "defense": 69,
+        "form": 3,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "MEX",
+        "winnerName": "Mexico",
+        "score": "1-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 78,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 82,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 79,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 75,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "round": "Group Stage",
+      "date": "Jun 11, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "KOR",
+        "name": "Korea Republic",
+        "group": "A",
+        "languages": "Korean",
+        "power": 78,
+        "attack": 78,
+        "defense": 76,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "CZE",
+        "name": "Czechia",
+        "group": "A",
+        "languages": "Czech",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "KOR",
+        "winnerName": "Korea Republic",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 68,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 65,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CZE",
+            "pickName": "Czechia",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "round": "Group Stage",
+      "date": "Jun 18, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "CZE",
+        "name": "Czechia",
+        "group": "A",
+        "languages": "Czech",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "RSA",
+        "name": "South Africa",
+        "group": "A",
+        "languages": "Zulu, Xhosa, Afrikaans, English + official languages",
+        "power": 68,
+        "attack": 67,
+        "defense": 69,
+        "form": 3,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "CZE",
+        "winnerName": "Czechia",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CZE",
+            "pickName": "Czechia",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CZE",
+            "pickName": "Czechia",
+            "confidence": 75,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CZE",
+            "pickName": "Czechia",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CZE",
+            "pickName": "Czechia",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 4,
+      "round": "Group Stage",
+      "date": "Jun 18, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "KOR",
+        "name": "Korea Republic",
+        "group": "A",
+        "languages": "Korean",
+        "power": 78,
+        "attack": 78,
+        "defense": 76,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "MEX",
+        "winnerName": "Mexico",
+        "score": "2-1",
+        "confidence": 92,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 68,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 67,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 67,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 5,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "CZE",
+        "name": "Czechia",
+        "group": "A",
+        "languages": "Czech",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "MEX",
+        "winnerName": "Mexico",
+        "score": "1-2",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 73,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 68,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 6,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "Mexico City / Guadalajara / Atlanta",
+      "slot": "Group A",
+      "teamA": {
+        "code": "RSA",
+        "name": "South Africa",
+        "group": "A",
+        "languages": "Zulu, Xhosa, Afrikaans, English + official languages",
+        "power": 68,
+        "attack": 67,
+        "defense": 69,
+        "form": 3,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "KOR",
+        "name": "Korea Republic",
+        "group": "A",
+        "languages": "Korean",
+        "power": 78,
+        "attack": 78,
+        "defense": 76,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "KOR",
+        "winnerName": "Korea Republic",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 77,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 7,
+      "round": "Group Stage",
+      "date": "Jun 12, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "BIH",
+        "name": "Bosnia and Herzegovina",
+        "group": "B",
+        "languages": "Bosnian, Croatian, Serbian",
+        "power": 73,
+        "attack": 73,
+        "defense": 72,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "CAN",
+        "winnerName": "Canada",
+        "score": "2-1",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 73,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 8,
+      "round": "Group Stage",
+      "date": "Jun 13, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "QAT",
+        "name": "Qatar",
+        "group": "B",
+        "languages": "Arabic",
+        "power": 70,
+        "attack": 70,
+        "defense": 69,
+        "form": 3,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "SUI",
+        "winnerName": "Switzerland",
+        "score": "0-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 77,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 83,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 82,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 75,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 9,
+      "round": "Group Stage",
+      "date": "Jun 18, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "BIH",
+        "name": "Bosnia and Herzegovina",
+        "group": "B",
+        "languages": "Bosnian, Croatian, Serbian",
+        "power": 73,
+        "attack": 73,
+        "defense": 72,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "SUI",
+        "winnerName": "Switzerland",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 79,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 80,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 10,
+      "round": "Group Stage",
+      "date": "Jun 18, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "QAT",
+        "name": "Qatar",
+        "group": "B",
+        "languages": "Arabic",
+        "power": 70,
+        "attack": 70,
+        "defense": 69,
+        "form": 3,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "CAN",
+        "winnerName": "Canada",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 73,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 11,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "SUI",
+        "winnerName": "Switzerland",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 68,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 74,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 71,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 12,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "Toronto / Bay Area / Los Angeles",
+      "slot": "Group B",
+      "teamA": {
+        "code": "BIH",
+        "name": "Bosnia and Herzegovina",
+        "group": "B",
+        "languages": "Bosnian, Croatian, Serbian",
+        "power": 73,
+        "attack": 73,
+        "defense": 72,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "QAT",
+        "name": "Qatar",
+        "group": "B",
+        "languages": "Arabic",
+        "power": 70,
+        "attack": 70,
+        "defense": 69,
+        "form": 3,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "BIH",
+        "winnerName": "Bosnia and Herzegovina",
+        "score": "2-1",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BIH",
+            "pickName": "Bosnia and Herzegovina",
+            "confidence": 68,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BIH",
+            "pickName": "Bosnia and Herzegovina",
+            "confidence": 71,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BIH",
+            "pickName": "Bosnia and Herzegovina",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BIH",
+            "pickName": "Bosnia and Herzegovina",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 13,
+      "round": "Group Stage",
+      "date": "Jun 13, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "2-1",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 72,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 73,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 70,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 14,
+      "round": "Group Stage",
+      "date": "Jun 13, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "HAI",
+        "name": "Haiti",
+        "group": "C",
+        "languages": "Haitian Creole, French",
+        "power": 64,
+        "attack": 64,
+        "defense": 62,
+        "form": 3,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "SCO",
+        "name": "Scotland",
+        "group": "C",
+        "languages": "English, Scots, Scottish Gaelic",
+        "power": 75,
+        "attack": 73,
+        "defense": 76,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "SCO",
+        "winnerName": "Scotland",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SCO",
+            "pickName": "Scotland",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SCO",
+            "pickName": "Scotland",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SCO",
+            "pickName": "Scotland",
+            "confidence": 82,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SCO",
+            "pickName": "Scotland",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 15,
+      "round": "Group Stage",
+      "date": "Jun 19, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "SCO",
+        "name": "Scotland",
+        "group": "C",
+        "languages": "English, Scots, Scottish Gaelic",
+        "power": 75,
+        "attack": 73,
+        "defense": 76,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "MAR",
+        "winnerName": "Morocco",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 82,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 16,
+      "round": "Group Stage",
+      "date": "Jun 19, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "HAI",
+        "name": "Haiti",
+        "group": "C",
+        "languages": "Haitian Creole, French",
+        "power": 64,
+        "attack": 64,
+        "defense": 62,
+        "form": 3,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "3-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 86,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 89,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 88,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 82,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 17,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "SCO",
+        "name": "Scotland",
+        "group": "C",
+        "languages": "English, Scots, Scottish Gaelic",
+        "power": 75,
+        "attack": 73,
+        "defense": 76,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 80,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 82,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 77,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 18,
+      "round": "Group Stage",
+      "date": "Jun 24, 2026",
+      "venue": "New York-New Jersey / Boston / Miami",
+      "slot": "Group C",
+      "teamA": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "HAI",
+        "name": "Haiti",
+        "group": "C",
+        "languages": "Haitian Creole, French",
+        "power": 64,
+        "attack": 64,
+        "defense": 62,
+        "form": 3,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "MAR",
+        "winnerName": "Morocco",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 83,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 87,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 87,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 82,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 19,
+      "round": "Group Stage",
+      "date": "Jun 12, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "PAR",
+        "name": "Paraguay",
+        "group": "D",
+        "languages": "Spanish, Guarani",
+        "power": 75,
+        "attack": 73,
+        "defense": 77,
+        "form": 4,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "USA",
+        "winnerName": "United States",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 75,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 75,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 20,
+      "round": "Group Stage",
+      "date": "Jun 13, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "AUS",
+        "name": "Australia",
+        "group": "D",
+        "languages": "English",
+        "power": 74,
+        "attack": 73,
+        "defense": 75,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "TUR",
+        "name": "Turkiye",
+        "group": "D",
+        "languages": "Turkish",
+        "power": 79,
+        "attack": 81,
+        "defense": 76,
+        "form": 5,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "TUR",
+        "winnerName": "Turkiye",
+        "score": "1-2",
+        "confidence": 92,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 70,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 72,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 64,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 21,
+      "round": "Group Stage",
+      "date": "Jun 19, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "TUR",
+        "name": "Turkiye",
+        "group": "D",
+        "languages": "Turkish",
+        "power": 79,
+        "attack": 81,
+        "defense": 76,
+        "form": 5,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "PAR",
+        "name": "Paraguay",
+        "group": "D",
+        "languages": "Spanish, Guarani",
+        "power": 75,
+        "attack": 73,
+        "defense": 77,
+        "form": 4,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "TUR",
+        "winnerName": "Turkiye",
+        "score": "2-1",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 69,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 72,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 66,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 69,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 22,
+      "round": "Group Stage",
+      "date": "Jun 19, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "AUS",
+        "name": "Australia",
+        "group": "D",
+        "languages": "English",
+        "power": 74,
+        "attack": 73,
+        "defense": 75,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "USA",
+        "winnerName": "United States",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 77,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 23,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "TUR",
+        "name": "Turkiye",
+        "group": "D",
+        "languages": "Turkish",
+        "power": 79,
+        "attack": 81,
+        "defense": 76,
+        "form": 5,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "USA",
+        "winnerName": "United States",
+        "score": "1-2",
+        "confidence": 92,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 68,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 65,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 67,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 71,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Los Angeles / Vancouver / Seattle",
+      "slot": "Group D",
+      "teamA": {
+        "code": "PAR",
+        "name": "Paraguay",
+        "group": "D",
+        "languages": "Spanish, Guarani",
+        "power": 75,
+        "attack": 73,
+        "defense": 77,
+        "form": 4,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "AUS",
+        "name": "Australia",
+        "group": "D",
+        "languages": "English",
+        "power": 74,
+        "attack": 73,
+        "defense": 75,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "DRAW",
+        "winnerName": "平局",
+        "score": "1-1",
+        "confidence": 52,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "PAR",
+            "pickName": "Paraguay",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "AUS",
+            "pickName": "Australia",
+            "confidence": 65,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "PAR",
+            "pickName": "Paraguay",
+            "confidence": 67,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "AUS",
+            "pickName": "Australia",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 25,
+      "round": "Group Stage",
+      "date": "Jun 14, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CUW",
+        "name": "Curacao",
+        "group": "E",
+        "languages": "Papiamentu, Dutch, English",
+        "power": 63,
+        "attack": 63,
+        "defense": 62,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "GER",
+        "winnerName": "Germany",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 86,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 88,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 88,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 84,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 26,
+      "round": "Group Stage",
+      "date": "Jun 14, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "CIV",
+        "name": "Cote d'Ivoire",
+        "group": "E",
+        "languages": "French",
+        "power": 78,
+        "attack": 79,
+        "defense": 76,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ECU",
+        "winnerName": "Ecuador",
+        "score": "0-1",
+        "confidence": 76,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 69,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 73,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CIV",
+            "pickName": "Cote d'Ivoire",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 27,
+      "round": "Group Stage",
+      "date": "Jun 20, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "CUW",
+        "name": "Curacao",
+        "group": "E",
+        "languages": "Papiamentu, Dutch, English",
+        "power": 63,
+        "attack": 63,
+        "defense": 62,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ECU",
+        "winnerName": "Ecuador",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 82,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 86,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 86,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 79,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 28,
+      "round": "Group Stage",
+      "date": "Jun 20, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CIV",
+        "name": "Cote d'Ivoire",
+        "group": "E",
+        "languages": "French",
+        "power": 78,
+        "attack": 79,
+        "defense": 76,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "GER",
+        "winnerName": "Germany",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 79,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "GER",
+        "winnerName": "Germany",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 72,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 75,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 30,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Philadelphia / Houston / New York-New Jersey",
+      "slot": "Group E",
+      "teamA": {
+        "code": "CUW",
+        "name": "Curacao",
+        "group": "E",
+        "languages": "Papiamentu, Dutch, English",
+        "power": 63,
+        "attack": 63,
+        "defense": 62,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "CIV",
+        "name": "Cote d'Ivoire",
+        "group": "E",
+        "languages": "French",
+        "power": 78,
+        "attack": 79,
+        "defense": 76,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "CIV",
+        "winnerName": "Cote d'Ivoire",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CIV",
+            "pickName": "Cote d'Ivoire",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CIV",
+            "pickName": "Cote d'Ivoire",
+            "confidence": 83,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CIV",
+            "pickName": "Cote d'Ivoire",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CIV",
+            "pickName": "Cote d'Ivoire",
+            "confidence": 81,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 31,
+      "round": "Group Stage",
+      "date": "Jun 14, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "JPN",
+        "name": "Japan",
+        "group": "F",
+        "languages": "Japanese",
+        "power": 83,
+        "attack": 84,
+        "defense": 81,
+        "form": 7,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "NED",
+        "winnerName": "Netherlands",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 70,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 72,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 73,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 32,
+      "round": "Group Stage",
+      "date": "Jun 14, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "SWE",
+        "name": "Sweden",
+        "group": "F",
+        "languages": "Swedish",
+        "power": 77,
+        "attack": 76,
+        "defense": 78,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "TUN",
+        "name": "Tunisia",
+        "group": "F",
+        "languages": "Arabic",
+        "power": 72,
+        "attack": 70,
+        "defense": 74,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "SWE",
+        "winnerName": "Sweden",
+        "score": "1-0",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SWE",
+            "pickName": "Sweden",
+            "confidence": 70,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SWE",
+            "pickName": "Sweden",
+            "confidence": 69,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SWE",
+            "pickName": "Sweden",
+            "confidence": 71,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SWE",
+            "pickName": "Sweden",
+            "confidence": 66,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 33,
+      "round": "Group Stage",
+      "date": "Jun 20, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "TUN",
+        "name": "Tunisia",
+        "group": "F",
+        "languages": "Arabic",
+        "power": 72,
+        "attack": 70,
+        "defense": 74,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "JPN",
+        "name": "Japan",
+        "group": "F",
+        "languages": "Japanese",
+        "power": 83,
+        "attack": 84,
+        "defense": 81,
+        "form": 7,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "JPN",
+        "winnerName": "Japan",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 82,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 77,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 34,
+      "round": "Group Stage",
+      "date": "Jun 20, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SWE",
+        "name": "Sweden",
+        "group": "F",
+        "languages": "Swedish",
+        "power": 77,
+        "attack": 76,
+        "defense": 78,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "NED",
+        "winnerName": "Netherlands",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 81,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 79,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 35,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "TUN",
+        "name": "Tunisia",
+        "group": "F",
+        "languages": "Arabic",
+        "power": 72,
+        "attack": 70,
+        "defense": 74,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "NED",
+        "winnerName": "Netherlands",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 80,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 81,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 36,
+      "round": "Group Stage",
+      "date": "Jun 25, 2026",
+      "venue": "Dallas / Monterrey / Kansas City",
+      "slot": "Group F",
+      "teamA": {
+        "code": "JPN",
+        "name": "Japan",
+        "group": "F",
+        "languages": "Japanese",
+        "power": 83,
+        "attack": 84,
+        "defense": 81,
+        "form": 7,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "SWE",
+        "name": "Sweden",
+        "group": "F",
+        "languages": "Swedish",
+        "power": 77,
+        "attack": 76,
+        "defense": 78,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "JPN",
+        "winnerName": "Japan",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 71,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "JPN",
+            "pickName": "Japan",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 37,
+      "round": "Group Stage",
+      "date": "Jun 15, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "BEL",
+        "winnerName": "Belgium",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 38,
+      "round": "Group Stage",
+      "date": "Jun 15, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "IRN",
+        "name": "IR Iran",
+        "group": "G",
+        "languages": "Persian",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "NZL",
+        "name": "New Zealand",
+        "group": "G",
+        "languages": "English, Maori, New Zealand Sign Language",
+        "power": 67,
+        "attack": 66,
+        "defense": 68,
+        "form": 4,
+        "confed": "OFC"
+      },
+      "localPrediction": {
+        "winnerCode": "IRN",
+        "winnerName": "IR Iran",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "IRN",
+            "pickName": "IR Iran",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "IRN",
+            "pickName": "IR Iran",
+            "confidence": 76,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "IRN",
+            "pickName": "IR Iran",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "IRN",
+            "pickName": "IR Iran",
+            "confidence": 67,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 39,
+      "round": "Group Stage",
+      "date": "Jun 21, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "NZL",
+        "name": "New Zealand",
+        "group": "G",
+        "languages": "English, Maori, New Zealand Sign Language",
+        "power": 67,
+        "attack": 66,
+        "defense": 68,
+        "form": 4,
+        "confed": "OFC"
+      },
+      "teamB": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "EGY",
+        "winnerName": "Egypt",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 77,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 75,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "round": "Group Stage",
+      "date": "Jun 21, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "IRN",
+        "name": "IR Iran",
+        "group": "G",
+        "languages": "Persian",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "BEL",
+        "winnerName": "Belgium",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 75,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 41,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "NZL",
+        "name": "New Zealand",
+        "group": "G",
+        "languages": "English, Maori, New Zealand Sign Language",
+        "power": 67,
+        "attack": 66,
+        "defense": 68,
+        "form": 4,
+        "confed": "OFC"
+      },
+      "teamB": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "BEL",
+        "winnerName": "Belgium",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 82,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 84,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 82,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 42,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "Seattle / Los Angeles / Vancouver",
+      "slot": "Group G",
+      "teamA": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "IRN",
+        "name": "IR Iran",
+        "group": "G",
+        "languages": "Persian",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "EGY",
+        "winnerName": "Egypt",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 65,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "IRN",
+            "pickName": "IR Iran",
+            "confidence": 65,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 43,
+      "round": "Group Stage",
+      "date": "Jun 15, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CPV",
+        "name": "Cape Verde",
+        "group": "H",
+        "languages": "Portuguese, Cape Verdean Creole",
+        "power": 69,
+        "attack": 70,
+        "defense": 67,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "3-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 84,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 88,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 87,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 82,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 44,
+      "round": "Group Stage",
+      "date": "Jun 15, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "KSA",
+        "name": "Saudi Arabia",
+        "group": "H",
+        "languages": "Arabic",
+        "power": 71,
+        "attack": 70,
+        "defense": 71,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "URU",
+        "name": "Uruguay",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 86,
+        "attack": 85,
+        "defense": 86,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "URU",
+        "winnerName": "Uruguay",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 81,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 45,
+      "round": "Group Stage",
+      "date": "Jun 21, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "URU",
+        "name": "Uruguay",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 86,
+        "attack": 85,
+        "defense": 86,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "CPV",
+        "name": "Cape Verde",
+        "group": "H",
+        "languages": "Portuguese, Cape Verdean Creole",
+        "power": 69,
+        "attack": 70,
+        "defense": 67,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "URU",
+        "winnerName": "Uruguay",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 81,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 85,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "URU",
+            "pickName": "Uruguay",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 46,
+      "round": "Group Stage",
+      "date": "Jun 21, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "KSA",
+        "name": "Saudi Arabia",
+        "group": "H",
+        "languages": "Arabic",
+        "power": 71,
+        "attack": 70,
+        "defense": 71,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 83,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 87,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 86,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 84,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 47,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "URU",
+        "name": "Uruguay",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 86,
+        "attack": 85,
+        "defense": 86,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 74,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 48,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "Atlanta / Miami / Houston",
+      "slot": "Group H",
+      "teamA": {
+        "code": "CPV",
+        "name": "Cape Verde",
+        "group": "H",
+        "languages": "Portuguese, Cape Verdean Creole",
+        "power": 69,
+        "attack": 70,
+        "defense": 67,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "KSA",
+        "name": "Saudi Arabia",
+        "group": "H",
+        "languages": "Arabic",
+        "power": 71,
+        "attack": 70,
+        "defense": 71,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "DRAW",
+        "winnerName": "平局",
+        "score": "1-1",
+        "confidence": 52,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "KSA",
+            "pickName": "Saudi Arabia",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CPV",
+            "pickName": "Cape Verde",
+            "confidence": 64,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "KSA",
+            "pickName": "Saudi Arabia",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CPV",
+            "pickName": "Cape Verde",
+            "confidence": 67,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 49,
+      "round": "Group Stage",
+      "date": "Jun 16, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "1-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 78,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 82,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 80,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 50,
+      "round": "Group Stage",
+      "date": "Jun 16, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "IRQ",
+        "name": "Iraq",
+        "group": "I",
+        "languages": "Arabic, Kurdish",
+        "power": 68,
+        "attack": 68,
+        "defense": 67,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "NOR",
+        "winnerName": "Norway",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 81,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 51,
+      "round": "Group Stage",
+      "date": "Jun 22, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "NOR",
+        "winnerName": "Norway",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 69,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 66,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NOR",
+            "pickName": "Norway",
+            "confidence": 69,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 52,
+      "round": "Group Stage",
+      "date": "Jun 22, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "IRQ",
+        "name": "Iraq",
+        "group": "I",
+        "languages": "Arabic, Kurdish",
+        "power": 68,
+        "attack": 68,
+        "defense": 67,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "3-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 85,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 88,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 88,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 83,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 53,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 77,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 81,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 54,
+      "round": "Group Stage",
+      "date": "Jun 26, 2026",
+      "venue": "New York-New Jersey / Boston / Toronto",
+      "slot": "Group I",
+      "teamA": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "IRQ",
+        "name": "Iraq",
+        "group": "I",
+        "languages": "Arabic, Kurdish",
+        "power": 68,
+        "attack": 68,
+        "defense": 67,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "SEN",
+        "winnerName": "Senegal",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 77,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 82,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 55,
+      "round": "Group Stage",
+      "date": "Jun 16, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ALG",
+        "name": "Algeria",
+        "group": "J",
+        "languages": "Arabic, Tamazight",
+        "power": 76,
+        "attack": 77,
+        "defense": 74,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 82,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 87,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 85,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 79,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 56,
+      "round": "Group Stage",
+      "date": "Jun 16, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "AUT",
+        "name": "Austria",
+        "group": "J",
+        "languages": "German",
+        "power": 81,
+        "attack": 80,
+        "defense": 81,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "JOR",
+        "name": "Jordan",
+        "group": "J",
+        "languages": "Arabic",
+        "power": 66,
+        "attack": 66,
+        "defense": 65,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "AUT",
+        "winnerName": "Austria",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 84,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 84,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 57,
+      "round": "Group Stage",
+      "date": "Jun 22, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "JOR",
+        "name": "Jordan",
+        "group": "J",
+        "languages": "Arabic",
+        "power": 66,
+        "attack": 66,
+        "defense": 65,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "ALG",
+        "name": "Algeria",
+        "group": "J",
+        "languages": "Arabic, Tamazight",
+        "power": 76,
+        "attack": 77,
+        "defense": 74,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ALG",
+        "winnerName": "Algeria",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ALG",
+            "pickName": "Algeria",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ALG",
+            "pickName": "Algeria",
+            "confidence": 77,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ALG",
+            "pickName": "Algeria",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ALG",
+            "pickName": "Algeria",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 58,
+      "round": "Group Stage",
+      "date": "Jun 22, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "AUT",
+        "name": "Austria",
+        "group": "J",
+        "languages": "German",
+        "power": 81,
+        "attack": 80,
+        "defense": 81,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 78,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 83,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 80,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 80,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 59,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "JOR",
+        "name": "Jordan",
+        "group": "J",
+        "languages": "Arabic",
+        "power": 66,
+        "attack": 66,
+        "defense": 65,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "0-3",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 86,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 89,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 88,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 83,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 60,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Kansas City / Bay Area / Dallas",
+      "slot": "Group J",
+      "teamA": {
+        "code": "ALG",
+        "name": "Algeria",
+        "group": "J",
+        "languages": "Arabic, Tamazight",
+        "power": 76,
+        "attack": 77,
+        "defense": 74,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "AUT",
+        "name": "Austria",
+        "group": "J",
+        "languages": "German",
+        "power": 81,
+        "attack": 80,
+        "defense": 81,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "AUT",
+        "winnerName": "Austria",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 70,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 72,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 74,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "AUT",
+            "pickName": "Austria",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 61,
+      "round": "Group Stage",
+      "date": "Jun 17, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "COD",
+        "name": "DR Congo",
+        "group": "K",
+        "languages": "French, Lingala, Kikongo, Swahili, Tshiluba",
+        "power": 72,
+        "attack": 73,
+        "defense": 71,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "POR",
+        "winnerName": "Portugal",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 82,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 86,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 84,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 79,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 62,
+      "round": "Group Stage",
+      "date": "Jun 17, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "UZB",
+        "name": "Uzbekistan",
+        "group": "K",
+        "languages": "Uzbek",
+        "power": 70,
+        "attack": 69,
+        "defense": 71,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "COL",
+        "winnerName": "Colombia",
+        "score": "0-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 83,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 81,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 80,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 63,
+      "round": "Group Stage",
+      "date": "Jun 23, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "COD",
+        "name": "DR Congo",
+        "group": "K",
+        "languages": "French, Lingala, Kikongo, Swahili, Tshiluba",
+        "power": 72,
+        "attack": 73,
+        "defense": 71,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "COL",
+        "winnerName": "Colombia",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 77,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 82,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 80,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 79,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 64,
+      "round": "Group Stage",
+      "date": "Jun 23, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "UZB",
+        "name": "Uzbekistan",
+        "group": "K",
+        "languages": "Uzbek",
+        "power": 70,
+        "attack": 69,
+        "defense": 71,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "POR",
+        "winnerName": "Portugal",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 83,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 87,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 85,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 83,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 65,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "POR",
+        "winnerName": "Portugal",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 71,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 66,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Houston / Mexico City / Miami",
+      "slot": "Group K",
+      "teamA": {
+        "code": "COD",
+        "name": "DR Congo",
+        "group": "K",
+        "languages": "French, Lingala, Kikongo, Swahili, Tshiluba",
+        "power": 72,
+        "attack": 73,
+        "defense": 71,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "UZB",
+        "name": "Uzbekistan",
+        "group": "K",
+        "languages": "Uzbek",
+        "power": 70,
+        "attack": 69,
+        "defense": 71,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "COD",
+        "winnerName": "DR Congo",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "COD",
+            "pickName": "DR Congo",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "COD",
+            "pickName": "DR Congo",
+            "confidence": 67,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "COD",
+            "pickName": "DR Congo",
+            "confidence": 65,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "UZB",
+            "pickName": "Uzbekistan",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 67,
+      "round": "Group Stage",
+      "date": "Jun 17, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CRO",
+        "name": "Croatia",
+        "group": "L",
+        "languages": "Croatian",
+        "power": 83,
+        "attack": 81,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ENG",
+        "winnerName": "England",
+        "score": "1-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 72,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 75,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 73,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 68,
+      "round": "Group Stage",
+      "date": "Jun 17, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "GHA",
+        "name": "Ghana",
+        "group": "L",
+        "languages": "English, Akan, Ewe, Ga, Dagbani",
+        "power": 75,
+        "attack": 76,
+        "defense": 73,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "PAN",
+        "name": "Panama",
+        "group": "L",
+        "languages": "Spanish",
+        "power": 69,
+        "attack": 68,
+        "defense": 69,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "GHA",
+        "winnerName": "Ghana",
+        "score": "2-1",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "GHA",
+            "pickName": "Ghana",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "GHA",
+            "pickName": "Ghana",
+            "confidence": 73,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "GHA",
+            "pickName": "Ghana",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "GHA",
+            "pickName": "Ghana",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 69,
+      "round": "Group Stage",
+      "date": "Jun 23, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "PAN",
+        "name": "Panama",
+        "group": "L",
+        "languages": "Spanish",
+        "power": 69,
+        "attack": 68,
+        "defense": 69,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "CRO",
+        "name": "Croatia",
+        "group": "L",
+        "languages": "Croatian",
+        "power": 83,
+        "attack": 81,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "CRO",
+        "winnerName": "Croatia",
+        "score": "0-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 84,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 70,
+      "round": "Group Stage",
+      "date": "Jun 23, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "GHA",
+        "name": "Ghana",
+        "group": "L",
+        "languages": "English, Akan, Ewe, Ga, Dagbani",
+        "power": 75,
+        "attack": 76,
+        "defense": 73,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ENG",
+        "winnerName": "England",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 85,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 71,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "PAN",
+        "name": "Panama",
+        "group": "L",
+        "languages": "Spanish",
+        "power": 69,
+        "attack": 68,
+        "defense": 69,
+        "form": 4,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ENG",
+        "winnerName": "England",
+        "score": "0-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 83,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 87,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 86,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 84,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 72,
+      "round": "Group Stage",
+      "date": "Jun 27, 2026",
+      "venue": "Dallas / Toronto / Philadelphia",
+      "slot": "Group L",
+      "teamA": {
+        "code": "CRO",
+        "name": "Croatia",
+        "group": "L",
+        "languages": "Croatian",
+        "power": 83,
+        "attack": 81,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "GHA",
+        "name": "Ghana",
+        "group": "L",
+        "languages": "English, Akan, Ewe, Ga, Dagbani",
+        "power": 75,
+        "attack": 76,
+        "defense": 73,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "CRO",
+        "winnerName": "Croatia",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 73,
+      "round": "Round of 32",
+      "date": "Jun 28, 2026",
+      "venue": "Los Angeles",
+      "slot": "2A vs 2B",
+      "teamA": {
+        "code": "KOR",
+        "name": "Korea Republic",
+        "group": "A",
+        "languages": "Korean",
+        "power": 78,
+        "attack": 78,
+        "defense": 76,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "localPrediction": {
+        "winnerCode": "KOR",
+        "winnerName": "Korea Republic",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "CAN",
+            "pickName": "Canada",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 68,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 67,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "KOR",
+            "pickName": "Korea Republic",
+            "confidence": 64,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 74,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Boston",
+      "slot": "1E vs 3ABCDF",
+      "teamA": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SCO",
+        "name": "Scotland",
+        "group": "C",
+        "languages": "English, Scots, Scottish Gaelic",
+        "power": 75,
+        "attack": 73,
+        "defense": 76,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "GER",
+        "winnerName": "Germany",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 83,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 81,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "GER",
+            "pickName": "Germany",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 75,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Monterrey",
+      "slot": "1F vs 2C",
+      "teamA": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "NED",
+        "winnerName": "Netherlands",
+        "score": "2-1",
+        "confidence": 76,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 69,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 67,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 69,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MAR",
+            "pickName": "Morocco",
+            "confidence": 64,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 76,
+      "round": "Round of 32",
+      "date": "Jun 29, 2026",
+      "venue": "Houston",
+      "slot": "1C vs 2F",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "JPN",
+        "name": "Japan",
+        "group": "F",
+        "languages": "Japanese",
+        "power": 83,
+        "attack": 84,
+        "defense": 81,
+        "form": 7,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 77,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 77,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "1I vs 3CDFGH",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "IRN",
+        "name": "IR Iran",
+        "group": "G",
+        "languages": "Persian",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 81,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 86,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 84,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 77,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 78,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "Dallas",
+      "slot": "2E vs 2I",
+      "teamA": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ECU",
+        "winnerName": "Ecuador",
+        "score": "2-1",
+        "confidence": 91,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 64,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 66,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 70,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ECU",
+            "pickName": "Ecuador",
+            "confidence": 66,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 79,
+      "round": "Round of 32",
+      "date": "Jun 30, 2026",
+      "venue": "Mexico City",
+      "slot": "1A vs 3CEFHI",
+      "teamA": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "SEN",
+        "winnerName": "Senegal",
+        "score": "1-2",
+        "confidence": 58,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 66,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SEN",
+            "pickName": "Senegal",
+            "confidence": 67,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "MEX",
+            "pickName": "Mexico",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 80,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "Atlanta",
+      "slot": "1L vs 3EHIJK",
+      "teamA": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CIV",
+        "name": "Cote d'Ivoire",
+        "group": "E",
+        "languages": "French",
+        "power": 78,
+        "attack": 79,
+        "defense": 76,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "ENG",
+        "winnerName": "England",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 77,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 81,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 82,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 81,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "San Francisco Bay Area",
+      "slot": "1D vs 3BEFIJ",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "BIH",
+        "name": "Bosnia and Herzegovina",
+        "group": "B",
+        "languages": "Bosnian, Croatian, Serbian",
+        "power": 73,
+        "attack": 73,
+        "defense": 72,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "USA",
+        "winnerName": "United States",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 79,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 74,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "USA",
+            "pickName": "United States",
+            "confidence": 77,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 82,
+      "round": "Round of 32",
+      "date": "Jul 1, 2026",
+      "venue": "Seattle",
+      "slot": "1G vs 3AEHIJ",
+      "teamA": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CZE",
+        "name": "Czechia",
+        "group": "A",
+        "languages": "Czech",
+        "power": 76,
+        "attack": 75,
+        "defense": 77,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "BEL",
+        "winnerName": "Belgium",
+        "score": "1-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 79,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 75,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 83,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Toronto",
+      "slot": "2K vs 2L",
+      "teamA": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "CRO",
+        "name": "Croatia",
+        "group": "L",
+        "languages": "Croatian",
+        "power": 83,
+        "attack": 81,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "COL",
+        "winnerName": "Colombia",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 67,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "CRO",
+            "pickName": "Croatia",
+            "confidence": 65,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "COL",
+            "pickName": "Colombia",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 84,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Los Angeles",
+      "slot": "1H vs 2J",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "AUT",
+        "name": "Austria",
+        "group": "J",
+        "languages": "German",
+        "power": 81,
+        "attack": 80,
+        "defense": 81,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 76,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 79,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 85,
+      "round": "Round of 32",
+      "date": "Jul 2, 2026",
+      "venue": "Vancouver",
+      "slot": "1B vs 3EFGIJ",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "ALG",
+        "name": "Algeria",
+        "group": "J",
+        "languages": "Arabic, Tamazight",
+        "power": 76,
+        "attack": 77,
+        "defense": 74,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "SUI",
+        "winnerName": "Switzerland",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 71,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 74,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "SUI",
+            "pickName": "Switzerland",
+            "confidence": 70,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 86,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Miami",
+      "slot": "1J vs 2H",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "URU",
+        "name": "Uruguay",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 86,
+        "attack": 85,
+        "defense": 86,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 74,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 87,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Kansas City",
+      "slot": "1K vs 3DEIJL",
+      "teamA": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "COD",
+        "name": "DR Congo",
+        "group": "K",
+        "languages": "French, Lingala, Kikongo, Swahili, Tshiluba",
+        "power": 72,
+        "attack": 73,
+        "defense": 71,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "POR",
+        "winnerName": "Portugal",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 82,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 86,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 85,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 88,
+      "round": "Round of 32",
+      "date": "Jul 3, 2026",
+      "venue": "Dallas",
+      "slot": "2D vs 2G",
+      "teamA": {
+        "code": "TUR",
+        "name": "Turkiye",
+        "group": "D",
+        "languages": "Turkish",
+        "power": 79,
+        "attack": 81,
+        "defense": 76,
+        "form": 5,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "localPrediction": {
+        "winnerCode": "TUR",
+        "winnerName": "Turkiye",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 66,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "TUR",
+            "pickName": "Turkiye",
+            "confidence": 68,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "EGY",
+            "pickName": "Egypt",
+            "confidence": 65,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 89,
+      "round": "Round of 16",
+      "date": "Jul 4, 2026",
+      "venue": "Philadelphia",
+      "slot": "W74 vs W77",
+      "teamA": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 69,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 71,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 74,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 90,
+      "round": "Round of 16",
+      "date": "Jul 4, 2026",
+      "venue": "Houston",
+      "slot": "W73 vs W75",
+      "teamA": {
+        "code": "KOR",
+        "name": "Korea Republic",
+        "group": "A",
+        "languages": "Korean",
+        "power": 78,
+        "attack": 78,
+        "defense": 76,
+        "form": 5,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "NED",
+        "winnerName": "Netherlands",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 80,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 80,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "NED",
+            "pickName": "Netherlands",
+            "confidence": 75,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 91,
+      "round": "Round of 16",
+      "date": "Jul 5, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "W76 vs W78",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 74,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 74,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 69,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 92,
+      "round": "Round of 16",
+      "date": "Jul 5, 2026",
+      "venue": "Mexico City",
+      "slot": "W79 vs W80",
+      "teamA": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ENG",
+        "winnerName": "England",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 75,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 78,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 76,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 93,
+      "round": "Round of 16",
+      "date": "Jul 6, 2026",
+      "venue": "Dallas",
+      "slot": "W83 vs W84",
+      "teamA": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 75,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 72,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 94,
+      "round": "Round of 16",
+      "date": "Jul 6, 2026",
+      "venue": "Seattle",
+      "slot": "W81 vs W82",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "BEL",
+        "winnerName": "Belgium",
+        "score": "2-3",
+        "confidence": 92,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 67,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 67,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BEL",
+            "pickName": "Belgium",
+            "confidence": 67,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 95,
+      "round": "Round of 16",
+      "date": "Jul 7, 2026",
+      "venue": "Atlanta",
+      "slot": "W86 vs W88",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "TUR",
+        "name": "Turkiye",
+        "group": "D",
+        "languages": "Turkish",
+        "power": 79,
+        "attack": 81,
+        "defense": 76,
+        "form": 5,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-0",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 79,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 86,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 83,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 78,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 96,
+      "round": "Round of 16",
+      "date": "Jul 7, 2026",
+      "venue": "Vancouver",
+      "slot": "W85 vs W87",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "POR",
+        "winnerName": "Portugal",
+        "score": "1-2",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 73,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 77,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 72,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "POR",
+            "pickName": "Portugal",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 97,
+      "round": "Quarter-finals",
+      "date": "Jul 9, 2026",
+      "venue": "Boston",
+      "slot": "W89 vs W90",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 70,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 74,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 70,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 98,
+      "round": "Quarter-finals",
+      "date": "Jul 10, 2026",
+      "venue": "Los Angeles",
+      "slot": "W93 vs W94",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "2-1",
+        "confidence": 94,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 72,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 78,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 76,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 73,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 99,
+      "round": "Quarter-finals",
+      "date": "Jul 11, 2026",
+      "venue": "Miami",
+      "slot": "W91 vs W92",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "BRA",
+        "winnerName": "Brazil",
+        "score": "3-2",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 68,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ENG",
+            "pickName": "England",
+            "confidence": 64,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "BRA",
+            "pickName": "Brazil",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 100,
+      "round": "Quarter-finals",
+      "date": "Jul 11, 2026",
+      "venue": "Kansas City",
+      "slot": "W95 vs W96",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "3-2",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 69,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 74,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 71,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 67,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 101,
+      "round": "Semi-finals",
+      "date": "Jul 14, 2026",
+      "venue": "Dallas",
+      "slot": "W97 vs W98",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "localPrediction": {
+        "winnerCode": "FRA",
+        "winnerName": "France",
+        "score": "2-1",
+        "confidence": 75,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 68,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 65,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 66,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 102,
+      "round": "Semi-finals",
+      "date": "Jul 15, 2026",
+      "venue": "Atlanta",
+      "slot": "W99 vs W100",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-3",
+        "confidence": 93,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 68,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 70,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 68,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 103,
+      "round": "Third-place Play-off",
+      "date": "Jul 18, 2026",
+      "venue": "Miami",
+      "slot": "L101 vs L102",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ESP",
+        "winnerName": "Spain",
+        "score": "3-2",
+        "confidence": 92,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 70,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 68,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "ESP",
+            "pickName": "Spain",
+            "confidence": 69,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    },
+    {
+      "id": 104,
+      "round": "Final",
+      "date": "Jul 19, 2026",
+      "venue": "New York-New Jersey",
+      "slot": "W101 vs W102",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "localPrediction": {
+        "winnerCode": "ARG",
+        "winnerName": "Argentina",
+        "score": "2-3",
+        "confidence": 74,
+        "votes": [
+          {
+            "model": "EloPulse",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 65,
+            "reason": "内置 power 评分 + 东道主地区加成"
+          },
+          {
+            "model": "FormNet",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 65,
+            "reason": "内置 attack/defense/form 评分组合"
+          },
+          {
+            "model": "TacticalLens",
+            "pickCode": "ARG",
+            "pickName": "Argentina",
+            "confidence": 66,
+            "reason": "内置 defense/power 评分 + 淘汰赛稳定性权重"
+          },
+          {
+            "model": "OracleSynth",
+            "pickCode": "FRA",
+            "pickName": "France",
+            "confidence": 66,
+            "reason": "内置强度评分 + 固定冷门扰动"
+          }
+        ]
+      }
+    }
+  ]
+}

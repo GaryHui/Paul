@@ -1,0 +1,583 @@
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+
+const root = __dirname;
+const dataDir = path.join(root, "data");
+
+function loadEnvFile() {
+  const envPath = path.join(root, ".env");
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const index = trimmed.indexOf("=");
+    if (index === -1) continue;
+    const key = trimmed.slice(0, index).trim();
+    const rawValue = trimmed.slice(index + 1).trim();
+    const value = rawValue.replace(/^["']|["']$/g, "");
+    if (key && process.env[key] === undefined) process.env[key] = value;
+  }
+}
+
+loadEnvFile();
+
+const port = Number(process.env.PORT || 4173);
+const qwenEndpoint = process.env.QWEN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
+const qwenModel = process.env.QWEN_MODEL || "qwen-plus";
+const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
+const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
+const automationIntervalMinutes = Number(process.env.AUTOMATION_INTERVAL_MINUTES || 60);
+
+const snapshotFile = path.join(dataDir, "match-snapshot.json");
+const predictionsFile = path.join(dataDir, "qwen-predictions.json");
+const resultsFile = path.join(dataDir, "match-results.json");
+const oddsFile = path.join(dataDir, "market-odds.json");
+const ratingsFile = path.join(dataDir, "team-ratings.json");
+const formFile = path.join(dataDir, "recent-form.json");
+
+const contentTypes = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png"
+};
+
+fs.mkdirSync(dataDir, { recursive: true });
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk;
+      if (body.length > 180000) {
+        reject(new Error("Request body is too large."));
+        req.destroy();
+      }
+    });
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+function sendJson(res, status, payload) {
+  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  res.end(JSON.stringify(payload));
+}
+
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
+function writeJson(file, payload) {
+  fs.writeFileSync(file, `${JSON.stringify(payload, null, 2)}\n`);
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function normalize3Way(probs) {
+  const home = Number(probs.home || probs.a || 0);
+  const draw = Number(probs.draw || 0);
+  const away = Number(probs.away || probs.b || 0);
+  const sum = home + draw + away;
+  if (!sum) return null;
+  return {
+    home: home / sum,
+    draw: draw / sum,
+    away: away / sum
+  };
+}
+
+function oddsToProbabilities(odds) {
+  if (!odds) return null;
+  const homeOdds = Number(odds.home || odds.a || odds.teamA);
+  const drawOdds = Number(odds.draw);
+  const awayOdds = Number(odds.away || odds.b || odds.teamB);
+  if (!homeOdds || !drawOdds || !awayOdds) return null;
+  return normalize3Way({
+    home: 1 / homeOdds,
+    draw: 1 / drawOdds,
+    away: 1 / awayOdds
+  });
+}
+
+function parseMatchTime(match) {
+  const date = new Date(`${match.date} 20:00:00 GMT+0000`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function resultWinner(result) {
+  if (Number(result.homeScore) === Number(result.awayScore)) return "DRAW";
+  return Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode;
+}
+
+function findByMatchId(collection, matchId) {
+  if (!collection) return null;
+  if (Array.isArray(collection)) {
+    return collection.find((item) => String(item.matchId || item.id) === String(matchId)) || null;
+  }
+  return collection[matchId] || collection[String(matchId)] || null;
+}
+
+function findTeamRecord(collection, code) {
+  if (!collection) return null;
+  if (Array.isArray(collection)) {
+    return collection.find((item) => item.code === code || item.teamCode === code) || null;
+  }
+  return collection[code] || null;
+}
+
+function eloProbabilities(aRating, bRating, allowDraw) {
+  const diff = Number(aRating) - Number(bRating);
+  const homeRaw = 1 / (1 + 10 ** (-diff / 400));
+  const draw = allowDraw ? clamp(0.28 - Math.abs(diff) / 2400, 0.12, 0.3) : 0;
+  return {
+    home: homeRaw * (1 - draw),
+    draw,
+    away: (1 - homeRaw) * (1 - draw)
+  };
+}
+
+function poisson(k, lambda) {
+  let factorial = 1;
+  for (let i = 2; i <= k; i += 1) factorial *= i;
+  return (Math.E ** -lambda * lambda ** k) / factorial;
+}
+
+function poissonProbabilities(aLambda, bLambda, allowDraw) {
+  let home = 0;
+  let draw = 0;
+  let away = 0;
+  let bestScore = "0-0";
+  let best = 0;
+
+  for (let a = 0; a <= 7; a += 1) {
+    for (let b = 0; b <= 7; b += 1) {
+      const p = poisson(a, aLambda) * poisson(b, bLambda);
+      if (p > best) {
+        best = p;
+        bestScore = `${a}-${b}`;
+      }
+      if (a > b) home += p;
+      else if (a === b) draw += p;
+      else away += p;
+    }
+  }
+
+  if (!allowDraw) {
+    const drawSplit = draw / 2;
+    home += drawSplit;
+    away += drawSplit;
+    draw = 0;
+  }
+
+  return {
+    probabilities: normalize3Way({ home, draw, away }),
+    predictedScore: bestScore,
+    expectedGoals: {
+      home: Number(aLambda.toFixed(2)),
+      away: Number(bLambda.toFixed(2))
+    }
+  };
+}
+
+function blendModels(models) {
+  const usable = models.filter((item) => item.probabilities && item.weight > 0);
+  const totalWeight = usable.reduce((sum, item) => sum + item.weight, 0);
+  if (!totalWeight) return null;
+  return normalize3Way({
+    home: usable.reduce((sum, item) => sum + item.probabilities.home * item.weight, 0) / totalWeight,
+    draw: usable.reduce((sum, item) => sum + item.probabilities.draw * item.weight, 0) / totalWeight,
+    away: usable.reduce((sum, item) => sum + item.probabilities.away * item.weight, 0) / totalWeight
+  });
+}
+
+function favoriteFromProbabilities(match, probabilities) {
+  if (!probabilities) return null;
+  const candidates = [
+    { code: match.teamA.code, name: match.teamA.name, value: probabilities.home },
+    { code: "DRAW", name: "平局", value: probabilities.draw },
+    { code: match.teamB.code, name: match.teamB.name, value: probabilities.away }
+  ].sort((a, b) => b.value - a.value);
+  return candidates[0];
+}
+
+function collectPredictionEvidence(match) {
+  const allOdds = readJson(oddsFile, {});
+  const allRatings = readJson(ratingsFile, {});
+  const allForm = readJson(formFile, {});
+  const allowDraw = match.round === "Group Stage";
+
+  const oddsRecord = findByMatchId(allOdds, match.id);
+  const marketProb = oddsToProbabilities(oddsRecord?.odds || oddsRecord);
+  const ratingA = findTeamRecord(allRatings, match.teamA.code);
+  const ratingB = findTeamRecord(allRatings, match.teamB.code);
+  const formA = findTeamRecord(allForm, match.teamA.code);
+  const formB = findTeamRecord(allForm, match.teamB.code);
+
+  const eloProb = ratingA?.elo && ratingB?.elo ? eloProbabilities(ratingA.elo, ratingB.elo, allowDraw) : null;
+
+  let poisson = null;
+  if (ratingA?.attack && ratingA?.defense && ratingB?.attack && ratingB?.defense) {
+    const base = allowDraw ? 1.22 : 1.28;
+    const aLambda = clamp(base * Number(ratingA.attack) / Math.max(0.1, Number(ratingB.defense)), 0.25, 3.5);
+    const bLambda = clamp(base * Number(ratingB.attack) / Math.max(0.1, Number(ratingA.defense)), 0.25, 3.5);
+    poisson = poissonProbabilities(aLambda, bLambda, allowDraw);
+  }
+
+  const modelBlend = blendModels([
+    { name: "market", probabilities: marketProb, weight: 55 },
+    { name: "elo", probabilities: eloProb, weight: 25 },
+    { name: "poisson", probabilities: poisson?.probabilities, weight: 20 }
+  ]);
+
+  const missing = [];
+  if (!marketProb) missing.push("市场赔率：data/market-odds.json 或 ODDS_API_*");
+  if (!eloProb) missing.push("真实 Elo/球队评分：data/team-ratings.json");
+  if (!poisson) missing.push("进攻/防守评分：team-ratings.json 的 attack/defense");
+  if (!formA || !formB) missing.push("近期战绩：data/recent-form.json");
+
+  const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson);
+  return {
+    matchId: match.id,
+    generatedAt: new Date().toISOString(),
+    hasPrimaryEvidence,
+    missing,
+    sources: {
+      marketOdds: marketProb ? "data/market-odds.json" : null,
+      ratings: eloProb || poisson ? "data/team-ratings.json" : null,
+      recentForm: formA && formB ? "data/recent-form.json" : null
+    },
+    market: marketProb ? { odds: oddsRecord?.odds || oddsRecord, probabilities: marketProb } : null,
+    ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
+    form: formA && formB ? { teamA: formA, teamB: formB } : null,
+    poisson,
+    blended: modelBlend,
+    favorite: favoriteFromProbabilities(match, modelBlend || marketProb || eloProb || poisson?.probabilities)
+  };
+}
+
+function buildQwenPrompt(payload, evidence) {
+  const needsSearch = !evidence.hasPrimaryEvidence;
+  return [
+    "你是一个世界杯赛前预测校准器，不是闲聊评论员。",
+    needsSearch
+      ? "本地 evidence 缺少赔率/Elo 等文件。你必须先联网搜索两队近期公开资料，再基于搜索到的资料分析。"
+      : "必须基于 evidence 里的真实数据源输出预测；不要凭空编造伤停、阵容、近期战绩或赔率。",
+    needsSearch
+      ? "优先搜索：两队近期战绩、FIFA/Elo排名、伤停与阵容新闻、赔率或市场预测、赛地和休息天数。"
+      : "市场赔率和统计模型是主依据，你只能做小幅校准。若证据不足，请在 reasoning 中明确说明。",
+    "需要判断是否存在黑马信号：低估、伤停错配、赛程压力、战术克制、心理和小组形势。",
+    "返回严格 JSON：winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed。",
+    "probabilities 必须包含 home/draw/away，数值为 0-100。reasoning、upsetRisk、evidenceUsed 用中文。",
+    "evidenceUsed 必须列出你实际使用的数据或搜索信息来源名称。不要编造不存在的具体链接。",
+    "",
+    `比赛：${payload.id} / ${payload.round} / ${payload.date} / ${payload.venue}`,
+    `球队A：${payload.teamA.code} ${payload.teamA.name}`,
+    `球队B：${payload.teamB.code} ${payload.teamB.name}`,
+    `证据包：${JSON.stringify(evidence)}`
+  ].join("\n");
+}
+
+async function callQwenAnalysis(payload, evidence = collectPredictionEvidence(payload)) {
+  const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
+  if (!apiKey) {
+    const error = new Error("缺少 DASHSCOPE_API_KEY。请先在启动 server.js 的终端设置它。");
+    error.status = 400;
+    throw error;
+  }
+  const useSearchFallback = !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
+  evidence.searchFallback = useSearchFallback;
+
+  const requestBody = {
+    model: qwenModel,
+    messages: [
+      {
+        role: "system",
+        content: "你只返回紧凑 JSON，不要 markdown。"
+      },
+      {
+        role: "user",
+        content: buildQwenPrompt(payload, evidence)
+      }
+    ],
+    temperature: 0.35,
+    response_format: { type: "json_object" }
+  };
+
+  if (useSearchFallback) {
+    requestBody.enable_search = true;
+    requestBody.search_options = {
+      forced_search: true,
+      search_strategy: "max"
+    };
+  }
+
+  const response = await fetch(`${qwenEndpoint.replace(/\/$/, "")}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  const text = await response.text();
+  if (!response.ok) {
+    const error = new Error(`PAUL AI request failed with status ${response.status}.`);
+    error.status = response.status;
+    error.detail = text.slice(0, 800);
+    throw error;
+  }
+
+  const data = JSON.parse(text);
+  const content = data.choices?.[0]?.message?.content || "{}";
+  let analysis;
+  try {
+    analysis = JSON.parse(content);
+  } catch {
+    analysis = { reasoning: content };
+  }
+
+  return {
+    model: data.model || qwenModel,
+    evidence,
+    analysis
+  };
+}
+
+async function handleQwen(req, res) {
+  try {
+    const payload = JSON.parse(await readBody(req));
+    const evidence = collectPredictionEvidence(payload);
+    const result = await callQwenAnalysis(payload, evidence);
+    sendJson(res, 200, result);
+  } catch (error) {
+    sendJson(res, error.status || 500, { error: error.message, detail: error.detail, evidence: error.evidence });
+  }
+}
+
+function accuracySnapshot(predictions, results) {
+  const completed = Object.values(results).filter((result) => result.status === "final");
+  const graded = completed.filter((result) => predictions[result.matchId]);
+  const correct = graded.filter((result) => {
+    const prediction = predictions[result.matchId].analysis || {};
+    const pick = prediction.winnerCode || prediction.winner || prediction.winnerName;
+    return String(pick).toUpperCase() === String(resultWinner(result)).toUpperCase();
+  });
+  return {
+    completed: completed.length,
+    graded: graded.length,
+    correct: correct.length,
+    accuracy: graded.length ? Math.round((correct.length / graded.length) * 100) : 0
+  };
+}
+
+function nextPredictionDue(matches, predictions, now = new Date()) {
+  return matches
+    .map((match) => {
+      const matchTime = parseMatchTime(match);
+      if (!matchTime || predictions[match.id]) return null;
+      return {
+        id: match.id,
+        label: `${match.teamA.name} vs ${match.teamB.name}`,
+        dueAt: new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000).toISOString()
+      };
+    })
+    .filter(Boolean)
+    .filter((item) => new Date(item.dueAt) >= now)
+    .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))[0] || null;
+}
+
+async function fetchMatchResult(match) {
+  const baseUrl = process.env.RESULTS_API_URL;
+  if (!baseUrl) return null;
+  const url = new URL(baseUrl);
+  url.searchParams.set("matchId", match.id);
+  const headers = {};
+  if (process.env.RESULTS_API_KEY) headers.Authorization = `Bearer ${process.env.RESULTS_API_KEY}`;
+  const response = await fetch(url, { headers });
+  if (!response.ok) throw new Error(`Result API failed for match ${match.id}: ${response.status}`);
+  const data = await response.json();
+  if (data.status !== "final") return null;
+  return {
+    matchId: match.id,
+    aCode: match.teamA.code,
+    bCode: match.teamB.code,
+    homeScore: Number(data.homeScore),
+    awayScore: Number(data.awayScore),
+    status: "final",
+    source: baseUrl,
+    syncedAt: new Date().toISOString()
+  };
+}
+
+async function runDueAutomation({ force = false } = {}) {
+  const matches = readJson(snapshotFile, { matches: [] }).matches || [];
+  const predictions = readJson(predictionsFile, {});
+  const results = readJson(resultsFile, {});
+  const now = new Date();
+  const events = [];
+
+  for (const match of matches) {
+    const matchTime = parseMatchTime(match);
+    if (!matchTime) continue;
+    const predictAt = new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000);
+    const shouldPredict = force || (now >= predictAt && now < matchTime);
+
+    if (shouldPredict && !predictions[match.id]) {
+      try {
+        const evidence = collectPredictionEvidence(match);
+        predictions[match.id] = {
+          matchId: match.id,
+          generatedAt: now.toISOString(),
+          ...await callQwenAnalysis(match, evidence)
+        };
+        events.push({ type: "prediction", matchId: match.id, status: "ok" });
+      } catch (error) {
+        events.push({ type: "prediction", matchId: match.id, status: "error", error: error.message });
+      }
+    }
+
+    const resultAt = new Date(matchTime.getTime() + resultSyncDelayHours * 60 * 60 * 1000);
+    const shouldSyncResult = force || now >= resultAt;
+    if (shouldSyncResult && !results[match.id]) {
+      try {
+        const result = await fetchMatchResult(match);
+        if (result) {
+          results[match.id] = result;
+          events.push({ type: "result", matchId: match.id, status: "ok" });
+        }
+      } catch (error) {
+        events.push({ type: "result", matchId: match.id, status: "error", error: error.message });
+      }
+    }
+  }
+
+  writeJson(predictionsFile, predictions);
+  writeJson(resultsFile, results);
+  return {
+    events,
+    summary: buildAutomationStatus(matches, predictions, results)
+  };
+}
+
+function dataReadiness(matches) {
+  const first = matches[0] ? collectPredictionEvidence(matches[0]) : null;
+  return {
+    marketOdds: fs.existsSync(oddsFile),
+    teamRatings: fs.existsSync(ratingsFile),
+    recentForm: fs.existsSync(formFile),
+    firstMatchEvidence: first
+  };
+}
+
+function buildAutomationStatus(matches, predictions, results) {
+  return {
+    totalMatches: matches.length,
+    predictionCount: Object.keys(predictions).length,
+    resultCount: Object.keys(results).length,
+    nextPrediction: nextPredictionDue(matches, predictions),
+    accuracy: accuracySnapshot(predictions, results),
+    predictions,
+    results,
+    dataReadiness: dataReadiness(matches),
+    predictionLeadHours,
+    resultSyncDelayHours,
+    hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
+    hasResultsApi: Boolean(process.env.RESULTS_API_URL)
+  };
+}
+
+async function handleAutomation(req, res) {
+  try {
+    if (req.method === "POST" && req.url?.startsWith("/api/automation/snapshot")) {
+      const payload = JSON.parse(await readBody(req));
+      writeJson(snapshotFile, { updatedAt: new Date().toISOString(), matches: payload.matches || [] });
+      sendJson(res, 200, { ok: true, matches: payload.matches?.length || 0 });
+      return;
+    }
+    if (req.method === "POST" && req.url?.startsWith("/api/automation/run-due")) {
+      const payload = JSON.parse((await readBody(req)) || "{}");
+      sendJson(res, 200, await runDueAutomation({ force: Boolean(payload.force) }));
+      return;
+    }
+    if (req.method === "GET" && req.url?.startsWith("/api/automation/status")) {
+      const matches = readJson(snapshotFile, { matches: [] }).matches || [];
+      const predictions = readJson(predictionsFile, {});
+      const results = readJson(resultsFile, {});
+      sendJson(res, 200, buildAutomationStatus(matches, predictions, results));
+      return;
+    }
+    sendJson(res, 404, { error: "Automation route not found." });
+  } catch (error) {
+    sendJson(res, 500, { error: error.message });
+  }
+}
+
+async function handleEvidence(req, res) {
+  const url = new URL(req.url, `http://localhost:${port}`);
+  const matchId = url.searchParams.get("matchId");
+  const matches = readJson(snapshotFile, { matches: [] }).matches || [];
+  const match = matches.find((item) => String(item.id) === String(matchId));
+  if (!match) {
+    sendJson(res, 404, { error: "Match not found in snapshot." });
+    return;
+  }
+  sendJson(res, 200, collectPredictionEvidence(match));
+}
+
+setInterval(() => {
+  runDueAutomation().catch((error) => console.error("Automation failed:", error.message));
+}, automationIntervalMinutes * 60 * 1000);
+
+runDueAutomation().catch(() => {});
+
+function serveStatic(req, res) {
+  const requestPath = decodeURIComponent((req.url || "/").split("?")[0]);
+  const safePath = requestPath === "/" ? "/index.html" : requestPath;
+  const filePath = path.normalize(path.join(root, safePath));
+  if (!filePath.startsWith(root)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
+  fs.readFile(filePath, (error, data) => {
+    if (error) {
+      res.writeHead(404);
+      res.end("Not found");
+      return;
+    }
+    res.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath)] || "application/octet-stream" });
+    res.end(data);
+  });
+}
+
+http
+  .createServer((req, res) => {
+    if (req.method === "POST" && req.url?.startsWith("/api/qwen-predict")) {
+      handleQwen(req, res);
+      return;
+    }
+    if (req.url?.startsWith("/api/automation/")) {
+      handleAutomation(req, res);
+      return;
+    }
+    if (req.method === "GET" && req.url?.startsWith("/api/prediction/evidence")) {
+      handleEvidence(req, res);
+      return;
+    }
+    serveStatic(req, res);
+  })
+  .listen(port, () => {
+    console.log(`Paul 2026 site: http://localhost:${port}`);
+    console.log(`PAUL AI model: ${qwenModel}`);
+  });
