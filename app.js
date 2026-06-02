@@ -480,6 +480,7 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
   return tournament.matches
     .map((match) => {
       if (predictions[match.id]) return null;
+      if (officialResult(match)?.status === "final") return null;
       const resolved = resolvedTeams(match);
       if (!resolved.aCode || !resolved.bCode) return null;
       const matchTime = new Date(`${match.date} 20:00:00 GMT+0000`);
@@ -1113,14 +1114,62 @@ function renderVerifyReport(data) {
   `;
 }
 
+function verifyTokenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("verify") || params.get("verify_token") || "";
+}
+
+function storedVerifyToken() {
+  try {
+    return sessionStorage.getItem("paul.verifyToken") || "";
+  } catch {
+    return "";
+  }
+}
+
+function currentVerifyToken() {
+  return document.getElementById("verifyTokenInput")?.value.trim() || storedVerifyToken() || "";
+}
+
+function setupVerifyAccess() {
+  const section = document.getElementById("verify");
+  const input = document.getElementById("verifyTokenInput");
+  const status = document.getElementById("verifyStatus");
+  if (!section || !input) return;
+  const token = verifyTokenFromUrl() || storedVerifyToken();
+  if (!token && window.location.hash !== "#verify") return;
+  section.hidden = false;
+  if (token) {
+    input.value = token;
+    try {
+      sessionStorage.setItem("paul.verifyToken", token);
+    } catch {
+      // Session storage is optional.
+    }
+    if (status) status.textContent = "Owner verification unlocked for this browser session.";
+  }
+}
+
 async function runDryVerification() {
   const button = document.getElementById("runVerifyButton");
   const status = document.getElementById("verifyStatus");
   if (!button || !status) return;
+  const token = currentVerifyToken();
+  if (!token) {
+    status.textContent = "Enter the owner verify token first.";
+    return;
+  }
   button.disabled = true;
   status.textContent = "Running dry-run simulation...";
   try {
-    const response = await fetch("/api/test/simulate");
+    try {
+      sessionStorage.setItem("paul.verifyToken", token);
+    } catch {
+      // Session storage is optional.
+    }
+    const response = await fetch("/api/test/simulate", {
+      headers: { "X-Verify-Token": token }
+    });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Dry-run failed.");
     renderVerifyReport(data);
@@ -1197,6 +1246,7 @@ function populateFilters() {
 
 function init() {
   populateFilters();
+  setupVerifyAccess();
   renderGroups();
   renderMatchList();
   renderPK();

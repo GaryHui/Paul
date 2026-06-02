@@ -143,7 +143,7 @@ function nextPredictionDue(matches, predictions, results, now = new Date()) {
   return resolveMatches(matches, results)
     .map((match) => {
       const matchTime = parseMatchTime(match);
-      if (!matchTime || predictions[match.id] || !match.teamA?.code || !match.teamB?.code) return null;
+      if (!matchTime || predictions[match.id] || results[match.id]?.status === "final" || !match.teamA?.code || !match.teamB?.code) return null;
       return {
         id: match.id,
         label: `${match.teamA.name} vs ${match.teamB.name}`,
