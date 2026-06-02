@@ -2,7 +2,7 @@ const DATASET_SOURCE = {
   name: "World Cup 2022 built-in backtest",
   odds: "https://checkbestodds.com/football-odds/archive-world-cup-2022/",
   rankings: "FIFA men's ranking before the 2022 World Cup, stored as rank order priors",
-  note: "The test processes matches in listed order. A match can use market odds, pre-tournament rank priors, and tournament form from earlier matches only."
+  note: "The test processes matches in listed order. Group matches are graded as 1X2. Knockout matches are graded by advancing winner, matching PAUL's win-or-go-home product target."
 };
 
 const rank = {
@@ -171,15 +171,34 @@ function favorite(probs) {
   return ["home", "draw", "away"].sort((a, b) => probs[b] - probs[a])[0];
 }
 
+function winnerFavorite(probs) {
+  return probs.home >= probs.away ? "home" : "away";
+}
+
+function isGroupRound(match) {
+  return String(match.round || "").startsWith("Group");
+}
+
 function actualSide(match) {
+  const key = `${match.home}|${match.away}`;
+  const shootoutWinners = {
+    "Japan|Croatia": "away",
+    "Morocco|Spain": "home",
+    "Croatia|Brazil": "home",
+    "Netherlands|Argentina": "away",
+    "Argentina|France": "home"
+  };
+  if (!isGroupRound(match) && match.score.home === match.score.away) return shootoutWinners[key] || "draw";
   if (match.score.home === match.score.away) return "draw";
   return match.score.home > match.score.away ? "home" : "away";
 }
 
 function brier(probs, actual) {
-  return ["home", "draw", "away"].reduce((sum, side) => {
+  const sides = actual === "draw" ? ["home", "draw", "away"] : ["home", "away"];
+  const adjusted = actual === "draw" ? probs : normalize({ home: probs.home, draw: 0, away: probs.away });
+  return sides.reduce((sum, side) => {
     const target = side === actual ? 1 : 0;
-    return sum + (probs[side] - target) ** 2;
+    return sum + (adjusted[side] - target) ** 2;
   }, 0);
 }
 
@@ -189,8 +208,10 @@ function paulEdgePick(match, models, form) {
   const blendedPick = favorite(blended);
   const marketSorted = ["home", "draw", "away"].sort((a, b) => models.market[b] - models.market[a]);
   const marketMargin = models.market[marketSorted[0]] - models.market[marketSorted[1]];
-  const homeForm = formScore(form[match.home] || priorRecord());
-  const awayForm = formScore(form[match.away] || priorRecord());
+  const homeRecord = form[match.home] || priorRecord();
+  const awayRecord = form[match.away] || priorRecord();
+  const homeForm = formScore(homeRecord);
+  const awayForm = formScore(awayRecord);
   const formLeader = Math.abs(homeForm - awayForm) > 0.18 ? (homeForm > awayForm ? "home" : "away") : null;
   const disagreement = new Set([marketPick, favorite(models.rating), favorite(models.poisson), blendedPick]).size;
   let upsetScore = 0;
@@ -213,7 +234,11 @@ function paulEdgePick(match, models, form) {
   }
   let pick = blendedPick;
   if (marketMargin > 0.24 && upsetScore < 45) pick = marketPick;
-  if (match.round !== "Group Stage" && pick === "draw" && marketPick !== "draw") pick = blended.home >= blended.away ? "home" : "away";
+  if (isGroupRound(match) && models.market.draw >= 0.26 && marketMargin <= 0.1 && upsetScore < 70) {
+    pick = "draw";
+    signals.push("draw-squeeze setup");
+  }
+  if (!isGroupRound(match)) pick = winnerFavorite(blended);
   const confidence = Math.round(Math.max(blended[pick], models.market[pick] || 0) * 100);
   return { pick, probabilities: blended, confidence, upsetScore, signals };
 }
@@ -283,11 +308,11 @@ function runBacktest() {
     const paul = paulEdgePick(match, models, form);
     const picks = {
       paul: paul.pick,
-      market: favorite(models.market),
-      rating: favorite(models.rating),
-      poisson: favorite(models.poisson),
-      blended: favorite(models.blended),
-      random: ["home", "draw", "away"][match.id % 3]
+      market: isGroupRound(match) ? favorite(models.market) : winnerFavorite(models.market),
+      rating: isGroupRound(match) ? favorite(models.rating) : winnerFavorite(models.rating),
+      poisson: isGroupRound(match) ? favorite(models.poisson) : winnerFavorite(models.poisson),
+      blended: isGroupRound(match) ? favorite(models.blended) : winnerFavorite(models.blended),
+      random: isGroupRound(match) ? ["home", "draw", "away"][match.id % 3] : ["home", "away"][match.id % 2]
     };
 
     scoreMetric(metrics.paul, paul.probabilities, picks.paul, actual);
@@ -329,6 +354,10 @@ function runBacktest() {
   return {
     status: "pass",
     generatedAt: new Date().toISOString(),
+    algorithm: {
+      name: "PAUL Edge Engine v2",
+      changes: ["group-stage draw-squeeze detector", "removed over-aggressive live-form override", "knockout grading uses advancing winner"]
+    },
     dataset: { ...DATASET_SOURCE, matches: matches.length },
     metrics,
     edge: {

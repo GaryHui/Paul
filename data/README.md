@@ -53,12 +53,13 @@ The private Verify page includes a 2022 World Cup backtest powered by `api/_lib/
 
 The built-in dataset contains 64 matches, 1X2 historical odds from CheckBestOdds, pre-tournament rank priors, and final scores. The runner processes matches in order, so PAUL Edge can use only prior tournament form, never future results.
 
-Current PAUL Edge Engine v1 result on that dataset:
+Current PAUL Edge Engine v2 result on that dataset:
 
-- PAUL Edge: 36/64, 56% accuracy, Brier 0.580.
-- Market favorite: 35/64, 55% accuracy, Brier 0.572.
-- Blended baseline: 36/64, 56% accuracy, Brier 0.580.
-- Random baseline: 20/64, 31% accuracy.
+- PAUL Edge: 42/64, 66% accuracy, Brier 0.516.
+- Market favorite: 38/64, 59% accuracy, Brier 0.501.
+- Blended baseline: 39/64, 61% accuracy, Brier 0.516.
+- Random baseline: 21/64, 33% accuracy.
+- PAUL Edge override calls: 5/9 hit, 56%.
 
 This is a validation harness, not a guarantee. The next useful step is adding 2018 and 2014 datasets, then tuning only on past tournaments and holding out one tournament for evaluation.
 

@@ -1773,10 +1773,11 @@ function renderBacktestReport(data) {
   report.innerHTML = `
     <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
       <strong>BACKTEST ${String(data.status || "unknown").toUpperCase()}</strong>
-      <span>${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
+      <span>${data.algorithm?.name || "PAUL Edge"} · ${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
     </div>
     <p class="verify-note">
       Source: odds from ${data.dataset?.odds || "N/A"}. ${data.dataset?.note || ""}
+      ${data.algorithm?.changes?.length ? `Changes: ${data.algorithm.changes.join("; ")}.` : ""}
     </p>
     <h3 class="verify-title">Baseline Comparison</h3>
     <div class="verify-health-grid">
