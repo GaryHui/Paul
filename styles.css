@@ -899,6 +899,10 @@ input {
   font-size: 11px;
 }
 
+.proof-download-inline {
+  justify-self: start;
+}
+
 .verify-actions {
   display: grid;
   grid-template-columns: minmax(220px, 320px) auto minmax(220px, 1fr);

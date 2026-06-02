@@ -1129,6 +1129,26 @@ function proofDownloadName(entry) {
   return `paul-proof-${entry.matchId || "match"}-${String(entry.hash || "hash").slice(0, 12)}.ots`;
 }
 
+function canonicalDownloadName(entry) {
+  return `paul-proof-${entry.matchId || "match"}-${String(entry.hash || "hash").slice(0, 12)}.canonical.json`;
+}
+
+function downloadTextFile(text, filename, type = "application/json;charset=utf-8") {
+  const blob = new Blob([text], { type });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
+}
+
+function downloadCanonicalProof(entry) {
+  if (!entry?.canonical) return;
+  downloadTextFile(entry.canonical, canonicalDownloadName(entry));
+}
+
 function downloadOtsProof(entry) {
   const ots = otsProof(entry?.externalProof);
   if (!ots?.otsBase64) return;
@@ -1306,7 +1326,9 @@ function renderProofs(entries) {
           <div class="proof-card__actions">
             <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
             <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
+            <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">Download canonical</button>
             ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
+            ${ots?.otsBase64 ? `<a class="button button--ghost" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">Open OTS verifier</a>` : ""}
           </div>
         </article>
       `;
@@ -1336,6 +1358,13 @@ function renderProofs(entries) {
     button.addEventListener("click", () => {
       const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
       if (entry) downloadOtsProof(entry);
+    });
+  });
+
+  grid.querySelectorAll(".proof-canonical-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
+      if (entry) downloadCanonicalProof(entry);
     });
   });
 }
@@ -1402,6 +1431,8 @@ async function verifyProofInput() {
       ? `data:application/octet-stream;base64,${ots.otsBase64}`
       : "";
     const otsDownloadName = `paul-proof-${payload?.matchId || parsed?.matchId || "demo"}-${String(expectedHash || actualHash).slice(0, 12)}.ots`;
+    const canonicalDownloadName = `paul-proof-${payload?.matchId || parsed?.matchId || "demo"}-${String(expectedHash || actualHash).slice(0, 12)}.canonical.json`;
+    const canonicalDownloadHref = `data:application/json;charset=utf-8,${encodeURIComponent(canonical)}`;
     const hasExternalTimestamp = Boolean(github?.commitUrl || ots?.otsBase64);
     const external = [
       github?.commitUrl
@@ -1443,8 +1474,10 @@ async function verifyProofInput() {
         </article>
         <article class="proof-result-card ${ots?.otsBase64 ? "is-pass" : "is-warn"}">
           <strong>${ots?.otsBase64 ? "OPENTIMESTAMPS PROOF READY" : "NO OPENTIMESTAMPS PROOF"}</strong>
-          <span>${ots?.otsBase64 ? `Download .ots from the proof card or copy otsBase64 from this JSON.` : "Official predictions will try to create an .ots proof automatically."}</span>
+          <span>${ots?.otsBase64 ? `Download both files, open the official verifier, then drop the canonical JSON and .ots proof.` : "Official predictions will try to create an .ots proof automatically."}</span>
+          <a class="button button--ghost proof-download-inline" download="${canonicalDownloadName}" href="${canonicalDownloadHref}">Download canonical JSON</a>
           ${otsDownloadHref ? `<a class="button button--ghost proof-download-inline" download="${otsDownloadName}" href="${otsDownloadHref}">Download loaded .ots</a>` : ""}
+          ${ots?.otsBase64 ? `<a class="button button--ghost proof-download-inline" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">Open OTS verifier</a>` : ""}
           <span>${ots?.note || "OpenTimestamps proofs may start as calendar attestations and need later upgrade to a Bitcoin block."}</span>
         </article>
         <article class="proof-result-card">
