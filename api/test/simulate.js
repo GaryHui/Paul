@@ -1,7 +1,7 @@
 const { createAuditEntry, sha256 } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
 const { loadSnapshot } = require("../_lib/paul");
-const { hasResultsProvider, providerName } = require("../_lib/results");
+const { configuredProviders, fetchMatchResult, hasResultsProvider, providerName } = require("../_lib/results");
 
 const roundOrder = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
 
@@ -12,6 +12,15 @@ function requestToken(req) {
   try {
     const url = new URL(req.url || "", "https://paul.local");
     return url.searchParams.get("token") || url.searchParams.get("verify") || "";
+  } catch {
+    return "";
+  }
+}
+
+function requestMode(req) {
+  try {
+    const url = new URL(req.url || "", "https://paul.local");
+    return url.searchParams.get("mode") || "";
   } catch {
     return "";
   }
@@ -168,10 +177,103 @@ function buildTrace(snapshot, results, resolved) {
   };
 }
 
+async function checkWorldcup26() {
+  const startedAt = Date.now();
+  const response = await fetch("https://worldcup26.ir/get/games");
+  const elapsedMs = Date.now() - startedAt;
+  if (!response.ok) {
+    return { provider: "worldcup26", ok: false, status: response.status, elapsedMs };
+  }
+  const data = await response.json();
+  const games = data.games || data.data || [];
+  return {
+    provider: "worldcup26",
+    ok: games.length >= 100,
+    status: response.status,
+    elapsedMs,
+    matchCount: games.length,
+    firstMatchFinished: games[0]?.finished || null
+  };
+}
+
+async function checkZafronix() {
+  if (!process.env.ZAFRONIX_API_KEY) {
+    return { provider: "zafronix", ok: false, skipped: true, reason: "ZAFRONIX_API_KEY is not configured." };
+  }
+  const baseUrl = process.env.ZAFRONIX_BASE_URL || "https://api.zafronix.com/fifa/worldcup/v1";
+  const startedAt = Date.now();
+  const response = await fetch(`${baseUrl}/tournaments/2026`, {
+    headers: { "X-API-Key": process.env.ZAFRONIX_API_KEY }
+  });
+  return {
+    provider: "zafronix",
+    ok: response.ok,
+    status: response.status,
+    elapsedMs: Date.now() - startedAt
+  };
+}
+
+async function providerHealth(provider) {
+  try {
+    if (provider === "worldcup26") return await checkWorldcup26();
+    if (provider === "zafronix") return await checkZafronix();
+    if (provider === "football-data") {
+      return {
+        provider,
+        ok: Boolean(process.env.FOOTBALL_DATA_API_KEY),
+        skipped: !process.env.FOOTBALL_DATA_API_KEY,
+        reason: process.env.FOOTBALL_DATA_API_KEY ? "Configured." : "FOOTBALL_DATA_API_KEY is not configured."
+      };
+    }
+    if (provider === "generic") {
+      return {
+        provider,
+        ok: Boolean(process.env.RESULTS_API_URL),
+        skipped: !process.env.RESULTS_API_URL,
+        reason: process.env.RESULTS_API_URL ? "Configured." : "RESULTS_API_URL is not configured."
+      };
+    }
+    return { provider, ok: false, reason: "Unknown provider." };
+  } catch (error) {
+    return { provider, ok: false, error: error.message };
+  }
+}
+
+async function resultsHealth(snapshot) {
+  const firstPlayable = snapshot.matches.find((match) => match.teamA?.code && match.teamB?.code);
+  const providers = configuredProviders();
+  const checks = await Promise.all(providers.map((provider) => providerHealth(provider)));
+  const firstMatchResult = firstPlayable ? await fetchMatchResult(firstPlayable) : null;
+  const safeBeforeKickoff = firstMatchResult === null;
+
+  return {
+    status: checks.some((check) => check.ok) && safeBeforeKickoff ? "pass" : "fail",
+    generatedAt: new Date().toISOString(),
+    providerName: providerName(),
+    providers,
+    checks,
+    firstPlayable: firstPlayable
+      ? {
+          id: firstPlayable.id,
+          label: `${firstPlayable.teamA.name} vs ${firstPlayable.teamB.name}`,
+          round: firstPlayable.round,
+          date: firstPlayable.date
+        }
+      : null,
+    safeBeforeKickoff,
+    firstMatchResult,
+    writesProductionData: false
+  };
+}
+
 module.exports = async function handler(req, res) {
   try {
     verifyAccess(req);
     const snapshot = loadSnapshot();
+    if (requestMode(req) === "results-health") {
+      res.status(200).json(await resultsHealth(snapshot));
+      return;
+    }
     const { results, roundStats, resolved } = simulateTournament(snapshot);
     const proofMatch = snapshot.matches.find((match) => match.id === 1);
     const prediction = fakePrediction(proofMatch);

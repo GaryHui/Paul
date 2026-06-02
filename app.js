@@ -1311,7 +1311,7 @@ async function runResultsHealthCheck() {
     } catch {
       // Session storage is optional.
     }
-    const response = await fetch("/api/test/results-health", {
+    const response = await fetch("/api/test/simulate?mode=results-health", {
       headers: { "X-Verify-Token": token }
     });
     const data = await response.json();
