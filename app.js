@@ -264,6 +264,42 @@ let automationState = {
   results: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 }
 };
+const storedPredictionKey = "paul.manualPredictions.v1";
+
+function loadStoredPredictions() {
+  try {
+    return JSON.parse(localStorage.getItem(storedPredictionKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveStoredPrediction(matchId, record) {
+  try {
+    const predictions = loadStoredPredictions();
+    predictions[matchId] = record;
+    localStorage.setItem(storedPredictionKey, JSON.stringify(predictions));
+  } catch {
+    // Local storage is optional; the current page state still updates.
+  }
+}
+
+function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()) {
+  return tournament.matches
+    .map((match) => {
+      if (predictions[match.id]) return null;
+      const matchTime = new Date(`${match.date} 20:00:00 GMT+0000`);
+      if (Number.isNaN(matchTime.getTime())) return null;
+      return {
+        id: match.id,
+        label: `${teams[match.aCode].name} vs ${teams[match.bCode].name}`,
+        dueAt: new Date(matchTime.getTime() - leadHours * 60 * 60 * 1000).toISOString()
+      };
+    })
+    .filter(Boolean)
+    .filter((item) => new Date(item.dueAt) >= now)
+    .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))[0] || null;
+}
 
 const flagIds = {
   MEX: "mx",
@@ -642,12 +678,14 @@ async function askQwen() {
       <p>${reasoning}</p>
     `;
 
-    automationState.predictions[match.id] = {
+    const record = {
       matchId: match.id,
       generatedAt: new Date().toISOString(),
       model: "PAUL",
       analysis
     };
+    automationState.predictions[match.id] = record;
+    saveStoredPrediction(match.id, record);
     renderMatchList();
     renderPK();
   } catch (error) {
@@ -686,12 +724,18 @@ async function loadAutomationStatus() {
     const status = await response.json();
     if (!response.ok) throw new Error(status.error || "读取自动化状态失败。");
 
-    document.getElementById("autoPredicted").textContent = status.predictionCount || 0;
+    const mergedPredictions = {
+      ...(status.predictions || {}),
+      ...loadStoredPredictions()
+    };
+    const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 24) || status.nextPrediction;
+
+    document.getElementById("autoPredicted").textContent = Object.keys(mergedPredictions).length;
     document.getElementById("autoResults").textContent = status.resultCount || 0;
     document.getElementById("autoAccuracy").textContent = `${status.accuracy?.accuracy || 0}%`;
-    document.getElementById("autoNext").textContent = formatNextPrediction(status.nextPrediction);
+    document.getElementById("autoNext").textContent = formatNextPrediction(nextPrediction);
     automationState = {
-      predictions: status.predictions || {},
+      predictions: mergedPredictions,
       results: status.results || {},
       accuracy: status.accuracy || automationState.accuracy
     };
@@ -706,6 +750,17 @@ async function loadAutomationStatus() {
     const ratingState = readiness.teamRatings ? "球队评分已导入" : "缺少球队评分";
     statusText.textContent = `${qwenState}；${oddsState}；${ratingState}；${resultState}；已载入 ${status.totalMatches || 0} 场赛程。`;
   } catch (error) {
+    const storedPredictions = loadStoredPredictions();
+    if (Object.keys(storedPredictions).length) {
+      automationState = {
+        ...automationState,
+        predictions: storedPredictions
+      };
+      document.getElementById("autoPredicted").textContent = Object.keys(storedPredictions).length;
+      document.getElementById("autoNext").textContent = formatNextPrediction(nextPredictionFromMatches(storedPredictions));
+      renderMatchList();
+      renderPK();
+    }
     statusText.textContent = error.message;
   }
 }
