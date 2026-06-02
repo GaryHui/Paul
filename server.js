@@ -358,9 +358,23 @@ async function callQwenAnalysis(payload, evidence = collectPredictionEvidence(pa
 async function handleQwen(req, res) {
   try {
     const payload = JSON.parse(await readBody(req));
+    const predictions = readJson(predictionsFile, {});
+    if (predictions[payload.id]) {
+      sendJson(res, 200, { ...predictions[payload.id], locked: true, persisted: true });
+      return;
+    }
     const evidence = collectPredictionEvidence(payload);
     const result = await callQwenAnalysis(payload, evidence);
-    sendJson(res, 200, result);
+    const record = {
+      matchId: payload.id,
+      generatedAt: new Date().toISOString(),
+      model: result.model || "PAUL",
+      evidence: result.evidence,
+      analysis: result.analysis
+    };
+    predictions[payload.id] = record;
+    writeJson(predictionsFile, predictions);
+    sendJson(res, 200, { ...record, persisted: true });
   } catch (error) {
     sendJson(res, error.status || 500, { error: error.message, detail: error.detail, evidence: error.evidence });
   }

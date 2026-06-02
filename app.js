@@ -680,7 +680,7 @@ async function askQwen() {
 
     const record = {
       matchId: match.id,
-      generatedAt: new Date().toISOString(),
+      generatedAt: data.generatedAt || new Date().toISOString(),
       model: "PAUL",
       analysis
     };
@@ -725,8 +725,8 @@ async function loadAutomationStatus() {
     if (!response.ok) throw new Error(status.error || "读取自动化状态失败。");
 
     const mergedPredictions = {
-      ...(status.predictions || {}),
-      ...loadStoredPredictions()
+      ...loadStoredPredictions(),
+      ...(status.predictions || {})
     };
     const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 24) || status.nextPrediction;
 
