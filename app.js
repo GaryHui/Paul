@@ -61,18 +61,12 @@ const teams = {
 };
 
 const groupOrder = "ABCDEFGHIJKL".split("");
-const roundOptions = ["All", "Group Stage", "Round of 32", "Round of 16", "Quarter-finals", "Semi-finals", "Third-place Play-off", "Final"];
+const roundOptions = ["All", "Group Stage"];
 const roundLabels = {
   All: "全部",
-  "Group Stage": "小组赛",
-  "Round of 32": "32 强",
-  "Round of 16": "16 强",
-  "Quarter-finals": "四分之一决赛",
-  "Semi-finals": "半决赛",
-  "Third-place Play-off": "三四名决赛",
-  Final: "决赛"
+  "Group Stage": "小组赛"
 };
-const groupLabels = { All: "全部", Knockout: "淘汰赛" };
+const groupLabels = { All: "全部" };
 const groupDates = {
   A: ["Jun 11", "Jun 11", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
   B: ["Jun 12", "Jun 13", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
@@ -259,100 +253,12 @@ function buildTournament() {
     prediction: predict(match.aCode, match.bCode, "Group Stage")
   }));
   const standings = standingsFrom(groupMatches);
-  const usedThird = new Set();
-  const bestThird = groupOrder
-    .map((group) => standings[group][2])
-    .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power)
-    .slice(0, 8);
 
-  function slot(label) {
-    if (label.startsWith("W")) return label;
-    if (label.startsWith("L")) return label;
-    const place = label[0];
-    if (place === "1" || place === "2") {
-      return standings[label[1]][Number(place) - 1].code;
-    }
-    if (place === "3") {
-      const eligible = label.slice(1).split("");
-      const chosen = bestThird.find((row) => eligible.includes(teams[row.code].group) && !usedThird.has(row.code)) || bestThird.find((row) => !usedThird.has(row.code));
-      usedThird.add(chosen.code);
-      return chosen.code;
-    }
-    return label;
-  }
-
-  const knockoutTemplates = [
-    [73, "Round of 32", "Jun 28, 2026", "Los Angeles", "2A", "2B"],
-    [74, "Round of 32", "Jun 29, 2026", "Boston", "1E", "3ABCDF"],
-    [75, "Round of 32", "Jun 29, 2026", "Monterrey", "1F", "2C"],
-    [76, "Round of 32", "Jun 29, 2026", "Houston", "1C", "2F"],
-    [77, "Round of 32", "Jun 30, 2026", "New York-New Jersey", "1I", "3CDFGH"],
-    [78, "Round of 32", "Jun 30, 2026", "Dallas", "2E", "2I"],
-    [79, "Round of 32", "Jun 30, 2026", "Mexico City", "1A", "3CEFHI"],
-    [80, "Round of 32", "Jul 1, 2026", "Atlanta", "1L", "3EHIJK"],
-    [81, "Round of 32", "Jul 1, 2026", "San Francisco Bay Area", "1D", "3BEFIJ"],
-    [82, "Round of 32", "Jul 1, 2026", "Seattle", "1G", "3AEHIJ"],
-    [83, "Round of 32", "Jul 2, 2026", "Toronto", "2K", "2L"],
-    [84, "Round of 32", "Jul 2, 2026", "Los Angeles", "1H", "2J"],
-    [85, "Round of 32", "Jul 2, 2026", "Vancouver", "1B", "3EFGIJ"],
-    [86, "Round of 32", "Jul 3, 2026", "Miami", "1J", "2H"],
-    [87, "Round of 32", "Jul 3, 2026", "Kansas City", "1K", "3DEIJL"],
-    [88, "Round of 32", "Jul 3, 2026", "Dallas", "2D", "2G"],
-    [89, "Round of 16", "Jul 4, 2026", "Philadelphia", "W74", "W77"],
-    [90, "Round of 16", "Jul 4, 2026", "Houston", "W73", "W75"],
-    [91, "Round of 16", "Jul 5, 2026", "New York-New Jersey", "W76", "W78"],
-    [92, "Round of 16", "Jul 5, 2026", "Mexico City", "W79", "W80"],
-    [93, "Round of 16", "Jul 6, 2026", "Dallas", "W83", "W84"],
-    [94, "Round of 16", "Jul 6, 2026", "Seattle", "W81", "W82"],
-    [95, "Round of 16", "Jul 7, 2026", "Atlanta", "W86", "W88"],
-    [96, "Round of 16", "Jul 7, 2026", "Vancouver", "W85", "W87"],
-    [97, "Quarter-finals", "Jul 9, 2026", "Boston", "W89", "W90"],
-    [98, "Quarter-finals", "Jul 10, 2026", "Los Angeles", "W93", "W94"],
-    [99, "Quarter-finals", "Jul 11, 2026", "Miami", "W91", "W92"],
-    [100, "Quarter-finals", "Jul 11, 2026", "Kansas City", "W95", "W96"],
-    [101, "Semi-finals", "Jul 14, 2026", "Dallas", "W97", "W98"],
-    [102, "Semi-finals", "Jul 15, 2026", "Atlanta", "W99", "W100"],
-    [103, "Third-place Play-off", "Jul 18, 2026", "Miami", "L101", "L102"],
-    [104, "Final", "Jul 19, 2026", "New York-New Jersey", "W101", "W102"]
-  ];
-
-  const knockout = [];
-  const matchIndex = {};
-  groupMatches.forEach((match) => {
-    matchIndex[match.id] = match;
-  });
-
-  knockoutTemplates.forEach(([id, round, date, venue, leftSlot, rightSlot]) => {
-    const resolve = (value) => {
-      if (value.startsWith("W")) return matchIndex[value.slice(1)].prediction.winner;
-      if (value.startsWith("L")) {
-        const source = matchIndex[value.slice(1)];
-        return source.prediction.winner === source.aCode ? source.bCode : source.aCode;
-      }
-      return slot(value);
-    };
-    const aCode = resolve(leftSlot);
-    const bCode = resolve(rightSlot);
-    const match = {
-      id,
-      round,
-      group: "Knockout",
-      date,
-      venue,
-      aCode,
-      bCode,
-      slot: `${leftSlot} vs ${rightSlot}`,
-      prediction: predict(aCode, bCode, round)
-    };
-    knockout.push(match);
-    matchIndex[id] = match;
-  });
-
-  return { matches: [...groupMatches, ...knockout], standings, bestThird };
+  return { matches: groupMatches, standings, bestThird: [] };
 }
 
 const tournament = buildTournament();
-let activeMatchId = 104;
+let activeMatchId = 1;
 let automationState = {
   predictions: {},
   results: {},
@@ -538,10 +444,7 @@ function resultLabel(match) {
 }
 
 function updateChampionLabel() {
-  const finalPrediction = officialPrediction(tournament.matches.find((match) => match.id === 104));
-  const pick = officialPickCode(finalPrediction);
-  const label = pick && pick !== "DRAW" ? teams[pick]?.name || finalPrediction.analysis?.winnerName : "待正式预测";
-  document.getElementById("championName").textContent = label;
+  document.getElementById("championName").textContent = "待小组赛结束";
 }
 
 function renderMatchList() {
@@ -570,6 +473,14 @@ function renderMatchList() {
       </button>
     `)
     .join("");
+
+  if (!filtered.length) {
+    list.innerHTML = `
+      <div class="empty-list">
+        32 强之后的对阵需要等小组赛真实赛果和官方排表出来后再显示。
+      </div>
+    `;
+  }
 
   list.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -855,7 +766,7 @@ function populateFilters() {
   const roundFilter = document.getElementById("roundFilter");
   const groupFilter = document.getElementById("groupFilter");
   roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabels[round] || round}</option>`).join("");
-  groupFilter.innerHTML = ["All", ...groupOrder, "Knockout"].map((group) => `<option value="${group}">${groupLabels[group] || `${group} 组`}</option>`).join("");
+  groupFilter.innerHTML = ["All", ...groupOrder].map((group) => `<option value="${group}">${groupLabels[group] || `${group} 组`}</option>`).join("");
   roundFilter.addEventListener("change", renderMatchList);
   groupFilter.addEventListener("change", renderMatchList);
   document.getElementById("searchBox").addEventListener("input", renderMatchList);

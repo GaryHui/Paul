@@ -7,11 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-5" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-6" />
   </head>
   <body>
     <header class="hero" id="top">
-      <img class="hero__image" src="assets/real-paul-reference.png" alt="Real octopus Paul reference, front side and back views" />
+      <img class="hero__image" src="assets/ai-octopus-oracle.png" alt="AI octopus oracle for football prediction" />
       <div class="hero__shade"></div>
       <nav class="nav" aria-label="Primary navigation">
         <a class="brand" href="#top">保罗 2026</a>
@@ -19,14 +19,13 @@
           <a href="#matches">预测</a>
           <a href="#origin">故事</a>
           <a href="#groups">分组</a>
-          <a href="#method">方法</a>
         </div>
       </nav>
       <section class="hero__content">
         <p class="eyebrow">2026 国际足联世界杯 AI 预测实验室</p>
-        <h1>AI 章鱼保罗将在赛前锁定 104 场预测。</h1>
+        <h1>AI 章鱼保罗先锁定 72 场小组赛预测。</h1>
         <p class="lede">
-          赛程先展示，正式预测等到比赛前 24 小时再由 PAUL AI 和统计模型生成。
+          当前只展示已经明确对阵的小组赛。正式预测等到比赛前 24 小时再由 PAUL AI 生成。
           一旦锁定，保罗会爬向预测获胜方的国旗；赛后自动统计命中率。
         </p>
         <div class="hero__actions">
@@ -43,16 +42,16 @@
           <span>参赛球队</span>
         </div>
         <div>
-          <strong>104</strong>
-          <span>赛程比赛</span>
+          <strong>72</strong>
+          <span>当前开放小组赛</span>
         </div>
         <div>
           <strong>AI</strong>
           <span>PAUL 正式预测</span>
         </div>
         <div>
-          <strong id="championName">加载中</strong>
-          <span>当前预测冠军</span>
+          <strong id="championName">待排表</strong>
+          <span>淘汰赛阶段</span>
         </div>
       </section>
 
@@ -184,46 +183,8 @@
         <div class="group-grid" id="groupGrid"></div>
       </section>
 
-      <section class="paul-reference band" id="paul">
-        <div class="section-head">
-          <p class="eyebrow">真实保罗参考图</p>
-          <h2>使用你上传的保罗图片制作</h2>
-          <p>PK 动画使用这张图里的侧面视角，完整参考图则保留正面、侧面和背面三种形态。</p>
-        </div>
-        <figure class="reference-frame">
-          <img src="assets/real-paul-reference.png" alt="Real Paul octopus front, side, and back reference" />
-        </figure>
-      </section>
-
-      <section class="method" id="method">
-        <div class="section-head">
-          <p class="eyebrow">预测方法</p>
-          <h2>赔率 + 评分 + 比分模型，再交给 PAUL 校准</h2>
-        </div>
-        <div class="method-grid">
-          <article>
-            <h3>市场赔率</h3>
-            <p>优先使用 1X2 赔率转换后的隐含概率，作为最重要的赛前基线。</p>
-          </article>
-          <article>
-            <h3>Elo / SPI</h3>
-            <p>导入真实球队评分后，计算双方强弱差，作为第二层概率来源。</p>
-          </article>
-          <article>
-            <h3>Poisson 比分</h3>
-            <p>有 attack/defense 数据时估算期望进球，并推导可能比分和胜平负概率。</p>
-          </article>
-          <article>
-            <h3>PAUL 校准</h3>
-            <p>PAUL 基于证据包和联网搜索做判断，输出中文解释、黑马信号和最终选择。</p>
-          </article>
-        </div>
-        <p class="sources">
-          赛程与分组参考 FIFA 2026 世界杯赛程页、AP 参赛队分组列表和当期赛程汇总。正式预测会在赛前 24 小时锁定，并在赛后根据真实比分统计命中率。所有预测仅供娱乐展示，不构成投注建议。
-        </p>
-      </section>
     </main>
 
-    <script src="app.js?v=paul-ai-5"></script>
+    <script src="app.js?v=paul-ai-6"></script>
   </body>
 </html>

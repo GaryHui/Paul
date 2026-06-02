@@ -302,6 +302,13 @@ input {
   white-space: nowrap;
 }
 
+.empty-list {
+  padding: 18px;
+  color: var(--muted);
+  line-height: 1.55;
+  font-weight: 800;
+}
+
 .pk-panel {
   border: 1px solid var(--line);
   background: var(--panel);
