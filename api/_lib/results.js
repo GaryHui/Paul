@@ -1,4 +1,4 @@
-const defaultProviders = ["worldcup26", "zafronix", "football-data", "generic"];
+const defaultProviders = ["zafronix", "worldcup26", "football-data", "generic"];
 
 function configuredProviders() {
   const raw = process.env.RESULTS_PROVIDERS || process.env.RESULTS_PROVIDER;
