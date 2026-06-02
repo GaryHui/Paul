@@ -1229,9 +1229,29 @@ async function copyText(value) {
 }
 
 async function loadDemoProof() {
-  setProofVerifierInput(await demoProofJson());
   const status = document.getElementById("copyProofStatus");
-  if (status) status.textContent = "Demo proof loaded. Click Verify Proof.";
+  const token = currentVerifyToken();
+  if (!token) {
+    setProofVerifierInput(await demoProofJson());
+    if (status) status.textContent = "Browser-only demo loaded. Add owner token to generate a real .ots receipt.";
+    return;
+  }
+  if (status) status.textContent = "Requesting OpenTimestamps demo proof...";
+  try {
+    const response = await fetch("/api/audit?mode=demo-ots", {
+      method: "POST",
+      headers: { "X-Verify-Token": token }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "OpenTimestamps demo failed.");
+    setProofVerifierInput(publicProofJson(data.entry));
+    const ots = otsProof(data.entry?.externalProof);
+    if (status) status.textContent = ots?.otsBase64
+      ? "Demo proof with real .ots loaded. Click Verify Proof."
+      : "Demo proof loaded, but .ots was not created.";
+  } catch (error) {
+    if (status) status.textContent = error.message;
+  }
 }
 
 function setProofVerifierInput(value) {
@@ -1378,6 +1398,10 @@ async function verifyProofInput() {
     const odds = market.odds || {};
     const github = githubProof(parsed?.externalProof);
     const ots = otsProof(parsed?.externalProof);
+    const otsDownloadHref = ots?.otsBase64 && /^[A-Za-z0-9+/=]+$/.test(ots.otsBase64)
+      ? `data:application/octet-stream;base64,${ots.otsBase64}`
+      : "";
+    const otsDownloadName = `paul-proof-${payload?.matchId || parsed?.matchId || "demo"}-${String(expectedHash || actualHash).slice(0, 12)}.ots`;
     const hasExternalTimestamp = Boolean(github?.commitUrl || ots?.otsBase64);
     const external = [
       github?.commitUrl
@@ -1420,6 +1444,7 @@ async function verifyProofInput() {
         <article class="proof-result-card ${ots?.otsBase64 ? "is-pass" : "is-warn"}">
           <strong>${ots?.otsBase64 ? "OPENTIMESTAMPS PROOF READY" : "NO OPENTIMESTAMPS PROOF"}</strong>
           <span>${ots?.otsBase64 ? `Download .ots from the proof card or copy otsBase64 from this JSON.` : "Official predictions will try to create an .ots proof automatically."}</span>
+          ${otsDownloadHref ? `<a class="button button--ghost proof-download-inline" download="${otsDownloadName}" href="${otsDownloadHref}">Download loaded .ots</a>` : ""}
           <span>${ots?.note || "OpenTimestamps proofs may start as calendar attestations and need later upgrade to a Bitcoin block."}</span>
         </article>
         <article class="proof-result-card">

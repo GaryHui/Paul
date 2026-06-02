@@ -235,6 +235,7 @@ module.exports = {
   attachAuditProof,
   auditSnapshot,
   createAuditEntry,
+  createOpenTimestamp,
   sha256,
   stableStringify
 };
