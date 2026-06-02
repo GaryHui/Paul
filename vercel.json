@@ -9,7 +9,19 @@
   ],
   "builds": [
     {
-      "src": "api/**/*.js",
+      "src": "api/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/automation/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/prediction/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/test/*.js",
       "use": "@vercel/node"
     },
     {
