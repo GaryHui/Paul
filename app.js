@@ -1315,11 +1315,18 @@ async function verifyProofInput() {
     const canonical = parsed?.canonical || (parsed?.payload ? stableStringify(parsed.payload) : raw);
     const expectedHash = parsed?.hash || "";
     const actualHash = await sha256Hex(canonical);
-    const payload = parsed?.payload || (parsed?.canonical ? JSON.parse(parsed.canonical) : parsed);
-    const lockedAt = parsed?.lockedAt || payload?.lockedAt;
-    const kickoffAt = parsed?.kickoffAt || payload?.kickoffAt;
+    const canonicalPayload = parsed?.canonical ? JSON.parse(parsed.canonical) : parsed?.payload || parsed;
+    const submittedPayload = parsed?.payload || canonicalPayload;
+    const payloadMatchesCanonical = parsed?.payload ? stableStringify(parsed.payload) === canonical : true;
+    const envelopeMatchesCanonical = parsed
+      ? ["matchId", "round", "match", "lockedAt", "kickoffAt"].every((key) => parsed[key] === undefined || parsed[key] === canonicalPayload?.[key])
+      : true;
+    const proofStructureOk = payloadMatchesCanonical && envelopeMatchesCanonical;
+    const payload = canonicalPayload;
+    const lockedAt = payload?.lockedAt;
+    const kickoffAt = payload?.kickoffAt;
     const timeOk = lockedAt && kickoffAt ? new Date(lockedAt).getTime() < new Date(kickoffAt).getTime() : null;
-    const hashOk = expectedHash ? actualHash === expectedHash : null;
+    const hashOk = expectedHash ? actualHash === expectedHash && proofStructureOk : null;
     const evidence = payload?.evidence || {};
     const market = evidence.market || {};
     const odds = market.odds || {};
@@ -1337,6 +1344,12 @@ async function verifyProofInput() {
           <span>Calculated SHA-256: <code>${actualHash}</code></span>
           ${expectedHash ? `<span>Expected hash: <code>${expectedHash}</code></span>` : "<span>No expected hash was included; use this calculated hash for manual comparison.</span>"}
         </article>
+        <article class="proof-result-card ${proofStructureOk ? "is-pass" : "is-fail"}">
+          <strong>${proofStructureOk ? "PROOF STRUCTURE MATCH" : "PROOF STRUCTURE TAMPERED"}</strong>
+          <span>Payload vs canonical: ${payloadMatchesCanonical ? "match" : "mismatch"}</span>
+          <span>Outer fields vs canonical: ${envelopeMatchesCanonical ? "match" : "mismatch"}</span>
+          <span>The hash is valid only for the canonical JSON. Edited outer fields do not count.</span>
+        </article>
         <article class="proof-result-card ${timeOk === false ? "is-fail" : "is-warn"}">
           <strong>${timeOk === null ? "SELF-DECLARED TIME UNKNOWN" : timeOk ? "SELF-DECLARED BEFORE KICKOFF" : "SELF-DECLARED TIME FAILED"}</strong>
           <span>Locked: ${formatProofTime(lockedAt)}</span>
@@ -1352,7 +1365,9 @@ async function verifyProofInput() {
           <strong>${payload?.match || parsed?.match || "PAUL proof"}</strong>
           <span>Match #${payload?.matchId || parsed?.matchId || "N/A"} · ${payload?.round || parsed?.round || "N/A"}</span>
           <span>Pick: ${payload?.prediction?.winnerName || payload?.prediction?.winnerCode || "N/A"} · Score ${payload?.prediction?.predictedScore || "N/A"}</span>
-          <span>${external}</span>
+          ${proofStructureOk
+            ? `<span>${external}</span>`
+            : `<span>Canonical lockedAt is ${formatProofTime(payload?.lockedAt)}. Submitted payload lockedAt is ${formatProofTime(submittedPayload?.lockedAt)}.</span>`}
         </article>
         <article class="proof-result-card">
           <strong>Evidence Snapshot</strong>
