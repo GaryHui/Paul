@@ -35,6 +35,18 @@ ODDS_REGIONS=us,uk,eu
 
 Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 
+## PAUL Edge Engine v1
+
+Formal predictions now build a fixed evidence layer before PAUL writes the final call:
+
+- Market baseline: 1X2 odds are converted into implied probabilities and weighted at 55%.
+- Rating baseline: Elo/SPI-style ratings are converted into win/draw/loss probabilities and weighted at 25%.
+- Score model: optional attack/defense values feed a Poisson score model and are weighted at 20%.
+- Upset overlay: PAUL receives an evidence-gated upset score from 0-100. It rises when baselines disagree, the blended model challenges the market, the market edge is narrow, or recent form supports the underdog.
+- Calibration: PAUL is instructed to keep confidence realistic: 50-59 lean, 60-69 solid, 70-79 strong, 80+ rare.
+
+The public proof payload stores `evidence.baselines` and `evidence.paulEdge`, so every pick can later be judged against market favorites, rating favorites, score-model favorites, and PAUL's own confidence.
+
 ## OpenTimestamps proof
 
 Official predictions also try to create an OpenTimestamps `.ots` receipt unless disabled:

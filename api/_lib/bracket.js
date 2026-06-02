@@ -172,13 +172,61 @@ function accuracySnapshot(predictions, results) {
   };
 }
 
+function predictedCode(prediction) {
+  return prediction?.analysis?.winnerCode || prediction?.analysis?.winner || prediction?.analysis?.winnerName || null;
+}
+
+function winnerCodeFor(result) {
+  return result.winnerCode || (Number(result.homeScore) === Number(result.awayScore) ? "DRAW" : Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode);
+}
+
+function isCorrectPick(pick, winner) {
+  return String(pick || "").toUpperCase() === String(winner || "").toUpperCase();
+}
+
+function baselineCode(prediction, key) {
+  return prediction?.evidence?.baselines?.[key]?.winnerCode || prediction?.proof?.payload?.evidence?.baselines?.[key]?.winnerCode || null;
+}
+
+function confidenceBand(confidence) {
+  const value = Number(confidence);
+  if (!Number.isFinite(value)) return null;
+  if (value < 60) return "50-59";
+  if (value < 70) return "60-69";
+  if (value < 80) return "70-79";
+  return "80+";
+}
+
+function createAccuracyBucket() {
+  return { graded: 0, correct: 0, accuracy: 0 };
+}
+
 function stageAccuracySnapshot(predictions, results, matches) {
   const byId = new Map(matches.map((match) => [Number(match.id), match]));
   const stats = {
     group: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
     knockout: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
     upsets: { called: 0, hit: 0 },
-    proofVerified: 0
+    proofVerified: 0,
+    baselines: {
+      market: createAccuracyBucket(),
+      rating: createAccuracyBucket(),
+      poisson: createAccuracyBucket(),
+      blended: createAccuracyBucket(),
+      paulVsMarket: { paulOnlyCorrect: 0, marketOnlyCorrect: 0, bothCorrect: 0, bothMissed: 0, edge: 0 }
+    },
+    calibration: {
+      graded: 0,
+      averageConfidence: 0,
+      actualAccuracy: 0,
+      gap: 0,
+      buckets: {
+        "50-59": createAccuracyBucket(),
+        "60-69": createAccuracyBucket(),
+        "70-79": createAccuracyBucket(),
+        "80+": createAccuracyBucket()
+      }
+    }
   };
 
   Object.values(predictions).forEach((prediction) => {
@@ -195,10 +243,40 @@ function stageAccuracySnapshot(predictions, results, matches) {
       const prediction = predictions[resolvedMatchId];
       if (!prediction) return;
       bucket.graded += 1;
-      const pick = prediction.analysis?.winnerCode || prediction.analysis?.winner || prediction.analysis?.winnerName;
-      const winner = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore) ? "DRAW" : Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode);
-      const correct = String(pick).toUpperCase() === String(winner).toUpperCase();
+      const pick = predictedCode(prediction);
+      const winner = winnerCodeFor(result);
+      const correct = isCorrectPick(pick, winner);
       if (correct) bucket.correct += 1;
+
+      const marketPick = baselineCode(prediction, "marketFavorite");
+      const baselineMap = [
+        ["market", marketPick],
+        ["rating", baselineCode(prediction, "ratingFavorite")],
+        ["poisson", baselineCode(prediction, "poissonFavorite")],
+        ["blended", baselineCode(prediction, "blendedFavorite")]
+      ];
+      baselineMap.forEach(([name, baselinePick]) => {
+        if (!baselinePick) return;
+        stats.baselines[name].graded += 1;
+        if (isCorrectPick(baselinePick, winner)) stats.baselines[name].correct += 1;
+      });
+
+      if (marketPick) {
+        const marketCorrect = isCorrectPick(marketPick, winner);
+        if (correct && marketCorrect) stats.baselines.paulVsMarket.bothCorrect += 1;
+        else if (correct && !marketCorrect) stats.baselines.paulVsMarket.paulOnlyCorrect += 1;
+        else if (!correct && marketCorrect) stats.baselines.paulVsMarket.marketOnlyCorrect += 1;
+        else stats.baselines.paulVsMarket.bothMissed += 1;
+      }
+
+      const confidence = Number(prediction.analysis?.confidence);
+      const band = confidenceBand(confidence);
+      if (band) {
+        stats.calibration.graded += 1;
+        stats.calibration.averageConfidence += confidence;
+        stats.calibration.buckets[band].graded += 1;
+        if (correct) stats.calibration.buckets[band].correct += 1;
+      }
 
       const homePower = Number(match?.teamA?.power || 0);
       const awayPower = Number(match?.teamB?.power || 0);
@@ -212,6 +290,22 @@ function stageAccuracySnapshot(predictions, results, matches) {
   [stats.group, stats.knockout].forEach((bucket) => {
     bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
   });
+  Object.values(stats.baselines)
+    .filter((bucket) => typeof bucket.graded === "number")
+    .forEach((bucket) => {
+      bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
+    });
+  stats.baselines.paulVsMarket.edge = stats.baselines.paulVsMarket.paulOnlyCorrect - stats.baselines.paulVsMarket.marketOnlyCorrect;
+  Object.values(stats.calibration.buckets).forEach((bucket) => {
+    bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
+  });
+  if (stats.calibration.graded) {
+    stats.calibration.averageConfidence = Math.round(stats.calibration.averageConfidence / stats.calibration.graded);
+    const totalCorrect = stats.group.correct + stats.knockout.correct;
+    const totalGraded = stats.group.graded + stats.knockout.graded;
+    stats.calibration.actualAccuracy = totalGraded ? Math.round((totalCorrect / totalGraded) * 100) : 0;
+    stats.calibration.gap = Math.abs(stats.calibration.actualAccuracy - stats.calibration.averageConfidence);
+  }
   return stats;
 }
 

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-32" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-33" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -53,6 +53,39 @@
         <div>
           <strong id="proofVerifiedStat">0</strong>
           <span>Proof-verified picks</span>
+        </div>
+      </section>
+
+      <section class="accuracy-lab band" aria-label="PAUL edge metrics">
+        <div class="section-head">
+          <p class="eyebrow">PAUL Edge Engine</p>
+          <h2>Transparent accuracy against real baselines.</h2>
+          <p>
+            PAUL is judged against market favorites, Elo-style ratings, score modeling, calibration, and upset calls.
+            The goal is not hidden magic; it is a proof-locked model that can beat simple favorites over time.
+          </p>
+        </div>
+        <div class="accuracy-lab-grid">
+          <article>
+            <span>Market favorite</span>
+            <strong id="marketBaselineStat">Pending</strong>
+            <p>Consensus odds baseline.</p>
+          </article>
+          <article>
+            <span>Elo baseline</span>
+            <strong id="ratingBaselineStat">Pending</strong>
+            <p>Team-strength baseline.</p>
+          </article>
+          <article>
+            <span>PAUL edge</span>
+            <strong id="paulEdgeStat">Pending</strong>
+            <p>Correct picks gained vs market.</p>
+          </article>
+          <article>
+            <span>Calibration</span>
+            <strong id="calibrationStat">Pending</strong>
+            <p>Actual accuracy vs confidence.</p>
+          </article>
         </div>
       </section>
 
@@ -231,6 +264,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-32"></script>
+    <script src="app.js?v=paul-ai-33"></script>
   </body>
 </html>

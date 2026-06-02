@@ -32,7 +32,11 @@ function compactPrediction(analysis = {}) {
     probabilities: analysis.probabilities || null,
     upsetRisk: analysis.upsetRisk || null,
     reasoning: analysis.reasoning || null,
-    evidenceUsed: analysis.evidenceUsed || null
+    evidenceUsed: analysis.evidenceUsed || null,
+    marketBaseline: analysis.marketBaseline || null,
+    ratingBaseline: analysis.ratingBaseline || null,
+    calibrationNote: analysis.calibrationNote || null,
+    upsetCase: analysis.upsetCase || null
   };
 }
 
@@ -55,6 +59,10 @@ function compactEvidence(evidence = {}) {
       : null,
     ratings: evidence.ratings || null,
     form: evidence.form || null,
+    poisson: evidence.poisson || null,
+    modelBlend: evidence.modelBlend || null,
+    baselines: evidence.baselines || null,
+    paulEdge: evidence.paulEdge || null,
     searchFallback: Boolean(evidence.searchFallback)
   };
 }

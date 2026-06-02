@@ -752,6 +752,39 @@ function resultLabel(match) {
   return teams[pick]?.name || record.analysis.winnerName || "Locked";
 }
 
+function officialModelCards(official, match) {
+  const baselines = official.evidence?.baselines || official.proof?.payload?.evidence?.baselines || {};
+  const edge = official.evidence?.paulEdge || official.proof?.payload?.evidence?.paulEdge || {};
+  const baselineLabel = (favorite) => favorite?.winnerName ? `${favorite.winnerName} · ${Math.round((favorite.probability || 0) * 100)}%` : "N/A";
+  return `
+    <article class="model-card">
+      <h3>Official PAUL Pick</h3>
+      <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
+      <p>${official.analysis?.reasoning || "PAUL has returned an official prediction."}</p>
+    </article>
+    <article class="model-card">
+      <h3>Market Baseline</h3>
+      <div class="vote">${baselineLabel(baselines.marketFavorite)}</div>
+      <p>${official.analysis?.marketBaseline || "Consensus odds anchor for PAUL's calibrated pick."}</p>
+    </article>
+    <article class="model-card">
+      <h3>Rating Baseline</h3>
+      <div class="vote">${baselineLabel(baselines.ratingFavorite || baselines.blendedFavorite)}</div>
+      <p>${official.analysis?.ratingBaseline || "Elo and score-model baseline used for comparison."}</p>
+    </article>
+    <article class="model-card">
+      <h3>PAUL Edge</h3>
+      <div class="vote">${edge.upsetScore ?? "N/A"} · ${edge.upsetTier || official.analysis?.upsetRisk || "N/A"}</div>
+      <p>${official.analysis?.upsetCase || edge.signals?.join(", ") || "Final scores will verify this pick after the match."}</p>
+    </article>
+    <article class="model-card model-card--wide">
+      <h3>Calibration</h3>
+      <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
+      <p>${official.analysis?.calibrationNote || `Generated at ${new Date(official.generatedAt).toLocaleString()}.`}</p>
+    </article>
+  `;
+}
+
 function updateChampionLabel() {
   setText("championName", "Awaiting groups");
 }
@@ -893,6 +926,10 @@ function renderPK() {
         <p>${resolved.aCode && resolved.bCode ? "No simulated reference is shown before the official lock." : "This match will become predictable after the earlier winners are known."}</p>
       </article>
     `;
+
+  if (official) {
+    document.getElementById("modelGrid").innerHTML = officialModelCards(official, match);
+  }
 
   const qwenResult = document.getElementById("qwenResult");
   if (qwenResult) {
@@ -1051,6 +1088,16 @@ async function loadAutomationStatus() {
     setText("knockoutAccuracyStat", `${stageAccuracy.knockout?.accuracy || 0}%`);
     setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
     setText("proofVerifiedStat", stageAccuracy.proofVerified || status.auditCount || 0);
+    const baselines = stageAccuracy.baselines || {};
+    setText("marketBaselineStat", baselines.market?.graded ? `${baselines.market.accuracy}%` : "Pending");
+    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : "Pending");
+    const edge = baselines.paulVsMarket?.edge;
+    setText("paulEdgeStat", Number.isFinite(edge) ? `${edge >= 0 ? "+" : ""}${edge}` : "Pending");
+    const calibration = stageAccuracy.calibration || {};
+    setText(
+      "calibrationStat",
+      calibration.graded ? `${calibration.actualAccuracy}% / ${calibration.averageConfidence}%` : "Pending"
+    );
     automationState = {
       predictions: mergedPredictions,
       results: status.results || {},

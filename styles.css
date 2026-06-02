@@ -189,6 +189,49 @@ h1 {
   font-size: 13px;
 }
 
+.accuracy-lab {
+  background: #081219;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.accuracy-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.accuracy-lab-grid article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10202a;
+  padding: 18px;
+  min-height: 146px;
+}
+
+.accuracy-lab-grid span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.accuracy-lab-grid strong {
+  display: block;
+  color: var(--gold);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+}
+
+.accuracy-lab-grid p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .section-head {
   max-width: 800px;
   margin-bottom: 26px;
@@ -1358,6 +1401,7 @@ input {
 
 @media (max-width: 980px) {
   .stats,
+  .accuracy-lab-grid,
   .automation-grid,
   .layout,
   .group-grid,
@@ -1415,6 +1459,7 @@ input {
   .toolbar,
   .verify-actions,
   .stats,
+  .accuracy-lab-grid,
   .automation-grid,
   .layout,
   .group-grid,
