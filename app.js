@@ -359,13 +359,141 @@ let automationState = {
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 }
 };
 
+const flagIds = {
+  MEX: "mx",
+  RSA: "za",
+  KOR: "kr",
+  CZE: "cz",
+  CAN: "ca",
+  BIH: "ba",
+  QAT: "qa",
+  SUI: "ch",
+  BRA: "br",
+  MAR: "ma",
+  HAI: "ht",
+  SCO: "gb-sct",
+  USA: "us",
+  PAR: "py",
+  AUS: "au",
+  TUR: "tr",
+  GER: "de",
+  CUW: "cw",
+  CIV: "ci",
+  ECU: "ec",
+  NED: "nl",
+  JPN: "jp",
+  SWE: "se",
+  TUN: "tn",
+  BEL: "be",
+  EGY: "eg",
+  IRN: "ir",
+  NZL: "nz",
+  ESP: "es",
+  CPV: "cv",
+  KSA: "sa",
+  URU: "uy",
+  FRA: "fr",
+  SEN: "sn",
+  IRQ: "iq",
+  NOR: "no",
+  ARG: "ar",
+  ALG: "dz",
+  AUT: "at",
+  JOR: "jo",
+  POR: "pt",
+  COD: "cd",
+  UZB: "uz",
+  COL: "co",
+  ENG: "gb-eng",
+  CRO: "hr",
+  GHA: "gh",
+  PAN: "pa"
+};
+
+const teamLocales = {
+  MEX: { language: "Español", phrase: "Predicción de PAUL para México" },
+  RSA: { language: "isiZulu / English / Afrikaans", phrase: "Isibikezelo sika PAUL seNingizimu Afrika" },
+  KOR: { language: "한국어", phrase: "대한민국을 위한 PAUL 예측" },
+  CZE: { language: "Čeština", phrase: "PAULova předpověď pro Česko" },
+  CAN: { language: "English / Français", phrase: "PAUL prediction for Canada / Prédiction de PAUL pour le Canada" },
+  BIH: { language: "Bosanski / Hrvatski / Srpski", phrase: "PAUL predviđa za Bosnu i Hercegovinu" },
+  QAT: { language: "العربية", phrase: "توقع PAUL لقطر" },
+  SUI: { language: "Deutsch / Français / Italiano / Rumantsch", phrase: "PAUL-Prognose für die Schweiz" },
+  BRA: { language: "Português", phrase: "Previsão de PAUL para o Brasil" },
+  MAR: { language: "العربية / ⵜⴰⵎⴰⵣⵉⵖⵜ", phrase: "توقع PAUL للمغرب" },
+  HAI: { language: "Kreyòl ayisyen / Français", phrase: "Prediksyon PAUL pou Ayiti" },
+  SCO: { language: "English / Scots / Gàidhlig", phrase: "PAUL prediction for Scotland" },
+  USA: { language: "English", phrase: "PAUL prediction for the United States" },
+  PAR: { language: "Español / Guaraní", phrase: "Predicción de PAUL para Paraguay" },
+  AUS: { language: "English", phrase: "PAUL prediction for Australia" },
+  TUR: { language: "Türkçe", phrase: "PAUL'un Türkiye tahmini" },
+  GER: { language: "Deutsch", phrase: "PAUL-Prognose für Deutschland" },
+  CUW: { language: "Papiamentu / Nederlands / English", phrase: "Pronostiko di PAUL pa Kòrsou" },
+  CIV: { language: "Français", phrase: "Pronostic de PAUL pour la Côte d'Ivoire" },
+  ECU: { language: "Español / Kichwa / Shuar", phrase: "Predicción de PAUL para Ecuador" },
+  NED: { language: "Nederlands", phrase: "PAULs voorspelling voor Nederland" },
+  JPN: { language: "日本語", phrase: "日本のためのPAUL予測" },
+  SWE: { language: "Svenska", phrase: "PAULs prognos för Sverige" },
+  TUN: { language: "العربية", phrase: "توقع PAUL لتونس" },
+  BEL: { language: "Nederlands / Français / Deutsch", phrase: "PAULs voorspelling voor België" },
+  EGY: { language: "العربية", phrase: "توقع PAUL لمصر" },
+  IRN: { language: "فارسی", phrase: "پیش‌بینی PAUL برای ایران" },
+  NZL: { language: "English / Māori", phrase: "PAUL prediction for Aotearoa New Zealand" },
+  ESP: { language: "Español", phrase: "Predicción de PAUL para España" },
+  CPV: { language: "Português / Kriolu", phrase: "Previsão de PAUL para Cabo Verde" },
+  KSA: { language: "العربية", phrase: "توقع PAUL للسعودية" },
+  URU: { language: "Español", phrase: "Predicción de PAUL para Uruguay" },
+  FRA: { language: "Français", phrase: "Pronostic de PAUL pour la France" },
+  SEN: { language: "Français / Wolof", phrase: "Pronostic de PAUL pour le Sénégal" },
+  IRQ: { language: "العربية / کوردی", phrase: "توقع PAUL للعراق" },
+  NOR: { language: "Norsk", phrase: "PAULs spådom for Norge" },
+  ARG: { language: "Español", phrase: "Predicción de PAUL para Argentina" },
+  ALG: { language: "العربية / Tamazight", phrase: "توقع PAUL للجزائر" },
+  AUT: { language: "Deutsch", phrase: "PAUL-Prognose für Österreich" },
+  JOR: { language: "العربية", phrase: "توقع PAUL للأردن" },
+  POR: { language: "Português", phrase: "Previsão de PAUL para Portugal" },
+  COD: { language: "Français / Lingála / Kiswahili", phrase: "Pronostic de PAUL pour la RD Congo" },
+  UZB: { language: "O‘zbekcha", phrase: "PAULning O‘zbekiston uchun bashorati" },
+  COL: { language: "Español", phrase: "Predicción de PAUL para Colombia" },
+  ENG: { language: "English", phrase: "PAUL prediction for England" },
+  CRO: { language: "Hrvatski", phrase: "PAULova prognoza za Hrvatsku" },
+  GHA: { language: "English / Akan / Ewe / Ga", phrase: "PAUL prediction for Ghana" },
+  PAN: { language: "Español", phrase: "Predicción de PAUL para Panamá" }
+};
+
+function flagImage(code, className = "flag-frame") {
+  const team = teams[code];
+  const flagId = flagIds[code];
+  const alt = `${team.name} flag`;
+  if (!flagId) return `<span class="${className} flag-frame--emoji" aria-label="${alt}">${team.flag}</span>`;
+  return `
+    <span class="${className}" aria-label="${alt}">
+      <img src="https://flagcdn.com/w160/${flagId}.png" srcset="https://flagcdn.com/w320/${flagId}.png 2x" alt="${alt}" loading="lazy" />
+    </span>
+  `;
+}
+
+function teamLocaleMarkup(code) {
+  const locale = teamLocales[code];
+  if (!locale) return "";
+  return `
+    <p class="local-language">
+      <strong>本国语言：</strong>
+      <span>${locale.language}</span>
+      <em>${locale.phrase}</em>
+    </p>
+  `;
+}
+
 function teamMarkup(code) {
   const team = teams[code];
   return `
-    <div>
-      <div class="flag" aria-hidden="true">${team.flag}</div>
-      <div class="team-name">${team.name}</div>
-      <div class="team-code">${code} · ${team.group} 组</div>
+    <div class="team-card-heading">
+      ${flagImage(code)}
+      <div>
+        <div class="team-name">${team.name}</div>
+        <div class="team-code">${code} · ${team.group} 组</div>
+      </div>
     </div>
     <p class="language"><strong>国家语言：</strong><br>${team.languages}</p>
   `;
@@ -432,7 +560,10 @@ function renderMatchList() {
       <button class="match-card ${match.id === activeMatchId ? "is-active" : ""}" data-id="${match.id}">
           <span class="match-no">#${match.id}</span>
         <span>
-          <span class="match-title">${teams[match.aCode].flag} ${teams[match.aCode].name} vs ${teams[match.bCode].flag} ${teams[match.bCode].name}</span>
+          <span class="match-title">
+            <span class="match-flags">${flagImage(match.aCode, "flag-frame match-flag")} ${flagImage(match.bCode, "flag-frame match-flag")}</span>
+            <span>${teams[match.aCode].name} vs ${teams[match.bCode].name}</span>
+          </span>
           <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
         </span>
         <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
@@ -460,12 +591,20 @@ function renderPK() {
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const crawlX = leftWon ? "-72%" : rightWon ? "72%" : "0%";
+  const crawlerAsset = leftWon
+    ? "assets/real-paul-crawl-left.gif"
+    : rightWon
+      ? "assets/real-paul-crawl-right.gif"
+      : "assets/real-paul-side-cutout.png";
 
   document.getElementById("pkMeta").textContent = `第 ${match.id} 场 · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
   document.getElementById("pkConfidence").textContent = official ? `正式预测信心 ${official.analysis?.confidence || "未说明"}%` : "正式预测待锁定";
-  document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode);
-  document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode);
+  document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode) + teamLocaleMarkup(match.aCode);
+  document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode) + teamLocaleMarkup(match.bCode);
   lane.style.setProperty("--crawl-x", crawlX);
+  if (!crawler.getAttribute("src")?.includes(crawlerAsset)) {
+    crawler.setAttribute("src", crawlerAsset);
+  }
   crawler.style.animation = "none";
   crawler.offsetHeight;
   crawler.style.animation = "";
@@ -700,7 +839,7 @@ function renderGroups() {
           ${groupTeams
             .map(([code, team]) => `
               <div class="team-row">
-                <span>${team.flag}</span>
+                ${flagImage(code, "flag-frame flag-frame--small")}
                 <strong>${team.name}</strong>
                 <span>${code}</span>
               </div>
