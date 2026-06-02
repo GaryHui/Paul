@@ -481,7 +481,7 @@ input {
   --crawl-x: 0%;
   grid-area: lane;
   position: relative;
-  min-height: clamp(250px, 28vw, 360px);
+  min-height: clamp(330px, 34vw, 460px);
   display: grid;
   place-items: center;
   overflow: visible;
@@ -497,10 +497,12 @@ input {
 }
 
 .crawler {
+  display: block;
   position: relative;
   z-index: 2;
-  width: min(520px, 76vw);
-  aspect-ratio: 1.49;
+  width: min(620px, 76vw);
+  height: auto;
+  max-height: clamp(290px, 31vw, 420px);
   object-fit: contain;
   border: 0;
   background: transparent;

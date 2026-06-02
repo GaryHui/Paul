@@ -502,17 +502,14 @@ function renderPK() {
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
-  const crawlerAsset = leftWon
-    ? "assets/real-paul-crawl-left.gif"
-    : rightWon
-      ? "assets/real-paul-crawl-right.gif"
-      : "assets/real-paul-side-cutout.png";
+  const crawlerAsset = "assets/real-paul-side-cutout.png";
 
   document.getElementById("pkMeta").textContent = `第 ${match.id} 场 · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
   document.getElementById("pkConfidence").textContent = official ? `正式预测信心 ${official.analysis?.confidence || "未说明"}%` : "正式预测待锁定";
   document.getElementById("leftTeam").innerHTML = teamMarkup(match.aCode) + teamLocaleMarkup(match.aCode);
   document.getElementById("rightTeam").innerHTML = teamMarkup(match.bCode) + teamLocaleMarkup(match.bCode);
   lane.style.setProperty("--crawl-x", crawlX);
+  lane.dataset.direction = leftWon ? "left" : rightWon ? "right" : "center";
   if (!crawler.getAttribute("src")?.includes(crawlerAsset)) {
     crawler.setAttribute("src", crawlerAsset);
   }
