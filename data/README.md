@@ -47,6 +47,21 @@ Formal predictions now build a fixed evidence layer before PAUL writes the final
 
 The public proof payload stores `evidence.baselines` and `evidence.paulEdge`, so every pick can later be judged against market favorites, rating favorites, score-model favorites, and PAUL's own confidence.
 
+## Historical backtest
+
+The private Verify page includes a 2022 World Cup backtest powered by `api/_lib/backtest.js`.
+
+The built-in dataset contains 64 matches, 1X2 historical odds from CheckBestOdds, pre-tournament rank priors, and final scores. The runner processes matches in order, so PAUL Edge can use only prior tournament form, never future results.
+
+Current PAUL Edge Engine v1 result on that dataset:
+
+- PAUL Edge: 36/64, 56% accuracy, Brier 0.580.
+- Market favorite: 35/64, 55% accuracy, Brier 0.572.
+- Blended baseline: 36/64, 56% accuracy, Brier 0.580.
+- Random baseline: 20/64, 31% accuracy.
+
+This is a validation harness, not a guarantee. The next useful step is adding 2018 and 2014 datasets, then tuning only on past tournaments and holding out one tournament for evaluation.
+
 ## OpenTimestamps proof
 
 Official predictions also try to create an OpenTimestamps `.ots` receipt unless disabled:

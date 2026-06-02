@@ -1755,6 +1755,82 @@ function renderResultsHealth(data) {
   `;
 }
 
+function metricCard(name, metric) {
+  return `
+    <article class="verify-health-card ${metric?.accuracy >= 50 ? "is-pass" : ""}">
+      <span>${name}</span>
+      <h3>${metric?.accuracy ?? 0}%</h3>
+      <p>${metric?.correct ?? 0}/${metric?.graded ?? 0} correct · Brier ${metric?.brier ?? "N/A"}</p>
+    </article>
+  `;
+}
+
+function renderBacktestReport(data) {
+  const report = document.getElementById("backtestReport");
+  if (!report) return;
+  const metrics = data.metrics || {};
+  const calibration = data.calibration || {};
+  report.innerHTML = `
+    <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
+      <strong>BACKTEST ${String(data.status || "unknown").toUpperCase()}</strong>
+      <span>${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
+    </div>
+    <p class="verify-note">
+      Source: odds from ${data.dataset?.odds || "N/A"}. ${data.dataset?.note || ""}
+    </p>
+    <h3 class="verify-title">Baseline Comparison</h3>
+    <div class="verify-health-grid">
+      ${metricCard("PAUL Edge", metrics.paul)}
+      ${metricCard("Market favorite", metrics.market)}
+      ${metricCard("Rating baseline", metrics.rating)}
+      ${metricCard("Poisson form", metrics.poisson)}
+      ${metricCard("Blended baseline", metrics.blended)}
+      ${metricCard("Random", metrics.random)}
+    </div>
+    <h3 class="verify-title">Edge Audit</h3>
+    <div class="verify-checks">
+      <div class="verify-check ${data.edge?.paulMinusMarket >= 0 ? "is-pass" : "is-fail"}">
+        <span>${data.edge?.paulMinusMarket >= 0 ? "PASS" : "WARN"}</span>
+        <strong>PAUL vs market: ${data.edge?.paulMinusMarket >= 0 ? "+" : ""}${data.edge?.paulMinusMarket ?? 0} correct picks</strong>
+      </div>
+      <div class="verify-check ${data.edge?.paulMinusBlended >= 0 ? "is-pass" : "is-fail"}">
+        <span>${data.edge?.paulMinusBlended >= 0 ? "PASS" : "WARN"}</span>
+        <strong>PAUL vs blended: ${data.edge?.paulMinusBlended >= 0 ? "+" : ""}${data.edge?.paulMinusBlended ?? 0} correct picks</strong>
+      </div>
+      <div class="verify-check">
+        <span>UPSET</span>
+        <strong>${data.edge?.upsetHits ?? 0}/${data.edge?.upsetCalls ?? 0} override hits · ${data.edge?.upsetAccuracy ?? 0}%</strong>
+      </div>
+    </div>
+    <h3 class="verify-title">Calibration Buckets</h3>
+    <div class="verify-checks">
+      ${Object.entries(calibration)
+        .map(([band, bucket]) => `
+          <div class="verify-check">
+            <span>${band}</span>
+            <strong>${bucket.correct}/${bucket.graded} · ${bucket.accuracy}%</strong>
+          </div>
+        `)
+        .join("")}
+    </div>
+    <h3 class="verify-title">Sample Match Trace</h3>
+    <div class="verify-rounds">
+      <article class="verify-round">
+        ${(data.trace || [])
+          .slice(0, 16)
+          .map((match) => `
+            <div class="verify-match">
+              <span>#${match.id}</span>
+              <strong>${match.match} ${match.score}</strong>
+              <em>Actual ${match.actual}; PAUL ${match.picks.paul}; Market ${match.picks.market}; Edge ${match.paul.upsetScore}</em>
+            </div>
+          `)
+          .join("")}
+      </article>
+    </div>
+  `;
+}
+
 function verifyTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get("verify") || params.get("verify_token") || "";
@@ -1858,6 +1934,38 @@ async function runResultsHealthCheck() {
   }
 }
 
+async function runHistoricalBacktest() {
+  const button = document.getElementById("runBacktestButton");
+  const status = document.getElementById("verifyStatus");
+  if (!button || !status) return;
+  const token = currentVerifyToken();
+  if (!token) {
+    status.textContent = "Enter the owner verify token first.";
+    return;
+  }
+  button.disabled = true;
+  status.textContent = "Running historical 2022 backtest...";
+  try {
+    try {
+      sessionStorage.setItem("paul.verifyToken", token);
+    } catch {
+      // Session storage is optional.
+    }
+    const response = await fetch("/api/test/backtest", {
+      headers: { "X-Verify-Token": token }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Backtest failed.");
+    renderBacktestReport(data);
+    status.textContent = "Historical backtest complete. Production data was not modified.";
+  } catch (error) {
+    status.textContent = error.message;
+    renderBacktestReport({ status: "fail", dataset: { name: "Backtest request" }, metrics: {}, edge: {}, trace: [] });
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function runDueAutomation() {
   const button = document.getElementById("runAutomationButton");
   const statusText = document.getElementById("automationStatus");
@@ -1935,6 +2043,7 @@ function init() {
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   document.getElementById("runVerifyButton")?.addEventListener("click", runDryVerification);
   document.getElementById("runResultsHealthButton")?.addEventListener("click", runResultsHealthCheck);
+  document.getElementById("runBacktestButton")?.addEventListener("click", runHistoricalBacktest);
   document.getElementById("loadDemoProofButton")?.addEventListener("click", loadDemoProof);
   document.getElementById("verifyProofButton")?.addEventListener("click", verifyProofInput);
   document.getElementById("clearProofButton")?.addEventListener("click", clearProofVerifier);
