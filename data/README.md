@@ -35,6 +35,26 @@ ODDS_REGIONS=us,uk,eu
 
 Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 
+## OpenTimestamps proof
+
+Official predictions also try to create an OpenTimestamps `.ots` receipt unless disabled:
+
+```text
+OPENTIMESTAMPS_DISABLED=1
+```
+
+When enabled, the server timestamps the SHA-256 hash of the canonical proof JSON through OpenTimestamps calendar servers. The resulting `.ots` receipt is stored in the public proof JSON as `externalProof.opentimestamps.otsBase64`.
+
+Verification flow:
+
+1. Copy the proof JSON.
+2. Recompute SHA-256 from `canonical`; it must equal `hash`.
+3. Save the canonical JSON bytes to a file.
+4. Decode `otsBase64` to `file.ots`.
+5. Verify with opentimestamps.org or the OpenTimestamps CLI.
+
+New `.ots` receipts may initially be `pending-bitcoin-confirmation`. After the calendar has anchored to Bitcoin, the proof can be upgraded and verified against a Bitcoin block.
+
 ## `market-odds.json`
 
 ```json

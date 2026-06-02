@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-25" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-26" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -139,10 +139,10 @@
       <section class="proof band" id="proof">
         <div class="section-head">
           <p class="eyebrow">Proof of Prediction</p>
-          <h2>Every PAUL pick gets a public hash before kickoff.</h2>
+          <h2>Every PAUL pick gets a public hash and timestamp proof.</h2>
           <p>
             When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256.
-            Anyone can copy the proof JSON below, recompute the hash in the browser, and confirm the pick existed before kickoff.
+            Official proofs also try to create an OpenTimestamps .ots receipt, so anyone can verify the same hash outside this site.
           </p>
         </div>
         <div class="proof-grid" id="proofGrid">
@@ -155,7 +155,7 @@
           <div class="section-head">
             <p class="eyebrow">Public Proof Verifier</p>
             <h2>Verify a PAUL proof yourself.</h2>
-            <p>Paste proof JSON from any card. The browser recalculates SHA-256 locally and checks the lock time against kickoff time.</p>
+            <p>Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.</p>
           </div>
           <textarea id="proofInput" spellcheck="false" placeholder="Paste proof JSON here..."></textarea>
           <div class="proof-actions">
@@ -197,6 +197,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-25"></script>
+    <script src="app.js?v=paul-ai-26"></script>
   </body>
 </html>

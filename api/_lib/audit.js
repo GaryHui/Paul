@@ -1,7 +1,9 @@
 const crypto = require("crypto");
+const OpenTimestamps = require("opentimestamps");
 const { getAuditLog, setAuditEntry } = require("./store");
 
 const proofVersion = "paul-proof-v2";
+const openTimestampsTimeoutMs = Number(process.env.OPENTIMESTAMPS_TIMEOUT_MS || 7000);
 
 function stableStringify(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -173,14 +175,42 @@ async function publishAuditToGitHub(entry) {
   };
 }
 
+async function createOpenTimestamp(entry) {
+  if (process.env.OPENTIMESTAMPS_DISABLED === "1") return null;
+  const hash = Buffer.from(entry.hash, "hex");
+  const detached = OpenTimestamps.DetachedTimestampFile.fromHash(new OpenTimestamps.Ops.OpSHA256(), hash);
+  await Promise.race([
+    OpenTimestamps.stamp(detached),
+    new Promise((_, reject) => setTimeout(() => reject(new Error("OpenTimestamps calendar request timed out.")), openTimestampsTimeoutMs))
+  ]);
+  const bytes = Buffer.from(detached.serializeToBytes());
+  return {
+    provider: "opentimestamps",
+    status: "pending-bitcoin-confirmation",
+    createdAt: new Date().toISOString(),
+    hash: entry.hash,
+    otsBase64: bytes.toString("base64"),
+    otsBytes: bytes.length,
+    note: "OpenTimestamps proof created from the SHA-256 hash of canonical proof JSON. It may need later upgrading before Bitcoin block verification is final."
+  };
+}
+
 async function attachAuditProof(match, record) {
   if (record.proof?.hash) return record;
   const entry = createAuditEntry(match, record);
+  const externalProof = {};
   try {
-    entry.externalProof = await publishAuditToGitHub(entry);
+    externalProof.github = await publishAuditToGitHub(entry);
   } catch (error) {
-    entry.externalProof = { provider: "github", error: error.message };
+    externalProof.github = { provider: "github", error: error.message };
   }
+  try {
+    externalProof.opentimestamps = await createOpenTimestamp(entry);
+  } catch (error) {
+    externalProof.opentimestamps = { provider: "opentimestamps", error: error.message };
+  }
+  if (!externalProof.github && !externalProof.opentimestamps) entry.externalProof = null;
+  else entry.externalProof = externalProof;
   await setAuditEntry(entry);
   return {
     ...record,

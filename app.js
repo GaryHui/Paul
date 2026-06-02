@@ -1117,6 +1117,32 @@ function publicProofJson(entry) {
   }, null, 2);
 }
 
+function githubProof(externalProof) {
+  return externalProof?.github || (externalProof?.provider === "github" ? externalProof : null);
+}
+
+function otsProof(externalProof) {
+  return externalProof?.opentimestamps || (externalProof?.provider === "opentimestamps" ? externalProof : null);
+}
+
+function proofDownloadName(entry) {
+  return `paul-proof-${entry.matchId || "match"}-${String(entry.hash || "hash").slice(0, 12)}.ots`;
+}
+
+function downloadOtsProof(entry) {
+  const ots = otsProof(entry?.externalProof);
+  if (!ots?.otsBase64) return;
+  const bytes = Uint8Array.from(atob(ots.otsBase64), (char) => char.charCodeAt(0));
+  const blob = new Blob([bytes], { type: "application/octet-stream" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = proofDownloadName(entry);
+  document.body.appendChild(link);
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
+}
+
 async function demoProofJson() {
   const match = tournament.matches[0];
   const kickoff = matchKickoffTime(match);
@@ -1178,7 +1204,11 @@ async function demoProofJson() {
     hash,
     canonical,
     payload,
-    externalProof: { provider: "demo", note: "Browser-only sample. Not stored, not official." }
+    externalProof: {
+      github: null,
+      opentimestamps: null,
+      demo: { provider: "demo", note: "Browser-only sample. Not stored, not official." }
+    }
   }, null, 2);
 }
 
@@ -1227,11 +1257,18 @@ function renderProofs(entries) {
 
   grid.innerHTML = entries
     .map((entry) => {
-      const external = entry.externalProof?.commitUrl
-        ? `<a href="${entry.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
-        : entry.externalProof?.error
-          ? `<span>GitHub proof pending</span>`
-          : `<span>KV proof only</span>`;
+      const github = githubProof(entry.externalProof);
+      const ots = otsProof(entry.externalProof);
+      const githubLine = github?.commitUrl
+        ? `<a href="${github.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
+        : github?.error
+          ? `<span>GitHub pending: ${github.error}</span>`
+          : `<span>No GitHub timestamp</span>`;
+      const otsLine = ots?.otsBase64
+        ? `<span>OpenTimestamps .ots ready (${ots.otsBytes || "N/A"} bytes)</span>`
+        : ots?.error
+          ? `<span>OpenTimestamps pending: ${ots.error}</span>`
+          : `<span>No OpenTimestamps proof</span>`;
       return `
         <article class="proof-card">
           <div class="proof-card__top">
@@ -1243,11 +1280,13 @@ function renderProofs(entries) {
             <div><dt>Locked</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
             <div><dt>Kickoff</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
             <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
-            <div><dt>External proof</dt><dd>${external}</dd></div>
+            <div><dt>GitHub proof</dt><dd>${githubLine}</dd></div>
+            <div><dt>OpenTimestamps</dt><dd>${otsLine}</dd></div>
           </dl>
           <div class="proof-card__actions">
             <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
             <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
+            ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
           </div>
         </article>
       `;
@@ -1270,6 +1309,13 @@ function renderProofs(entries) {
       if (!entry) return;
       setProofVerifierInput(publicProofJson(entry));
       document.getElementById("proofVerifier")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  grid.querySelectorAll(".proof-ots-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
+      if (entry) downloadOtsProof(entry);
     });
   });
 }
@@ -1330,12 +1376,22 @@ async function verifyProofInput() {
     const evidence = payload?.evidence || {};
     const market = evidence.market || {};
     const odds = market.odds || {};
-    const hasExternalTimestamp = Boolean(parsed?.externalProof?.commitUrl);
-    const external = parsed?.externalProof?.commitUrl
-      ? `<a href="${parsed.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
-      : parsed?.externalProof?.error
-        ? "GitHub proof pending"
-        : parsed?.externalProof?.note || "No external timestamp in this proof JSON";
+    const github = githubProof(parsed?.externalProof);
+    const ots = otsProof(parsed?.externalProof);
+    const hasExternalTimestamp = Boolean(github?.commitUrl || ots?.otsBase64);
+    const external = [
+      github?.commitUrl
+        ? `<a href="${github.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
+        : github?.error
+          ? `GitHub pending: ${github.error}`
+          : null,
+      ots?.otsBase64
+        ? `OpenTimestamps .ots ready (${ots.otsBytes || "N/A"} bytes; ${ots.status || "pending"})`
+        : ots?.error
+          ? `OpenTimestamps pending: ${ots.error}`
+          : null,
+      parsed?.externalProof?.demo?.note || parsed?.externalProof?.note || null
+    ].filter(Boolean).join("<br>") || "No external timestamp in this proof JSON";
 
     result.innerHTML = `
       <div class="proof-result-grid">
@@ -1359,7 +1415,12 @@ async function verifyProofInput() {
         <article class="proof-result-card ${hasExternalTimestamp ? "is-pass" : "is-warn"}">
           <strong>${hasExternalTimestamp ? "PUBLIC TIMESTAMP FOUND" : "NO INDEPENDENT TIMESTAMP"}</strong>
           <span>${external}</span>
-          <span>${hasExternalTimestamp ? "The GitHub commit time can be checked outside this site." : "Hash is valid, but the lockedAt value could still be backdated without an external timestamp."}</span>
+          <span>${hasExternalTimestamp ? "GitHub and/or OpenTimestamps can be checked outside this site." : "Hash is valid, but the lockedAt value could still be backdated without an external timestamp."}</span>
+        </article>
+        <article class="proof-result-card ${ots?.otsBase64 ? "is-pass" : "is-warn"}">
+          <strong>${ots?.otsBase64 ? "OPENTIMESTAMPS PROOF READY" : "NO OPENTIMESTAMPS PROOF"}</strong>
+          <span>${ots?.otsBase64 ? `Download .ots from the proof card or copy otsBase64 from this JSON.` : "Official predictions will try to create an .ots proof automatically."}</span>
+          <span>${ots?.note || "OpenTimestamps proofs may start as calendar attestations and need later upgrade to a Bitcoin block."}</span>
         </article>
         <article class="proof-result-card">
           <strong>${payload?.match || parsed?.match || "PAUL proof"}</strong>
