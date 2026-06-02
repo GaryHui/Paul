@@ -1163,73 +1163,104 @@ function downloadOtsProof(entry) {
   link.remove();
 }
 
-async function demoProofJson() {
-  const match = tournament.matches[0];
-  const kickoff = matchKickoffTime(match);
-  const lockedAt = new Date().toISOString();
-  const kickoffAt = kickoff.toISOString();
-  const payload = {
-    version: "paul-proof-v2",
-    matchId: match.id,
-    round: match.round,
-    match: `${teams[match.aCode].name} vs ${teams[match.bCode].name}`,
-    teams: {
-      home: { code: match.aCode, name: teams[match.aCode].name },
-      away: { code: match.bCode, name: teams[match.bCode].name }
-    },
-    kickoffAt,
-    lockedAt,
-    model: "PAUL-DEMO",
-    prediction: {
-      winnerCode: match.aCode,
-      winnerName: teams[match.aCode].name,
-      confidence: 57,
-      predictedScore: "2-1",
-      probabilities: { home: 48, draw: 27, away: 25 },
-      upsetRisk: "Demo only",
-      reasoning: "Synthetic browser-only proof used to test public verification before real predictions exist.",
-      evidenceUsed: ["demo odds snapshot", "demo proof verifier"]
-    },
-    evidence: {
-      generatedAt: lockedAt,
-      hasPrimaryEvidence: true,
-      missing: [],
-      market: {
-        source: "demo",
-        provider: "browser demo",
-        eventId: "demo-match-1",
-        updatedAt: lockedAt,
-        bookmakerCount: 3,
-        sampleBookmakers: ["DemoBook A", "DemoBook B", "DemoBook C"],
-        odds: { home: 2.05, draw: 3.55, away: 3.9 },
-        probabilities: { home: 0.437, draw: 0.253, away: 0.23 }
+const fixedDemoProofJson = String.raw`{
+  "id": "1:1bb71fdcec218484",
+  "version": "paul-proof-v2",
+  "matchId": 1,
+  "match": "Mexico vs South Africa",
+  "round": "Group Stage",
+  "lockedAt": "2026-06-02T14:34:50.196Z",
+  "kickoffAt": "2026-06-11T20:00:00.000Z",
+  "algorithm": "sha256",
+  "hash": "1bb71fdcec218484418bd16b11e2366d27a976cc17136a95e7ccc83c33ebacc0",
+  "canonical": "{\"evidence\":{\"form\":null,\"generatedAt\":\"2026-06-02T14:34:50.196Z\",\"hasPrimaryEvidence\":true,\"market\":{\"bookmakerCount\":3,\"eventId\":\"demo-match-1\",\"odds\":{\"away\":3.9,\"draw\":3.55,\"home\":2.05},\"probabilities\":{\"away\":0.23,\"draw\":0.253,\"home\":0.437},\"provider\":\"server demo\",\"sampleBookmakers\":[\"DemoBook A\",\"DemoBook B\",\"DemoBook C\"],\"source\":\"demo\",\"updatedAt\":\"2026-06-02T14:34:50.196Z\"},\"missing\":[],\"ratings\":null,\"searchFallback\":false},\"kickoffAt\":\"2026-06-11T20:00:00.000Z\",\"lockedAt\":\"2026-06-02T14:34:50.196Z\",\"match\":\"Mexico vs South Africa\",\"matchId\":1,\"model\":\"PAUL-DEMO\",\"nonce\":\"79a4906603800af68ac374a0cfc64613\",\"prediction\":{\"confidence\":57,\"evidenceUsed\":[\"demo odds snapshot\",\"OpenTimestamps demo\"],\"predictedScore\":\"2-1\",\"probabilities\":{\"away\":25,\"draw\":27,\"home\":48},\"reasoning\":\"Synthetic server-generated proof used to test OpenTimestamps without writing production data.\",\"upsetRisk\":\"Demo only\",\"winnerCode\":\"MEX\",\"winnerName\":\"Mexico\"},\"round\":\"Group Stage\",\"teams\":{\"away\":{\"code\":\"RSA\",\"name\":\"South Africa\"},\"home\":{\"code\":\"MEX\",\"name\":\"Mexico\"}},\"version\":\"paul-proof-v2\"}",
+  "payload": {
+    "version": "paul-proof-v2",
+    "matchId": 1,
+    "round": "Group Stage",
+    "match": "Mexico vs South Africa",
+    "teams": {
+      "home": {
+        "code": "MEX",
+        "name": "Mexico"
       },
-      ratings: null,
-      form: null,
-      searchFallback: false
+      "away": {
+        "code": "RSA",
+        "name": "South Africa"
+      }
     },
-    nonce: "demo-proof-not-a-real-prediction"
-  };
-  const canonical = stableStringify(payload);
-  const hash = await sha256Hex(canonical);
-  return JSON.stringify({
-    id: `${match.id}:${hash.slice(0, 16)}:demo`,
-    version: "paul-proof-v2",
-    matchId: match.id,
-    match: payload.match,
-    round: match.round,
-    lockedAt,
-    kickoffAt,
-    algorithm: "sha256",
-    hash,
-    canonical,
-    payload,
-    externalProof: {
-      github: null,
-      opentimestamps: null,
-      demo: { provider: "demo", note: "Browser-only sample. Not stored, not official." }
+    "kickoffAt": "2026-06-11T20:00:00.000Z",
+    "lockedAt": "2026-06-02T14:34:50.196Z",
+    "model": "PAUL-DEMO",
+    "prediction": {
+      "winnerCode": "MEX",
+      "winnerName": "Mexico",
+      "confidence": 57,
+      "predictedScore": "2-1",
+      "probabilities": {
+        "home": 48,
+        "draw": 27,
+        "away": 25
+      },
+      "upsetRisk": "Demo only",
+      "reasoning": "Synthetic server-generated proof used to test OpenTimestamps without writing production data.",
+      "evidenceUsed": [
+        "demo odds snapshot",
+        "OpenTimestamps demo"
+      ]
+    },
+    "evidence": {
+      "generatedAt": "2026-06-02T14:34:50.196Z",
+      "hasPrimaryEvidence": true,
+      "missing": [],
+      "market": {
+        "source": "demo",
+        "provider": "server demo",
+        "eventId": "demo-match-1",
+        "updatedAt": "2026-06-02T14:34:50.196Z",
+        "bookmakerCount": 3,
+        "sampleBookmakers": [
+          "DemoBook A",
+          "DemoBook B",
+          "DemoBook C"
+        ],
+        "odds": {
+          "home": 2.05,
+          "draw": 3.55,
+          "away": 3.9
+        },
+        "probabilities": {
+          "home": 0.437,
+          "draw": 0.253,
+          "away": 0.23
+        }
+      },
+      "ratings": null,
+      "form": null,
+      "searchFallback": false
+    },
+    "nonce": "79a4906603800af68ac374a0cfc64613"
+  },
+  "externalProof": {
+    "github": null,
+    "opentimestamps": {
+      "provider": "opentimestamps",
+      "status": "pending-bitcoin-confirmation",
+      "createdAt": "2026-06-02T14:34:51.302Z",
+      "hash": "1bb71fdcec218484418bd16b11e2366d27a976cc17136a95e7ccc83c33ebacc0",
+      "otsBase64": "AE9wZW5UaW1lc3RhbXBzAABQcm9vZgC/ieLohOiSlAEIG7cf3OwhhIRBi9FrEeI2bSepdswXE2qV58zIPDPrrMDwEB8luUujemVj5iVQvX2ucb8I//AIh8WYeENJQfUI8SAR8mWR3Ld7wtYd2BIDQhOFUy7ogC278+RTfzSBWeqEqgjwEGSzJwdlzTV1VEs6MapbYyoI8SDsiPjcaAWI9cWcvNTmZgOuW2Mq5ikRZZ7YjnictdRVWQjwIFuv6H6iRUoyZ8I0wlO+cpJWWEM+eJNc6GljNbPIsLarCPEEah7qCvAI3LGNWrGM3TgAg9/jDS75DI4uLWh0dHBzOi8vYWxpY2UuYnRjLmNhbGVuZGFyLm9wZW50aW1lc3RhbXBzLm9yZ//wCDBHjDhpVIX5CPAQ6drEG7+FSeq2w3Yt/CQPSAjxIC4zogz3fjur+VXCKKRWa6+cgatAVq38JLnY++HaXHwxCPAgcH2LngBY/J7NI39WQjrXZaA6vyETs1NHO0cxbW+Y1R8I8QRqHuoK8Ah7gGygZVDquACD3+MNLvkMjiwraHR0cHM6Ly9ib2IuYnRjLmNhbGVuZGFyLm9wZW50aW1lc3RhbXBzLm9yZ//wEHwRDr+qfr2CD88b2M0YfdwI8CBSQHTj2o+JOxPsszvq654875TKdUdCjGc3VaPGruovZAjwIC8J4jTHRdr9gt3MZCHqWP+P3FAZ6wuInozdy4gzfY6hCPEEah7qC/AINUYC0UyrdYUAg9/jDS75DI4pKGh0dHBzOi8vZmlubmV5LmNhbGVuZGFyLmV0ZXJuaXR5d2FsbC5jb23wEHjhp3uoNDT0eqnDrpWebIEI8CB5uKjDIBzPUflRfXZ68V8sOuAnTOf8ssRk3X5rbNGGaQjxBGoe6grwCI/nWWz7mVouAIPf4w0u+QyOIyJodHRwczovL2J0Yy5jYWxlbmRhci5jYXRhbGxheHkuY29t",
+      "otsBytes": 735,
+      "note": "OpenTimestamps proof created from the SHA-256 hash of canonical proof JSON. It may need later upgrading before Bitcoin block verification is final."
+    },
+    "demo": {
+      "provider": "demo",
+      "note": "Server-generated owner demo. Not stored, not official."
     }
-  }, null, 2);
+  }
+}`;
+
+function demoProofJson() {
+  return fixedDemoProofJson;
 }
 
 async function copyText(value) {
@@ -1250,28 +1281,8 @@ async function copyText(value) {
 
 async function loadDemoProof() {
   const status = document.getElementById("copyProofStatus");
-  const token = currentVerifyToken();
-  if (!token) {
-    setProofVerifierInput(await demoProofJson());
-    if (status) status.textContent = "Browser-only demo loaded. Add owner token to generate a real .ots receipt.";
-    return;
-  }
-  if (status) status.textContent = "Requesting OpenTimestamps demo proof...";
-  try {
-    const response = await fetch("/api/audit?mode=demo-ots", {
-      method: "POST",
-      headers: { "X-Verify-Token": token }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "OpenTimestamps demo failed.");
-    setProofVerifierInput(publicProofJson(data.entry));
-    const ots = otsProof(data.entry?.externalProof);
-    if (status) status.textContent = ots?.otsBase64
-      ? "Demo proof with real .ots loaded. Click Verify Proof."
-      : "Demo proof loaded, but .ots was not created.";
-  } catch (error) {
-    if (status) status.textContent = error.message;
-  }
+  setProofVerifierInput(demoProofJson());
+  if (status) status.textContent = "Fixed demo proof with bundled .ots loaded. Click Verify Proof.";
 }
 
 function setProofVerifierInput(value) {
