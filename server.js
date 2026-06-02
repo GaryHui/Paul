@@ -2,6 +2,7 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 const { resolveMatches, stageAccuracySnapshot } = require("./api/_lib/bracket");
+const { fetchMatchResult: fetchSharedMatchResult, hasResultsProvider, providerName } = require("./api/_lib/results");
 
 const root = __dirname;
 const dataDir = path.join(root, "data");
@@ -414,26 +415,7 @@ function nextPredictionDue(matches, predictions, results = {}, now = new Date())
 }
 
 async function fetchMatchResult(match) {
-  const baseUrl = process.env.RESULTS_API_URL;
-  if (!baseUrl || !match.teamA?.code || !match.teamB?.code) return null;
-  const url = new URL(baseUrl);
-  url.searchParams.set("matchId", match.id);
-  const headers = {};
-  if (process.env.RESULTS_API_KEY) headers.Authorization = `Bearer ${process.env.RESULTS_API_KEY}`;
-  const response = await fetch(url, { headers });
-  if (!response.ok) throw new Error(`Result API failed for match ${match.id}: ${response.status}`);
-  const data = await response.json();
-  if (data.status !== "final") return null;
-  return {
-    matchId: match.id,
-    aCode: match.teamA.code,
-    bCode: match.teamB.code,
-    homeScore: Number(data.homeScore),
-    awayScore: Number(data.awayScore),
-    status: "final",
-    source: baseUrl,
-    syncedAt: new Date().toISOString()
-  };
+  return fetchSharedMatchResult(match);
 }
 
 async function runDueAutomation({ force = false } = {}) {
@@ -521,7 +503,8 @@ function buildAutomationStatus(matches, predictions, results) {
     predictionLeadHours,
     resultSyncDelayHours,
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
-    hasResultsApi: Boolean(process.env.RESULTS_API_URL)
+    hasResultsApi: hasResultsProvider(),
+    resultsProvider: providerName()
   };
 }
 

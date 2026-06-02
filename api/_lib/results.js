@@ -1,9 +1,26 @@
+const defaultProviders = ["worldcup26", "zafronix", "football-data", "generic"];
+
+function configuredProviders() {
+  const raw = process.env.RESULTS_PROVIDERS || process.env.RESULTS_PROVIDER;
+  const providers = raw
+    ? raw.split(",").map((item) => item.trim()).filter(Boolean)
+    : defaultProviders;
+
+  return providers.filter((provider) => {
+    if (provider === "worldcup26") return true;
+    if (provider === "zafronix") return Boolean(process.env.ZAFRONIX_API_KEY);
+    if (provider === "football-data") return Boolean(process.env.FOOTBALL_DATA_API_KEY);
+    if (provider === "generic") return Boolean(process.env.RESULTS_API_URL);
+    return false;
+  });
+}
+
 function providerName() {
-  return process.env.RESULTS_PROVIDER || (process.env.FOOTBALL_DATA_API_KEY ? "football-data" : process.env.RESULTS_API_URL ? "generic" : "none");
+  return configuredProviders().join(",") || "none";
 }
 
 function hasResultsProvider() {
-  return providerName() !== "none";
+  return configuredProviders().length > 0;
 }
 
 function normalizeName(value = "") {
@@ -19,13 +36,18 @@ function teamAliases(team) {
   const aliases = new Set([team.name, team.code]);
   if (team.code === "RSA") aliases.add("South Africa");
   if (team.code === "KOR") aliases.add("Korea Republic");
+  if (team.code === "KOR") aliases.add("South Korea");
   if (team.code === "CZE") aliases.add("Czech Republic");
   if (team.code === "USA") aliases.add("United States");
   if (team.code === "CIV") aliases.add("Ivory Coast");
+  if (team.code === "CUW") aliases.add("Curacao");
   if (team.code === "CUW") aliases.add("Curaçao");
   if (team.code === "IRN") aliases.add("Iran");
   if (team.code === "KSA") aliases.add("Saudi Arabia");
   if (team.code === "COD") aliases.add("Congo DR");
+  if (team.code === "COD") aliases.add("DR Congo");
+  if (team.code === "COD") aliases.add("Democratic Republic of the Congo");
+  if (team.code === "TUR") aliases.add("Turkey");
   if (team.code === "ENG") aliases.add("England");
   return [...aliases].map(normalizeName);
 }
@@ -40,30 +62,44 @@ function teamsMatch(apiHome, apiAway, match) {
   return { direct, reversed, matched: direct || reversed };
 }
 
-function parseFootballDataScore(apiMatch, match) {
-  if (apiMatch.status !== "FINISHED") return null;
-  const { direct, reversed, matched } = teamsMatch(apiMatch.homeTeam?.name, apiMatch.awayTeam?.name, match);
-  if (!matched) return null;
-  const home = Number(apiMatch.score?.fullTime?.home);
-  const away = Number(apiMatch.score?.fullTime?.away);
-  if (!Number.isFinite(home) || !Number.isFinite(away)) return null;
-  const homeScore = direct ? home : away;
-  const awayScore = direct ? away : home;
-  const winnerCode = homeScore === awayScore ? null : homeScore > awayScore ? match.teamA.code : match.teamB.code;
-  const loserCode = homeScore === awayScore ? null : homeScore > awayScore ? match.teamB.code : match.teamA.code;
+function normalizeFinished(value) {
+  const normalized = String(value).toLowerCase();
+  return value === true || normalized === "true" || normalized === "finished" || normalized === "completed" || normalized === "ft" || normalized === "ft_pen";
+}
+
+function scoreResult(match, homeScore, awayScore, direct, source, providerMatchId) {
+  if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
+  const aScore = direct ? homeScore : awayScore;
+  const bScore = direct ? awayScore : homeScore;
+  const winnerCode = aScore === bScore ? null : aScore > bScore ? match.teamA.code : match.teamB.code;
+  const loserCode = aScore === bScore ? null : aScore > bScore ? match.teamB.code : match.teamA.code;
   return {
     matchId: match.id,
     aCode: match.teamA.code,
     bCode: match.teamB.code,
-    homeScore,
-    awayScore,
+    homeScore: aScore,
+    awayScore: bScore,
     winnerCode,
     loserCode,
     status: "final",
-    source: "football-data.org",
-    providerMatchId: apiMatch.id,
+    source,
+    providerMatchId,
     syncedAt: new Date().toISOString()
   };
+}
+
+function parseFootballDataScore(apiMatch, match) {
+  if (apiMatch.status !== "FINISHED") return null;
+  const { direct, matched } = teamsMatch(apiMatch.homeTeam?.name, apiMatch.awayTeam?.name, match);
+  if (!matched) return null;
+  return scoreResult(
+    match,
+    Number(apiMatch.score?.fullTime?.home),
+    Number(apiMatch.score?.fullTime?.away),
+    direct,
+    "football-data.org",
+    apiMatch.id
+  );
 }
 
 async function fetchFootballDataResult(match) {
@@ -81,6 +117,72 @@ async function fetchFootballDataResult(match) {
   const matches = data.matches || [];
   for (const apiMatch of matches) {
     const result = parseFootballDataScore(apiMatch, match);
+    if (result) return result;
+  }
+  return null;
+}
+
+function parseWorldcup26Score(apiMatch, match) {
+  if (!normalizeFinished(apiMatch.finished)) return null;
+  const { direct, matched } = teamsMatch(apiMatch.home_team_name_en, apiMatch.away_team_name_en, match);
+  if (!matched) return null;
+  return scoreResult(
+    match,
+    Number(apiMatch.home_score),
+    Number(apiMatch.away_score),
+    direct,
+    "worldcup26.ir",
+    apiMatch.id || apiMatch._id
+  );
+}
+
+async function fetchWorldcup26Result(match) {
+  const response = await fetch("https://worldcup26.ir/get/games");
+  if (!response.ok) throw new Error(`worldcup26.ir failed: ${response.status}`);
+  const data = await response.json();
+  const games = data.games || data.data || [];
+  for (const apiMatch of games) {
+    const result = parseWorldcup26Score(apiMatch, match);
+    if (result) return result;
+  }
+  return null;
+}
+
+function extractArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value.matches)) return value.matches;
+  if (Array.isArray(value.games)) return value.games;
+  if (Array.isArray(value.fixtures)) return value.fixtures;
+  if (Array.isArray(value.group_stage)) return value.group_stage;
+  if (Array.isArray(value.knockouts)) return value.knockouts;
+  if (typeof value !== "object") return [];
+  return Object.values(value).flatMap((item) => extractArray(item));
+}
+
+function parseZafronixScore(apiMatch, match) {
+  const status = apiMatch.status || apiMatch.state || apiMatch.phase || apiMatch.finished;
+  if (!normalizeFinished(status)) return null;
+  const apiHome = apiMatch.home_team?.name || apiMatch.homeTeam?.name || apiMatch.home || apiMatch.team1 || apiMatch.home_team;
+  const apiAway = apiMatch.away_team?.name || apiMatch.awayTeam?.name || apiMatch.away || apiMatch.team2 || apiMatch.away_team;
+  const { direct, matched } = teamsMatch(apiHome, apiAway, match);
+  if (!matched) return null;
+  const homeScore = Number(apiMatch.home_score ?? apiMatch.homeScore ?? apiMatch.score?.home ?? apiMatch.score?.home_team);
+  const awayScore = Number(apiMatch.away_score ?? apiMatch.awayScore ?? apiMatch.score?.away ?? apiMatch.score?.away_team);
+  return scoreResult(match, homeScore, awayScore, direct, "zafronix.com", apiMatch.id || apiMatch.match_id || apiMatch.matchNumber);
+}
+
+async function fetchZafronixResult(match) {
+  const token = process.env.ZAFRONIX_API_KEY;
+  if (!token) return null;
+  const baseUrl = process.env.ZAFRONIX_BASE_URL || "https://api.zafronix.com/fifa/worldcup/v1";
+  const response = await fetch(`${baseUrl}/tournaments/2026`, {
+    headers: { "X-API-Key": token }
+  });
+  if (!response.ok) throw new Error(`zafronix failed: ${response.status}`);
+  const data = await response.json();
+  for (const apiMatch of extractArray(data)) {
+    const result = parseZafronixScore(apiMatch, match);
     if (result) return result;
   }
   return null;
@@ -119,13 +221,37 @@ async function fetchGenericResult(match) {
 
 async function fetchMatchResult(match) {
   if (!match.teamA?.code || !match.teamB?.code) return null;
-  const provider = providerName();
-  if (provider === "football-data") return fetchFootballDataResult(match);
-  if (provider === "generic") return fetchGenericResult(match);
+  const errors = [];
+  for (const provider of configuredProviders()) {
+    try {
+      if (provider === "worldcup26") {
+        const result = await fetchWorldcup26Result(match);
+        if (result) return result;
+      }
+      if (provider === "zafronix") {
+        const result = await fetchZafronixResult(match);
+        if (result) return result;
+      }
+      if (provider === "football-data") {
+        const result = await fetchFootballDataResult(match);
+        if (result) return result;
+      }
+      if (provider === "generic") {
+        const result = await fetchGenericResult(match);
+        if (result) return result;
+      }
+    } catch (error) {
+      errors.push(`${provider}: ${error.message}`);
+    }
+  }
+  if (errors.length && process.env.RESULTS_STRICT === "true") {
+    throw new Error(errors.join("; "));
+  }
   return null;
 }
 
 module.exports = {
+  configuredProviders,
   fetchMatchResult,
   hasResultsProvider,
   providerName
