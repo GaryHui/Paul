@@ -832,8 +832,22 @@ input {
   color: var(--gold);
 }
 
-.proof-card h3 {
+.proof-card__heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
   margin-bottom: 12px;
+}
+
+.proof-card h3 {
+  margin: 0;
+}
+
+.proof-card__heading .button {
+  min-height: 34px;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .proof-card dl {

@@ -1376,7 +1376,10 @@ function proofCardMarkup(entry) {
         <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? "Before kickoff" : "Check time"}</span>
         ${ots?.otsBase64 ? `<span class="winner-pill">OTS receipt</span>` : ""}
       </div>
-      <h3>#${entry.matchId} ${entry.match}</h3>
+      <div class="proof-card__heading">
+        <h3>#${entry.matchId} ${entry.match}</h3>
+        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy</button>
+      </div>
       <dl>
         <div><dt>Round</dt><dd>${entry.round || "Unknown"}</dd></div>
         ${prediction?.winnerName ? `<div><dt>Pick</dt><dd>${prediction.winnerName}${prediction.predictedScore ? ` · ${prediction.predictedScore}` : ""}</dd></div>` : ""}
@@ -1387,7 +1390,6 @@ function proofCardMarkup(entry) {
         <div><dt>OpenTimestamps</dt><dd>${otsLine}</dd></div>
       </dl>
       <div class="proof-card__actions">
-        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
         <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
         <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">Download canonical</button>
         ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
