@@ -156,10 +156,10 @@ function nextPredictionDue(matches, predictions, results, now = new Date()) {
 }
 
 function accuracySnapshot(predictions, results) {
-  const completed = Object.values(results).filter((result) => result.status === "final");
-  const graded = completed.filter((result) => predictions[result.matchId]);
-  const correct = graded.filter((result) => {
-    const prediction = predictions[result.matchId].analysis || {};
+  const completed = Object.entries(results).filter(([, result]) => result.status === "final");
+  const graded = completed.filter(([matchId, result]) => predictions[result.matchId || matchId]);
+  const correct = graded.filter(([matchId, result]) => {
+    const prediction = predictions[result.matchId || matchId].analysis || {};
     const pick = prediction.winnerCode || prediction.winner || prediction.winnerName;
     const winner = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore) ? "DRAW" : Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode);
     return String(pick).toUpperCase() === String(winner).toUpperCase();
@@ -172,10 +172,54 @@ function accuracySnapshot(predictions, results) {
   };
 }
 
+function stageAccuracySnapshot(predictions, results, matches) {
+  const byId = new Map(matches.map((match) => [Number(match.id), match]));
+  const stats = {
+    group: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
+    knockout: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
+    upsets: { called: 0, hit: 0 },
+    proofVerified: 0
+  };
+
+  Object.values(predictions).forEach((prediction) => {
+    if (prediction.proof?.hash) stats.proofVerified += 1;
+  });
+
+  Object.entries(results)
+    .filter(([, result]) => result.status === "final")
+    .forEach(([matchId, result]) => {
+      const resolvedMatchId = result.matchId || matchId;
+      const match = byId.get(Number(resolvedMatchId));
+      const bucket = match?.round === "Group Stage" ? stats.group : stats.knockout;
+      bucket.completed += 1;
+      const prediction = predictions[resolvedMatchId];
+      if (!prediction) return;
+      bucket.graded += 1;
+      const pick = prediction.analysis?.winnerCode || prediction.analysis?.winner || prediction.analysis?.winnerName;
+      const winner = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore) ? "DRAW" : Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode);
+      const correct = String(pick).toUpperCase() === String(winner).toUpperCase();
+      if (correct) bucket.correct += 1;
+
+      const homePower = Number(match?.teamA?.power || 0);
+      const awayPower = Number(match?.teamB?.power || 0);
+      const underdog = homePower === awayPower ? null : homePower < awayPower ? match.teamA?.code : match.teamB?.code;
+      if (underdog && String(pick).toUpperCase() === String(underdog).toUpperCase()) {
+        stats.upsets.called += 1;
+        if (correct) stats.upsets.hit += 1;
+      }
+    });
+
+  [stats.group, stats.knockout].forEach((bucket) => {
+    bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
+  });
+  return stats;
+}
+
 module.exports = {
   accuracySnapshot,
   nextPredictionDue,
   parseMatchTime,
   resolveMatches,
-  resultWinnerCode
+  resultWinnerCode,
+  stageAccuracySnapshot
 };

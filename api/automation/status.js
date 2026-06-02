@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
-const { accuracySnapshot, nextPredictionDue, resolveMatches } = require("../_lib/bracket");
+const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
 const { hasResultsProvider, providerName } = require("../_lib/results");
 const { getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
     resultCount: Object.keys(results).length,
     nextPrediction: nextPredictionDue(snapshot.matches, predictions, results),
     accuracy: accuracySnapshot(predictions, results),
+    stageAccuracy: stageAccuracySnapshot(predictions, results, resolvedMatches),
     predictions,
     results,
     resolvedMatches: resolvedMatches.map((match) => ({

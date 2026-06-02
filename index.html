@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-16" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-17" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -24,10 +24,10 @@
       </nav>
       <section class="hero__content">
         <p class="eyebrow">2026 FIFA World Cup AI Prediction Lab</p>
-        <h1>AI Octopus PAUL follows the full World Cup bracket.</h1>
+        <h1>PAUL predicts every match, then enters Knockout Oracle Mode.</h1>
         <p class="lede">
-          Group-stage fixtures are listed with teams, while knockout matches begin as official bracket slots.
-          Daily automation syncs results, advances winners into the next round, and locks PAUL picks before kickoff.
+          Group-stage picks build the public record from day one. Once the Round of 32 begins,
+          PAUL shifts into knockout focus with upset signals, proof-locked picks, and bracket paths.
         </p>
         <div class="hero__actions">
           <a class="button button--primary" href="#matches">Open Predictor</a>
@@ -39,30 +39,30 @@
     <main>
       <section class="stats band" aria-label="Tournament stats">
         <div>
-          <strong>48</strong>
-          <span>Qualified teams</span>
+          <strong id="groupAccuracyStat">0%</strong>
+          <span>Group-stage accuracy</span>
         </div>
         <div>
-          <strong>104</strong>
-          <span>Full tournament fixtures</span>
+          <strong id="knockoutAccuracyStat">0%</strong>
+          <span>Knockout accuracy</span>
         </div>
         <div>
-          <strong>AI</strong>
-          <span>Official PAUL picks</span>
+          <strong id="upsetHitsStat">0/0</strong>
+          <span>Upset calls hit</span>
         </div>
         <div>
-          <strong id="championName">Pending</strong>
-          <span>Knockout stage</span>
+          <strong id="proofVerifiedStat">0</strong>
+          <span>Proof-verified picks</span>
         </div>
       </section>
 
       <section class="console" id="matches">
         <div class="section-head">
           <p class="eyebrow">PK Predictor</p>
-          <h2>Every fixture, from group stage to final.</h2>
+          <h2>Group-stage record first, knockout oracle after qualification.</h2>
           <p>
-            Select any match to open the PK page. Knockout slots stay as bracket positions until earlier results are synced.
-            Once teams are known, PAUL can lock an official pick before kickoff.
+            PAUL still predicts every playable match before kickoff, including the group stage.
+            The public showpiece begins when the Round of 32 bracket is resolved and every pick becomes a win-or-go-home call.
           </p>
         </div>
 

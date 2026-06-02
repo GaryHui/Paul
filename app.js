@@ -454,7 +454,13 @@ let activeMatchId = 1;
 let automationState = {
   predictions: {},
   results: {},
-  accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 }
+  accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
+  stageAccuracy: {
+    group: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
+    knockout: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
+    upsets: { called: 0, hit: 0 },
+    proofVerified: 0
+  }
 };
 const storedPredictionKey = "paul.manualPredictions.v2";
 
@@ -498,6 +504,19 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
 
 function matchKickoffTime(match) {
   return new Date(`${match.date} 20:00:00 GMT+0000`);
+}
+
+function setText(id, value) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = value;
+}
+
+function matchMode(match) {
+  return match.round === "Group Stage" ? "Group-stage record" : "Knockout Oracle Mode";
+}
+
+function modeClass(match) {
+  return match.round === "Group Stage" ? "mode-pill--group" : "mode-pill--knockout";
 }
 
 function compactDuration(ms) {
@@ -718,7 +737,7 @@ function resultLabel(match) {
 }
 
 function updateChampionLabel() {
-  document.getElementById("championName").textContent = "Awaiting groups";
+  setText("championName", "Awaiting groups");
 }
 
 function renderMatchList() {
@@ -753,6 +772,7 @@ function renderMatchList() {
           </span>
           <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
           <span class="match-countdown">${matchCountdown(match)}</span>
+          <span class="mode-pill ${modeClass(match)}">${matchMode(match)}</span>
         </span>
         <span class="winner-pill">${predictionStatus(match)} · ${resultLabel(match)}</span>
       </button>
@@ -785,12 +805,14 @@ function renderPK() {
   const finalResult = officialResult(match);
   const leftWon = officialPick === resolved.aCode;
   const rightWon = officialPick === resolved.bCode;
+  const mode = matchMode(match);
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
   const crawlerAsset = "assets/real-paul-side-cutout.png";
 
-  document.getElementById("pkMeta").textContent = `Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
+  document.getElementById("pkPanel").dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
+  document.getElementById("pkMeta").textContent = `${mode} · Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
   document.getElementById("pkConfidence").textContent = official
     ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${matchCountdown(match)}`
     : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${matchCountdown(match)}`;
@@ -817,8 +839,14 @@ function renderPK() {
       <p>${resultCopy}</p>
     `;
   } else {
+    const pendingCopy = resolved.aCode && resolved.bCode
+      ? match.round === "Group Stage"
+        ? "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record."
+        : "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning."
+      : "This knockout slot will become predictable after earlier real results fill the official bracket.";
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${resolved.aCode && resolved.bCode ? "Official PAUL prediction is not locked yet." : "This bracket slot is not resolved yet."}</strong></p>
+      <p>${pendingCopy}</p>
       <p class="countdown-detail">Kickoff countdown: <strong>${matchCountdown(match)}</strong></p>
     `;
   }
@@ -843,7 +871,7 @@ function renderPK() {
     `
     : `
       <article class="model-card model-card--wide">
-        <h3>Awaiting Official PAUL Prediction</h3>
+        <h3>${match.round === "Group Stage" ? "Awaiting Group-stage PAUL Pick" : "Awaiting Knockout Oracle Pick"}</h3>
         <div class="vote">${resolved.aCode && resolved.bCode ? "Not locked" : "Waiting for bracket results"}</div>
         <p>${resolved.aCode && resolved.bCode ? "No simulated reference is shown before the official lock." : "This match will become predictable after the earlier winners are known."}</p>
       </article>
@@ -997,14 +1025,20 @@ async function loadAutomationStatus() {
     const mergedPredictions = status.predictions || {};
     const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 24) || status.nextPrediction;
 
-    document.getElementById("autoPredicted").textContent = Object.keys(mergedPredictions).length;
-    document.getElementById("autoResults").textContent = status.resultCount || 0;
-    document.getElementById("autoAccuracy").textContent = `${status.accuracy?.accuracy || 0}%`;
-    document.getElementById("autoNext").textContent = formatNextPrediction(nextPrediction);
+    const stageAccuracy = status.stageAccuracy || automationState.stageAccuracy;
+    setText("autoPredicted", Object.keys(mergedPredictions).length);
+    setText("autoResults", status.resultCount || 0);
+    setText("autoAccuracy", `${status.accuracy?.accuracy || 0}%`);
+    setText("autoNext", formatNextPrediction(nextPrediction));
+    setText("groupAccuracyStat", `${stageAccuracy.group?.accuracy || 0}%`);
+    setText("knockoutAccuracyStat", `${stageAccuracy.knockout?.accuracy || 0}%`);
+    setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
+    setText("proofVerifiedStat", stageAccuracy.proofVerified || status.auditCount || 0);
     automationState = {
       predictions: mergedPredictions,
       results: status.results || {},
-      accuracy: status.accuracy || automationState.accuracy
+      accuracy: status.accuracy || automationState.accuracy,
+      stageAccuracy
     };
     updateChampionLabel();
     renderMatchList();

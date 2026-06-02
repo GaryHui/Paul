@@ -1,7 +1,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-const { resolveMatches } = require("./api/_lib/bracket");
+const { resolveMatches, stageAccuracySnapshot } = require("./api/_lib/bracket");
 
 const root = __dirname;
 const dataDir = path.join(root, "data");
@@ -382,10 +382,10 @@ async function handleQwen(req, res) {
 }
 
 function accuracySnapshot(predictions, results) {
-  const completed = Object.values(results).filter((result) => result.status === "final");
-  const graded = completed.filter((result) => predictions[result.matchId]);
-  const correct = graded.filter((result) => {
-    const prediction = predictions[result.matchId].analysis || {};
+  const completed = Object.entries(results).filter(([, result]) => result.status === "final");
+  const graded = completed.filter(([matchId, result]) => predictions[result.matchId || matchId]);
+  const correct = graded.filter(([matchId, result]) => {
+    const prediction = predictions[result.matchId || matchId].analysis || {};
     const pick = prediction.winnerCode || prediction.winner || prediction.winnerName;
     return String(pick).toUpperCase() === String(resultWinner(result)).toUpperCase();
   });
@@ -509,6 +509,7 @@ function buildAutomationStatus(matches, predictions, results) {
     resultCount: Object.keys(results).length,
     nextPrediction: nextPredictionDue(matches, predictions, results),
     accuracy: accuracySnapshot(predictions, results),
+    stageAccuracy: stageAccuracySnapshot(predictions, results, resolvedMatches),
     predictions,
     results,
     resolvedMatches: resolvedMatches.map((match) => ({
