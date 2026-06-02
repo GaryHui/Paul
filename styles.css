@@ -662,6 +662,11 @@ input {
   border-bottom: 1px solid var(--line);
 }
 
+.verify {
+  background: #071219;
+  border-bottom: 1px solid var(--line);
+}
+
 .automation-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -764,6 +769,93 @@ input {
 .proof-card a {
   color: var(--green);
   font-weight: 900;
+}
+
+.verify-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.verify-actions span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.verify-report {
+  margin-top: 18px;
+}
+
+.verify-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10202a;
+  padding: 16px;
+}
+
+.verify-summary strong {
+  color: var(--green);
+  font-size: 22px;
+}
+
+.verify-summary.is-fail strong {
+  color: var(--red);
+}
+
+.verify-summary span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.verify-checks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.verify-check {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10202a;
+  padding: 12px;
+}
+
+.verify-check span {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.verify-check.is-fail span {
+  color: var(--red);
+}
+
+.verify-check strong {
+  display: block;
+  color: #e8f3f8;
+  overflow-wrap: anywhere;
+}
+
+.verify-report pre {
+  margin: 12px 0 0;
+  max-height: 340px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 16, 22, 0.75);
+  color: #dbe9ef;
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
 }
 
 .origin {
@@ -913,7 +1005,8 @@ input {
   .layout,
   .group-grid,
   .origin-ritual,
-  .method-grid {
+  .method-grid,
+  .verify-checks {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -956,6 +1049,7 @@ input {
   .layout,
   .group-grid,
   .method-grid,
+  .verify-checks,
   .model-grid,
   .qwen-panel {
     grid-template-columns: 1fr;

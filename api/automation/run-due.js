@@ -1,41 +1,11 @@
 const { callPaul, loadSnapshot } = require("../_lib/paul");
 const { attachAuditProof } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
+const { fetchMatchResult } = require("../_lib/results");
 const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
-
-async function fetchMatchResult(match) {
-  const baseUrl = process.env.RESULTS_API_URL;
-  if (!baseUrl || !match.teamA?.code || !match.teamB?.code) return null;
-  const url = new URL(baseUrl);
-  url.searchParams.set("matchId", match.id);
-  url.searchParams.set("teamA", match.teamA.code);
-  url.searchParams.set("teamB", match.teamB.code);
-  const headers = {};
-  if (process.env.RESULTS_API_KEY) headers.Authorization = `Bearer ${process.env.RESULTS_API_KEY}`;
-  const response = await fetch(url, { headers });
-  if (!response.ok) throw new Error(`Result API failed for match ${match.id}: ${response.status}`);
-  const data = await response.json();
-  if (data.status !== "final") return null;
-  const homeScore = Number(data.homeScore);
-  const awayScore = Number(data.awayScore);
-  const winnerCode = data.winnerCode || (homeScore === awayScore ? null : homeScore > awayScore ? match.teamA.code : match.teamB.code);
-  const loserCode = data.loserCode || (homeScore === awayScore ? null : homeScore > awayScore ? match.teamB.code : match.teamA.code);
-  return {
-    matchId: match.id,
-    aCode: match.teamA.code,
-    bCode: match.teamB.code,
-    homeScore,
-    awayScore,
-    winnerCode,
-    loserCode,
-    status: "final",
-    source: baseUrl,
-    syncedAt: new Date().toISOString()
-  };
-}
 
 function automationSummary(matches, predictions, results) {
   return {

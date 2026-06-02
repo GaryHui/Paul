@@ -384,7 +384,7 @@ function thirdPlaceAssignments(standings) {
       [match.aSlot, match.bSlot].filter((slot) => slot?.type === "bestThird").forEach((slot) => {
         const key = slot.label;
         if (assignments[key]) return;
-        const chosen = pool.find((row) => slot.groups.includes(teams[row.code].group) && !used.has(row.code));
+        const chosen = pool.find((row) => slot.groups.includes(teams[row.code].group) && !used.has(row.code)) || pool.find((row) => !used.has(row.code));
         if (chosen) {
           assignments[key] = chosen.code;
           used.add(chosen.code);
@@ -874,6 +874,7 @@ function qwenPayload(match) {
   return {
     id: match.id,
     round: match.round,
+    group: match.group,
     date: match.date,
     venue: match.venue,
     slot: match.slot,
@@ -1089,6 +1090,49 @@ async function loadAuditProofs() {
   }
 }
 
+function renderVerifyReport(data) {
+  const report = document.getElementById("verifyReport");
+  if (!report) return;
+  const checks = Object.entries(data.checks || {});
+  report.innerHTML = `
+    <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
+      <strong>${String(data.status || "unknown").toUpperCase()}</strong>
+      <span>Results provider: ${data.provider?.name || "none"} (${data.provider?.configured ? "configured" : "not configured"})</span>
+    </div>
+    <div class="verify-checks">
+      ${checks
+        .map(([key, value]) => `
+          <div class="verify-check ${value ? "is-pass" : "is-fail"}">
+            <span>${value ? "PASS" : "FAIL"}</span>
+            <strong>${key}</strong>
+          </div>
+        `)
+        .join("")}
+    </div>
+    <pre>${JSON.stringify(data.sample || {}, null, 2)}</pre>
+  `;
+}
+
+async function runDryVerification() {
+  const button = document.getElementById("runVerifyButton");
+  const status = document.getElementById("verifyStatus");
+  if (!button || !status) return;
+  button.disabled = true;
+  status.textContent = "Running dry-run simulation...";
+  try {
+    const response = await fetch("/api/test/simulate");
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Dry-run failed.");
+    renderVerifyReport(data);
+    status.textContent = "Dry-run complete. Production data was not modified.";
+  } catch (error) {
+    status.textContent = error.message;
+    renderVerifyReport({ status: "fail", checks: { dryRunRequest: false }, sample: { error: error.message } });
+  } finally {
+    button.disabled = false;
+  }
+}
+
 async function runDueAutomation() {
   const button = document.getElementById("runAutomationButton");
   const statusText = document.getElementById("automationStatus");
@@ -1158,6 +1202,7 @@ function init() {
   renderPK();
   document.getElementById("qwenButton")?.addEventListener("click", askQwen);
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
+  document.getElementById("runVerifyButton")?.addEventListener("click", runDryVerification);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();

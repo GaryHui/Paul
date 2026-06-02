@@ -180,6 +180,7 @@ async function auditSnapshot() {
 module.exports = {
   attachAuditProof,
   auditSnapshot,
+  createAuditEntry,
   sha256,
   stableStringify
 };

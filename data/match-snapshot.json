@@ -1,9 +1,10 @@
 {
-  "updatedAt": "2026-06-02T09:58:48.783Z",
+  "updatedAt": "2026-06-02T11:19:52.770Z",
   "matches": [
     {
       "id": 1,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 11, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -69,6 +70,7 @@
     {
       "id": 2,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 11, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -134,6 +136,7 @@
     {
       "id": 3,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 18, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -199,6 +202,7 @@
     {
       "id": 4,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 18, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -264,6 +268,7 @@
     {
       "id": 5,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 24, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -329,6 +334,7 @@
     {
       "id": 6,
       "round": "Group Stage",
+      "group": "A",
       "date": "Jun 24, 2026",
       "venue": "Mexico City / Guadalajara / Atlanta",
       "slot": "Group A",
@@ -394,6 +400,7 @@
     {
       "id": 7,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 12, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -459,6 +466,7 @@
     {
       "id": 8,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 13, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -524,6 +532,7 @@
     {
       "id": 9,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 18, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -589,6 +598,7 @@
     {
       "id": 10,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 18, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -654,6 +664,7 @@
     {
       "id": 11,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 24, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -719,6 +730,7 @@
     {
       "id": 12,
       "round": "Group Stage",
+      "group": "B",
       "date": "Jun 24, 2026",
       "venue": "Toronto / Bay Area / Los Angeles",
       "slot": "Group B",
@@ -784,6 +796,7 @@
     {
       "id": 13,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 13, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -849,6 +862,7 @@
     {
       "id": 14,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 13, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -914,6 +928,7 @@
     {
       "id": 15,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 19, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -979,6 +994,7 @@
     {
       "id": 16,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 19, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -1044,6 +1060,7 @@
     {
       "id": 17,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 24, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -1109,6 +1126,7 @@
     {
       "id": 18,
       "round": "Group Stage",
+      "group": "C",
       "date": "Jun 24, 2026",
       "venue": "New York-New Jersey / Boston / Miami",
       "slot": "Group C",
@@ -1174,6 +1192,7 @@
     {
       "id": 19,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 12, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1239,6 +1258,7 @@
     {
       "id": 20,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 13, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1304,6 +1324,7 @@
     {
       "id": 21,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 19, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1369,6 +1390,7 @@
     {
       "id": 22,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 19, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1434,6 +1456,7 @@
     {
       "id": 23,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 25, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1499,6 +1522,7 @@
     {
       "id": 24,
       "round": "Group Stage",
+      "group": "D",
       "date": "Jun 25, 2026",
       "venue": "Los Angeles / Vancouver / Seattle",
       "slot": "Group D",
@@ -1564,6 +1588,7 @@
     {
       "id": 25,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 14, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1629,6 +1654,7 @@
     {
       "id": 26,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 14, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1694,6 +1720,7 @@
     {
       "id": 27,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 20, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1759,6 +1786,7 @@
     {
       "id": 28,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 20, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1824,6 +1852,7 @@
     {
       "id": 29,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 25, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1889,6 +1918,7 @@
     {
       "id": 30,
       "round": "Group Stage",
+      "group": "E",
       "date": "Jun 25, 2026",
       "venue": "Philadelphia / Houston / New York-New Jersey",
       "slot": "Group E",
@@ -1954,6 +1984,7 @@
     {
       "id": 31,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 14, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2019,6 +2050,7 @@
     {
       "id": 32,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 14, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2084,6 +2116,7 @@
     {
       "id": 33,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 20, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2149,6 +2182,7 @@
     {
       "id": 34,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 20, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2214,6 +2248,7 @@
     {
       "id": 35,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 25, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2279,6 +2314,7 @@
     {
       "id": 36,
       "round": "Group Stage",
+      "group": "F",
       "date": "Jun 25, 2026",
       "venue": "Dallas / Monterrey / Kansas City",
       "slot": "Group F",
@@ -2344,6 +2380,7 @@
     {
       "id": 37,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 15, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2409,6 +2446,7 @@
     {
       "id": 38,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 15, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2474,6 +2512,7 @@
     {
       "id": 39,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 21, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2539,6 +2578,7 @@
     {
       "id": 40,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 21, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2604,6 +2644,7 @@
     {
       "id": 41,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 26, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2669,6 +2710,7 @@
     {
       "id": 42,
       "round": "Group Stage",
+      "group": "G",
       "date": "Jun 26, 2026",
       "venue": "Seattle / Los Angeles / Vancouver",
       "slot": "Group G",
@@ -2734,6 +2776,7 @@
     {
       "id": 43,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 15, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -2799,6 +2842,7 @@
     {
       "id": 44,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 15, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -2864,6 +2908,7 @@
     {
       "id": 45,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 21, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -2929,6 +2974,7 @@
     {
       "id": 46,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 21, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -2994,6 +3040,7 @@
     {
       "id": 47,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 26, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -3059,6 +3106,7 @@
     {
       "id": 48,
       "round": "Group Stage",
+      "group": "H",
       "date": "Jun 26, 2026",
       "venue": "Atlanta / Miami / Houston",
       "slot": "Group H",
@@ -3124,6 +3172,7 @@
     {
       "id": 49,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 16, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3189,6 +3238,7 @@
     {
       "id": 50,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 16, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3254,6 +3304,7 @@
     {
       "id": 51,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 22, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3319,6 +3370,7 @@
     {
       "id": 52,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 22, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3384,6 +3436,7 @@
     {
       "id": 53,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 26, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3449,6 +3502,7 @@
     {
       "id": 54,
       "round": "Group Stage",
+      "group": "I",
       "date": "Jun 26, 2026",
       "venue": "New York-New Jersey / Boston / Toronto",
       "slot": "Group I",
@@ -3514,6 +3568,7 @@
     {
       "id": 55,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 16, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3579,6 +3634,7 @@
     {
       "id": 56,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 16, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3644,6 +3700,7 @@
     {
       "id": 57,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 22, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3709,6 +3766,7 @@
     {
       "id": 58,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 22, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3774,6 +3832,7 @@
     {
       "id": 59,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 27, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3839,6 +3898,7 @@
     {
       "id": 60,
       "round": "Group Stage",
+      "group": "J",
       "date": "Jun 27, 2026",
       "venue": "Kansas City / Bay Area / Dallas",
       "slot": "Group J",
@@ -3904,6 +3964,7 @@
     {
       "id": 61,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 17, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -3969,6 +4030,7 @@
     {
       "id": 62,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 17, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -4034,6 +4096,7 @@
     {
       "id": 63,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 23, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -4099,6 +4162,7 @@
     {
       "id": 64,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 23, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -4164,6 +4228,7 @@
     {
       "id": 65,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 27, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -4229,6 +4294,7 @@
     {
       "id": 66,
       "round": "Group Stage",
+      "group": "K",
       "date": "Jun 27, 2026",
       "venue": "Houston / Mexico City / Miami",
       "slot": "Group K",
@@ -4294,6 +4360,7 @@
     {
       "id": 67,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 17, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",
@@ -4359,6 +4426,7 @@
     {
       "id": 68,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 17, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",
@@ -4424,6 +4492,7 @@
     {
       "id": 69,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 23, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",
@@ -4489,6 +4558,7 @@
     {
       "id": 70,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 23, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",
@@ -4554,6 +4624,7 @@
     {
       "id": 71,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 27, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",
@@ -4619,6 +4690,7 @@
     {
       "id": 72,
       "round": "Group Stage",
+      "group": "L",
       "date": "Jun 27, 2026",
       "venue": "Dallas / Toronto / Philadelphia",
       "slot": "Group L",

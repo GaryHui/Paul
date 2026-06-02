@@ -97,7 +97,7 @@ function thirdPlaceAssignments(matches, results, standings, teams) {
     .forEach((match) => {
       [match.aSlot, match.bSlot].filter((slot) => slot?.type === "bestThird").forEach((slot) => {
         if (assignments[slot.label]) return;
-        const chosen = thirds.find((row) => slot.groups.includes(teams[row.code]?.group) && !used.has(row.code));
+        const chosen = thirds.find((row) => slot.groups.includes(teams[row.code]?.group) && !used.has(row.code)) || thirds.find((row) => !used.has(row.code));
         if (chosen) {
           assignments[slot.label] = chosen.code;
           used.add(chosen.code);

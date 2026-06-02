@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-13" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-14" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -19,6 +19,7 @@
           <a href="#matches">Predictions</a>
           <a href="#automation">Automation</a>
           <a href="#proof">Proof</a>
+          <a href="#verify">Verify</a>
           <a href="#groups">Groups</a>
         </div>
       </nav>
@@ -153,6 +154,22 @@
         </div>
       </section>
 
+      <section class="verify band" id="verify">
+        <div class="section-head">
+          <p class="eyebrow">Dry-Run Verification</p>
+          <h2>Test the whole pipeline before the tournament starts.</h2>
+          <p>
+            This simulation uses synthetic results and a test proof. It does not write production predictions,
+            results, or audit records.
+          </p>
+        </div>
+        <div class="verify-actions">
+          <button class="button button--primary" id="runVerifyButton" type="button">Run Dry Test</button>
+          <span id="verifyStatus">Ready to test schedule, bracket advancement, result sync logic, and proof hashing.</span>
+        </div>
+        <div class="verify-report" id="verifyReport"></div>
+      </section>
+
       <section class="groups band" id="groups">
         <div class="section-head">
           <p class="eyebrow">48-Team Field</p>
@@ -163,6 +180,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-13"></script>
+    <script src="app.js?v=paul-ai-14"></script>
   </body>
 </html>
