@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-19" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-20" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -142,7 +142,7 @@
           <h2>Every PAUL pick gets a public hash before kickoff.</h2>
           <p>
             When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256.
-            The proof record shows the lock time, kickoff time, verification hash, and optional GitHub commit timestamp.
+            Anyone can copy the proof JSON below, recompute the hash in the browser, and confirm the pick existed before kickoff.
           </p>
         </div>
         <div class="proof-grid" id="proofGrid">
@@ -150,6 +150,20 @@
             <h3>No locked proofs yet</h3>
             <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
           </article>
+        </div>
+        <div class="proof-verifier" id="proofVerifier">
+          <div class="section-head">
+            <p class="eyebrow">Public Proof Verifier</p>
+            <h2>Verify a PAUL proof yourself.</h2>
+            <p>Paste proof JSON from any card. The browser recalculates SHA-256 locally and checks the lock time against kickoff time.</p>
+          </div>
+          <textarea id="proofInput" spellcheck="false" placeholder="Paste proof JSON here..."></textarea>
+          <div class="proof-actions">
+            <button class="button button--primary" id="verifyProofButton" type="button">Verify Proof</button>
+            <button class="button button--ghost" id="clearProofButton" type="button">Clear</button>
+            <span id="copyProofStatus">No proof loaded.</span>
+          </div>
+          <div class="proof-result" id="proofVerifyResult"></div>
         </div>
       </section>
 
@@ -182,6 +196,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-19"></script>
+    <script src="app.js?v=paul-ai-20"></script>
   </body>
 </html>

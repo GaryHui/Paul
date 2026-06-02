@@ -802,6 +802,95 @@ input {
   font-weight: 900;
 }
 
+.proof-card__actions,
+.proof-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.proof-card__actions .button,
+.proof-actions .button {
+  min-height: 38px;
+}
+
+.proof-verifier {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 28px;
+}
+
+.proof-verifier textarea {
+  width: 100%;
+  min-height: 210px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 16, 22, 0.84);
+  color: #e8f3f8;
+  padding: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.proof-actions span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.proof-result {
+  margin-top: 14px;
+}
+
+.proof-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.proof-result-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #10202a;
+  padding: 14px;
+}
+
+.proof-result-card.is-pass {
+  border-color: rgba(62, 230, 163, 0.42);
+}
+
+.proof-result-card.is-fail {
+  border-color: rgba(255, 93, 108, 0.48);
+}
+
+.proof-result-card strong {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.proof-result-card.is-fail strong {
+  color: var(--red);
+}
+
+.proof-result-card span {
+  color: var(--muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.proof-result-card code {
+  color: var(--gold);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+}
+
 .verify-actions {
   display: grid;
   grid-template-columns: minmax(220px, 320px) auto minmax(220px, 1fr);
@@ -1179,7 +1268,8 @@ input {
   .method-grid,
   .verify-groups,
   .verify-checks,
-  .verify-health-grid {
+  .verify-health-grid,
+  .proof-result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1226,6 +1316,7 @@ input {
   .verify-groups,
   .verify-checks,
   .verify-health-grid,
+  .proof-result-grid,
   .model-grid,
   .qwen-panel {
     grid-template-columns: 1fr;

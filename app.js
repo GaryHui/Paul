@@ -463,6 +463,7 @@ let automationState = {
   }
 };
 const storedPredictionKey = "paul.manualPredictions.v2";
+let publicProofEntries = [];
 
 function loadStoredPredictions() {
   try {
@@ -1067,9 +1068,65 @@ function formatProofTime(value) {
   return date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+function stableStringify(value) {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map((item) => stableStringify(item)).join(",")}]`;
+  return `{${Object.keys(value)
+    .sort()
+    .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+    .join(",")}}`;
+}
+
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function publicProofJson(entry) {
+  return JSON.stringify({
+    id: entry.id,
+    version: entry.version,
+    matchId: entry.matchId,
+    match: entry.match,
+    round: entry.round,
+    lockedAt: entry.lockedAt,
+    kickoffAt: entry.kickoffAt,
+    algorithm: entry.algorithm,
+    hash: entry.hash,
+    canonical: entry.canonical,
+    payload: entry.payload,
+    externalProof: entry.externalProof || null
+  }, null, 2);
+}
+
+async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = value;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+
+function setProofVerifierInput(value) {
+  const input = document.getElementById("proofInput");
+  const status = document.getElementById("copyProofStatus");
+  if (input) input.value = value;
+  if (status) status.textContent = "Proof JSON loaded. Click Verify Proof.";
+}
+
 function renderProofs(entries) {
   const grid = document.getElementById("proofGrid");
   if (!grid) return;
+  publicProofEntries = entries;
   if (!entries.length) {
     grid.innerHTML = `
       <article class="proof-card">
@@ -1100,10 +1157,33 @@ function renderProofs(entries) {
             <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
             <div><dt>External proof</dt><dd>${external}</dd></div>
           </dl>
+          <div class="proof-card__actions">
+            <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
+            <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
+          </div>
         </article>
       `;
     })
     .join("");
+
+  grid.querySelectorAll(".proof-copy-button").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
+      if (!entry) return;
+      await copyText(publicProofJson(entry));
+      const status = document.getElementById("copyProofStatus");
+      if (status) status.textContent = `Copied proof for match #${entry.matchId}.`;
+    });
+  });
+
+  grid.querySelectorAll(".proof-load-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
+      if (!entry) return;
+      setProofVerifierInput(publicProofJson(entry));
+      document.getElementById("proofVerifier")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
 }
 
 async function loadAuditProofs() {
@@ -1124,6 +1204,73 @@ async function loadAuditProofs() {
       `;
     }
   }
+}
+
+async function verifyProofInput() {
+  const input = document.getElementById("proofInput");
+  const result = document.getElementById("proofVerifyResult");
+  const status = document.getElementById("copyProofStatus");
+  if (!input || !result) return;
+  const raw = input.value.trim();
+  if (!raw) {
+    result.innerHTML = `<div class="proof-result-card is-fail"><strong>Missing proof JSON</strong><span>Paste a proof object first.</span></div>`;
+    return;
+  }
+
+  try {
+    let parsed = null;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = null;
+    }
+    const canonical = parsed?.canonical || (parsed?.payload ? stableStringify(parsed.payload) : raw);
+    const expectedHash = parsed?.hash || "";
+    const actualHash = await sha256Hex(canonical);
+    const payload = parsed?.payload || (parsed?.canonical ? JSON.parse(parsed.canonical) : parsed);
+    const lockedAt = parsed?.lockedAt || payload?.lockedAt;
+    const kickoffAt = parsed?.kickoffAt || payload?.kickoffAt;
+    const timeOk = lockedAt && kickoffAt ? new Date(lockedAt).getTime() < new Date(kickoffAt).getTime() : null;
+    const hashOk = expectedHash ? actualHash === expectedHash : null;
+    const external = parsed?.externalProof?.commitUrl
+      ? `<a href="${parsed.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
+      : parsed?.externalProof?.error
+        ? "GitHub proof pending"
+        : "No external timestamp in this proof JSON";
+
+    result.innerHTML = `
+      <div class="proof-result-grid">
+        <article class="proof-result-card ${hashOk === false ? "is-fail" : "is-pass"}">
+          <strong>${hashOk === null ? "HASH CALCULATED" : hashOk ? "HASH MATCH" : "HASH MISMATCH"}</strong>
+          <span>Calculated SHA-256: <code>${actualHash}</code></span>
+          ${expectedHash ? `<span>Expected hash: <code>${expectedHash}</code></span>` : "<span>No expected hash was included; use this calculated hash for manual comparison.</span>"}
+        </article>
+        <article class="proof-result-card ${timeOk === false ? "is-fail" : "is-pass"}">
+          <strong>${timeOk === null ? "TIME UNKNOWN" : timeOk ? "LOCKED BEFORE KICKOFF" : "LOCK TIME FAILED"}</strong>
+          <span>Locked: ${formatProofTime(lockedAt)}</span>
+          <span>Kickoff: ${formatProofTime(kickoffAt)}</span>
+        </article>
+        <article class="proof-result-card">
+          <strong>${payload?.match || parsed?.match || "PAUL proof"}</strong>
+          <span>Match #${payload?.matchId || parsed?.matchId || "N/A"} · ${payload?.round || parsed?.round || "N/A"}</span>
+          <span>Pick: ${payload?.prediction?.winnerName || payload?.prediction?.winnerCode || "N/A"} · Score ${payload?.prediction?.predictedScore || "N/A"}</span>
+          <span>${external}</span>
+        </article>
+      </div>
+    `;
+    if (status) status.textContent = "Proof verification completed locally in this browser.";
+  } catch (error) {
+    result.innerHTML = `<div class="proof-result-card is-fail"><strong>Verification failed</strong><span>${error.message}</span></div>`;
+  }
+}
+
+function clearProofVerifier() {
+  const input = document.getElementById("proofInput");
+  const result = document.getElementById("proofVerifyResult");
+  const status = document.getElementById("copyProofStatus");
+  if (input) input.value = "";
+  if (result) result.innerHTML = "";
+  if (status) status.textContent = "No proof loaded.";
 }
 
 function renderVerifyReport(data) {
@@ -1398,6 +1545,8 @@ function init() {
   document.getElementById("runAutomationButton")?.addEventListener("click", runDueAutomation);
   document.getElementById("runVerifyButton")?.addEventListener("click", runDryVerification);
   document.getElementById("runResultsHealthButton")?.addEventListener("click", runResultsHealthCheck);
+  document.getElementById("verifyProofButton")?.addEventListener("click", verifyProofInput);
+  document.getElementById("clearProofButton")?.addEventListener("click", clearProofVerifier);
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();
