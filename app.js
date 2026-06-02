@@ -1120,7 +1120,7 @@ function publicProofJson(entry) {
 async function demoProofJson() {
   const match = tournament.matches[0];
   const kickoff = matchKickoffTime(match);
-  const lockedAt = new Date(kickoff.getTime() - 24 * 60 * 60 * 1000).toISOString();
+  const lockedAt = new Date().toISOString();
   const kickoffAt = kickoff.toISOString();
   const payload = {
     version: "paul-proof-v2",
@@ -1323,6 +1323,7 @@ async function verifyProofInput() {
     const evidence = payload?.evidence || {};
     const market = evidence.market || {};
     const odds = market.odds || {};
+    const hasExternalTimestamp = Boolean(parsed?.externalProof?.commitUrl);
     const external = parsed?.externalProof?.commitUrl
       ? `<a href="${parsed.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
       : parsed?.externalProof?.error
@@ -1336,10 +1337,16 @@ async function verifyProofInput() {
           <span>Calculated SHA-256: <code>${actualHash}</code></span>
           ${expectedHash ? `<span>Expected hash: <code>${expectedHash}</code></span>` : "<span>No expected hash was included; use this calculated hash for manual comparison.</span>"}
         </article>
-        <article class="proof-result-card ${timeOk === false ? "is-fail" : "is-pass"}">
-          <strong>${timeOk === null ? "TIME UNKNOWN" : timeOk ? "LOCKED BEFORE KICKOFF" : "LOCK TIME FAILED"}</strong>
+        <article class="proof-result-card ${timeOk === false ? "is-fail" : "is-warn"}">
+          <strong>${timeOk === null ? "SELF-DECLARED TIME UNKNOWN" : timeOk ? "SELF-DECLARED BEFORE KICKOFF" : "SELF-DECLARED TIME FAILED"}</strong>
           <span>Locked: ${formatProofTime(lockedAt)}</span>
           <span>Kickoff: ${formatProofTime(kickoffAt)}</span>
+          <span>This timestamp is only trusted if an independent public timestamp also exists.</span>
+        </article>
+        <article class="proof-result-card ${hasExternalTimestamp ? "is-pass" : "is-warn"}">
+          <strong>${hasExternalTimestamp ? "PUBLIC TIMESTAMP FOUND" : "NO INDEPENDENT TIMESTAMP"}</strong>
+          <span>${external}</span>
+          <span>${hasExternalTimestamp ? "The GitHub commit time can be checked outside this site." : "Hash is valid, but the lockedAt value could still be backdated without an external timestamp."}</span>
         </article>
         <article class="proof-result-card">
           <strong>${payload?.match || parsed?.match || "PAUL proof"}</strong>

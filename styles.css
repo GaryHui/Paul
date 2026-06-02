@@ -869,6 +869,10 @@ input {
   border-color: rgba(255, 93, 108, 0.48);
 }
 
+.proof-result-card.is-warn {
+  border-color: rgba(255, 205, 87, 0.5);
+}
+
 .proof-result-card strong {
   color: var(--green);
   font-size: 13px;
@@ -877,6 +881,10 @@ input {
 
 .proof-result-card.is-fail strong {
   color: var(--red);
+}
+
+.proof-result-card.is-warn strong {
+  color: var(--gold);
 }
 
 .proof-result-card span {
