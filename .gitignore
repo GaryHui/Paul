@@ -4,3 +4,5 @@ node_modules/
 npm-debug.log*
 data/qwen-predictions.json
 data/match-results.json
+
+.vercel
