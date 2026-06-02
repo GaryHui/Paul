@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { fetchRemoteMarketOdds, oddsToProbabilities } = require("./odds");
+const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");

@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { resolveMatches, stageAccuracySnapshot } = require("./api/_lib/bracket");
 const { fetchMatchResult: fetchSharedMatchResult, hasResultsProvider, providerName } = require("./api/_lib/results");
-const { fetchRemoteMarketOdds } = require("./api/_lib/odds");
+const { fetchRemoteMarketOdds } = require("./lib/odds");
 
 const root = __dirname;
 const dataDir = path.join(root, "data");
