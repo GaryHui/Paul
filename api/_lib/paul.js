@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { fetchRemoteMarketOdds, oddsToProbabilities } = require("./odds");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -23,15 +24,6 @@ function normalize3Way(probs) {
   return { home: home / sum, draw: draw / sum, away: away / sum };
 }
 
-function oddsToProbabilities(odds) {
-  if (!odds) return null;
-  const homeOdds = Number(odds.home || odds.a || odds.teamA);
-  const drawOdds = Number(odds.draw);
-  const awayOdds = Number(odds.away || odds.b || odds.teamB);
-  if (!homeOdds || !drawOdds || !awayOdds) return null;
-  return normalize3Way({ home: 1 / homeOdds, draw: 1 / drawOdds, away: 1 / awayOdds });
-}
-
 function findByMatchId(collection, matchId) {
   if (!collection) return null;
   if (Array.isArray(collection)) {
@@ -48,14 +40,15 @@ function findTeamRecord(collection, code) {
   return collection[code] || null;
 }
 
-function collectPredictionEvidence(match) {
+async function collectPredictionEvidence(match, options = {}) {
   const oddsFile = path.join(dataDir, "market-odds.json");
   const ratingsFile = path.join(dataDir, "team-ratings.json");
   const formFile = path.join(dataDir, "recent-form.json");
   const allOdds = readJson(oddsFile, {});
   const allRatings = readJson(ratingsFile, {});
   const allForm = readJson(formFile, {});
-  const oddsRecord = findByMatchId(allOdds, match.id);
+  const remoteOdds = options.liveOdds === false ? { record: null, errors: [] } : await fetchRemoteMarketOdds(match);
+  const oddsRecord = remoteOdds.record || findByMatchId(allOdds, match.id);
   const marketProb = oddsToProbabilities(oddsRecord?.odds || oddsRecord);
   const ratingA = findTeamRecord(allRatings, match.teamA.code);
   const ratingB = findTeamRecord(allRatings, match.teamB.code);
@@ -71,7 +64,19 @@ function collectPredictionEvidence(match) {
     generatedAt: new Date().toISOString(),
     hasPrimaryEvidence,
     missing,
-    market: marketProb ? { odds: oddsRecord?.odds || oddsRecord, probabilities: marketProb } : null,
+    market: marketProb
+      ? {
+          source: remoteOdds.record ? oddsRecord.source : "data/market-odds.json",
+          provider: oddsRecord.provider || oddsRecord.bookmaker || oddsRecord.source || "local",
+          eventId: oddsRecord.eventId || null,
+          updatedAt: oddsRecord.updatedAt || null,
+          bookmakerCount: oddsRecord.bookmakerCount || null,
+          sampleBookmakers: oddsRecord.sampleBookmakers || null,
+          odds: oddsRecord?.odds || oddsRecord,
+          probabilities: marketProb
+        }
+      : null,
+    marketFetchErrors: remoteOdds.errors,
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null
   };
@@ -103,7 +108,7 @@ async function callPaul(payload) {
     error.status = 400;
     throw error;
   }
-  const evidence = collectPredictionEvidence(payload);
+  const evidence = await collectPredictionEvidence(payload);
   const useSearchFallback = !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
   evidence.searchFallback = useSearchFallback;
   const requestBody = {

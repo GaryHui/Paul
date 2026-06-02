@@ -6,13 +6,34 @@ The site now refuses to create a formal prediction unless it has real input data
 
 Use at least one primary source:
 
-- `market-odds.json`: 1X2 market odds or probabilities.
+- Live odds provider env vars, preferred:
+  - `ODDS_API_IO_KEY`: Odds-API.io key. The app checks football events, finds the matching fixture, then pulls 1X2 odds.
+  - `THE_ODDS_API_KEY`: TheOddsAPI key. Used as a secondary live odds provider.
+- `market-odds.json`: local 1X2 market odds or probabilities, used only when live providers are not configured or no matching event is found.
 - `team-ratings.json`: real team ratings such as Elo/SPI plus optional attack/defense values.
 
 Optional but useful:
 
 - `recent-form.json`: recent match form, injuries, rest days, or notes.
 - `RESULTS_API_URL`: API endpoint for final scores.
+
+## Live odds environment variables
+
+Keep all keys server-side in Vercel Production env vars. Never put them in `app.js` or `index.html`.
+
+```text
+ODDS_API_IO_KEY=...
+ODDS_API_IO_SPORT=football
+ODDS_BOOKMAKERS=Bet365,Pinnacle,Unibet
+
+THE_ODDS_API_KEY=...
+THE_ODDS_SPORT_KEY=soccer_fifa_world_cup
+ODDS_REGIONS=us,uk,eu
+```
+
+`ODDS_API_IO_KEY` is tried first. `THE_ODDS_API_KEY` is tried second. If neither returns a matching event, PAUL falls back to `market-odds.json`. Live odds are fetched only when PAUL is about to create a formal prediction or when the private evidence endpoint is requested, not on every page view.
+
+Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 
 ## `market-odds.json`
 

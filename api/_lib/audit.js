@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const { getAuditLog, setAuditEntry } = require("./store");
 
-const proofVersion = "paul-proof-v1";
+const proofVersion = "paul-proof-v2";
 
 function stableStringify(value) {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -34,6 +34,29 @@ function compactPrediction(analysis = {}) {
   };
 }
 
+function compactEvidence(evidence = {}) {
+  return {
+    generatedAt: evidence.generatedAt || null,
+    hasPrimaryEvidence: Boolean(evidence.hasPrimaryEvidence),
+    missing: evidence.missing || [],
+    market: evidence.market
+      ? {
+          source: evidence.market.source || null,
+          provider: evidence.market.provider || null,
+          eventId: evidence.market.eventId || null,
+          updatedAt: evidence.market.updatedAt || null,
+          bookmakerCount: evidence.market.bookmakerCount || null,
+          sampleBookmakers: evidence.market.sampleBookmakers || null,
+          odds: evidence.market.odds || null,
+          probabilities: evidence.market.probabilities || null
+        }
+      : null,
+    ratings: evidence.ratings || null,
+    form: evidence.form || null,
+    searchFallback: Boolean(evidence.searchFallback)
+  };
+}
+
 function buildProofPayload(match, record, nonce) {
   return {
     version: proofVersion,
@@ -48,6 +71,7 @@ function buildProofPayload(match, record, nonce) {
     lockedAt: record.generatedAt,
     model: record.model || "PAUL",
     prediction: compactPrediction(record.analysis),
+    evidence: compactEvidence(record.evidence),
     nonce
   };
 }

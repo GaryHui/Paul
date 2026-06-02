@@ -1049,7 +1049,11 @@ async function loadAutomationStatus() {
     const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
     const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
     const readiness = status.dataReadiness || {};
-    const oddsState = readiness.marketOdds ? "market odds loaded" : "market odds missing";
+    const oddsState = readiness.liveOddsProvider
+      ? `live odds via ${readiness.liveOddsProvider}`
+      : readiness.marketOdds
+        ? "market odds loaded"
+        : "market odds missing";
     const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
     statusText.textContent = `${qwenState}; ${oddsState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
@@ -1232,6 +1236,9 @@ async function verifyProofInput() {
     const kickoffAt = parsed?.kickoffAt || payload?.kickoffAt;
     const timeOk = lockedAt && kickoffAt ? new Date(lockedAt).getTime() < new Date(kickoffAt).getTime() : null;
     const hashOk = expectedHash ? actualHash === expectedHash : null;
+    const evidence = payload?.evidence || {};
+    const market = evidence.market || {};
+    const odds = market.odds || {};
     const external = parsed?.externalProof?.commitUrl
       ? `<a href="${parsed.externalProof.commitUrl}" target="_blank" rel="noreferrer">GitHub commit timestamp</a>`
       : parsed?.externalProof?.error
@@ -1255,6 +1262,12 @@ async function verifyProofInput() {
           <span>Match #${payload?.matchId || parsed?.matchId || "N/A"} · ${payload?.round || parsed?.round || "N/A"}</span>
           <span>Pick: ${payload?.prediction?.winnerName || payload?.prediction?.winnerCode || "N/A"} · Score ${payload?.prediction?.predictedScore || "N/A"}</span>
           <span>${external}</span>
+        </article>
+        <article class="proof-result-card">
+          <strong>Evidence Snapshot</strong>
+          <span>Market source: ${market.source || "N/A"} ${market.provider ? `(${market.provider})` : ""}</span>
+          <span>Bookmakers: ${market.bookmakerCount || "N/A"}${market.sampleBookmakers?.length ? ` · ${market.sampleBookmakers.join(", ")}` : ""}</span>
+          <span>1X2 odds: ${odds.home || "N/A"} / ${odds.draw || "N/A"} / ${odds.away || "N/A"}</span>
         </article>
       </div>
     `;

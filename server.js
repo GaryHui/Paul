@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { resolveMatches, stageAccuracySnapshot } = require("./api/_lib/bracket");
 const { fetchMatchResult: fetchSharedMatchResult, hasResultsProvider, providerName } = require("./api/_lib/results");
+const { fetchRemoteMarketOdds } = require("./api/_lib/odds");
 
 const root = __dirname;
 const dataDir = path.join(root, "data");
@@ -213,13 +214,14 @@ function favoriteFromProbabilities(match, probabilities) {
   return candidates[0];
 }
 
-function collectPredictionEvidence(match) {
+async function collectPredictionEvidence(match, options = {}) {
   const allOdds = readJson(oddsFile, {});
   const allRatings = readJson(ratingsFile, {});
   const allForm = readJson(formFile, {});
   const allowDraw = match.round === "Group Stage";
 
-  const oddsRecord = findByMatchId(allOdds, match.id);
+  const remoteOdds = options.liveOdds === false ? { record: null, errors: [] } : await fetchRemoteMarketOdds(match);
+  const oddsRecord = remoteOdds.record || findByMatchId(allOdds, match.id);
   const marketProb = oddsToProbabilities(oddsRecord?.odds || oddsRecord);
   const ratingA = findTeamRecord(allRatings, match.teamA.code);
   const ratingB = findTeamRecord(allRatings, match.teamB.code);
@@ -255,11 +257,23 @@ function collectPredictionEvidence(match) {
     hasPrimaryEvidence,
     missing,
     sources: {
-      marketOdds: marketProb ? "data/market-odds.json" : null,
+      marketOdds: marketProb ? (remoteOdds.record ? oddsRecord.source : "data/market-odds.json") : null,
       ratings: eloProb || poisson ? "data/team-ratings.json" : null,
       recentForm: formA && formB ? "data/recent-form.json" : null
     },
-    market: marketProb ? { odds: oddsRecord?.odds || oddsRecord, probabilities: marketProb } : null,
+    market: marketProb
+      ? {
+          source: remoteOdds.record ? oddsRecord.source : "data/market-odds.json",
+          provider: oddsRecord.provider || oddsRecord.bookmaker || oddsRecord.source || "local",
+          eventId: oddsRecord.eventId || null,
+          updatedAt: oddsRecord.updatedAt || null,
+          bookmakerCount: oddsRecord.bookmakerCount || null,
+          sampleBookmakers: oddsRecord.sampleBookmakers || null,
+          odds: oddsRecord?.odds || oddsRecord,
+          probabilities: marketProb
+        }
+      : null,
+    marketFetchErrors: remoteOdds.errors,
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
     poisson,
@@ -290,13 +304,14 @@ function buildQwenPrompt(payload, evidence) {
   ].join("\n");
 }
 
-async function callQwenAnalysis(payload, evidence = collectPredictionEvidence(payload)) {
+async function callQwenAnalysis(payload, evidence = null) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
     const error = new Error("PAUL AI is not connected: missing DASHSCOPE_API_KEY.");
     error.status = 400;
     throw error;
   }
+  evidence = evidence || await collectPredictionEvidence(payload);
   const useSearchFallback = !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
   evidence.searchFallback = useSearchFallback;
 
@@ -365,7 +380,7 @@ async function handleQwen(req, res) {
       sendJson(res, 200, { ...predictions[payload.id], locked: true, persisted: true });
       return;
     }
-    const evidence = collectPredictionEvidence(payload);
+    const evidence = await collectPredictionEvidence(payload);
     const result = await callQwenAnalysis(payload, evidence);
     const record = {
       matchId: payload.id,
@@ -438,7 +453,7 @@ async function runDueAutomation({ force = false } = {}) {
 
     if (shouldPredict && !predictions[match.id]) {
       try {
-        const evidence = collectPredictionEvidence(match);
+        const evidence = await collectPredictionEvidence(match);
         predictions[match.id] = {
           matchId: match.id,
           generatedAt: now.toISOString(),
@@ -469,21 +484,26 @@ async function runDueAutomation({ force = false } = {}) {
   writeJson(resultsFile, results);
   return {
     events,
-    summary: buildAutomationStatus(matches, predictions, results)
+      summary: await buildAutomationStatus(matches, predictions, results)
   };
 }
 
-function dataReadiness(matches) {
-  const first = matches[0] ? collectPredictionEvidence(matches[0]) : null;
+async function dataReadiness(matches) {
+  const first = matches[0] ? await collectPredictionEvidence(matches[0], { liveOdds: false }) : null;
   return {
     marketOdds: fs.existsSync(oddsFile),
     teamRatings: fs.existsSync(ratingsFile),
     recentForm: fs.existsSync(formFile),
+    liveOddsProvider: process.env.ODDS_API_IO_KEY
+      ? "odds-api.io"
+      : process.env.THE_ODDS_API_KEY
+        ? "theoddsapi.com"
+        : null,
     firstMatchEvidence: first
   };
 }
 
-function buildAutomationStatus(matches, predictions, results) {
+async function buildAutomationStatus(matches, predictions, results) {
   const resolvedMatches = resolveMatches(matches, results);
   return {
     totalMatches: matches.length,
@@ -499,7 +519,7 @@ function buildAutomationStatus(matches, predictions, results) {
       teamA: match.teamA || null,
       teamB: match.teamB || null
     })),
-    dataReadiness: dataReadiness(matches),
+    dataReadiness: await dataReadiness(matches),
     predictionLeadHours,
     resultSyncDelayHours,
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
@@ -525,7 +545,7 @@ async function handleAutomation(req, res) {
       const matches = readJson(snapshotFile, { matches: [] }).matches || [];
       const predictions = readJson(predictionsFile, {});
       const results = readJson(resultsFile, {});
-      sendJson(res, 200, buildAutomationStatus(matches, predictions, results));
+      sendJson(res, 200, await buildAutomationStatus(matches, predictions, results));
       return;
     }
     sendJson(res, 404, { error: "Automation route not found." });
@@ -543,7 +563,7 @@ async function handleEvidence(req, res) {
     sendJson(res, 404, { error: "Match not found in snapshot." });
     return;
   }
-  sendJson(res, 200, collectPredictionEvidence(match));
+  sendJson(res, 200, await collectPredictionEvidence(match));
 }
 
 setInterval(() => {

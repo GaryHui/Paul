@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
   const resolvedMatches = resolveMatches(snapshot.matches, results);
   const auditEntries = await auditSnapshot();
   const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
-  const first = firstResolved ? collectPredictionEvidence(firstResolved) : null;
+  const first = firstResolved ? await collectPredictionEvidence(firstResolved, { liveOdds: false }) : null;
   res.status(200).json({
     totalMatches: snapshot.matches.length,
     predictionCount: Object.keys(predictions).length,
@@ -34,6 +34,11 @@ module.exports = async function handler(req, res) {
       marketOdds: fs.existsSync(path.join(dataDir, "market-odds.json")),
       teamRatings: fs.existsSync(path.join(dataDir, "team-ratings.json")),
       recentForm: fs.existsSync(path.join(dataDir, "recent-form.json")),
+      liveOddsProvider: process.env.ODDS_API_IO_KEY
+        ? "odds-api.io"
+        : process.env.THE_ODDS_API_KEY
+          ? "theoddsapi.com"
+          : null,
       firstMatchEvidence: first
     },
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
