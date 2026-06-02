@@ -264,6 +264,10 @@ input {
   font: inherit;
 }
 
+.match-card > span:nth-child(2) {
+  min-width: 0;
+}
+
 .match-card:hover,
 .match-card.is-active {
   background: rgba(75, 185, 255, 0.12);
@@ -340,9 +344,10 @@ input {
 
 .team-card-heading {
   display: grid;
-  grid-template-columns: minmax(70px, 104px) minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 12px;
-  align-items: center;
+  justify-items: center;
+  text-align: center;
 }
 
 .flag-frame {
@@ -374,6 +379,7 @@ input {
   width: 32px;
   min-width: 32px;
   max-width: 32px;
+  height: 24px;
   border-radius: 4px;
   box-shadow: none;
 }
@@ -382,6 +388,14 @@ input {
   display: flex;
   align-items: center;
   gap: 9px;
+  min-width: 0;
+}
+
+.match-title > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .match-flags {
@@ -394,9 +408,10 @@ input {
 .team-name {
   font-size: clamp(22px, 2.1vw, 32px);
   font-weight: 900;
-  line-height: 1;
+  line-height: 1.08;
   overflow-wrap: normal;
   word-break: normal;
+  max-width: 100%;
 }
 
 .team-code {
