@@ -1,4 +1,5 @@
 const { createAuditEntry, sha256 } = require("../_lib/audit");
+const { runBacktest } = require("../_lib/backtest");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
 const { loadSnapshot } = require("../_lib/paul");
 const { configuredProviders, fetchMatchResult, hasResultsProvider, providerName } = require("../_lib/results");
@@ -272,6 +273,10 @@ module.exports = async function handler(req, res) {
     const snapshot = loadSnapshot();
     if (requestMode(req) === "results-health") {
       res.status(200).json(await resultsHealth(snapshot));
+      return;
+    }
+    if (requestMode(req) === "backtest") {
+      res.status(200).json(runBacktest());
       return;
     }
     const { results, roundStats, resolved } = simulateTournament(snapshot);

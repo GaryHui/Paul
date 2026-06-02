@@ -1951,7 +1951,7 @@ async function runHistoricalBacktest() {
     } catch {
       // Session storage is optional.
     }
-    const response = await fetch("/api/test/backtest", {
+    const response = await fetch("/api/test/simulate?mode=backtest", {
       headers: { "X-Verify-Token": token }
     });
     const data = await response.json();
