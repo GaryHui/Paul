@@ -736,6 +736,77 @@ input {
   margin-top: 18px;
 }
 
+.proof-ledger-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  background: rgba(16, 32, 42, 0.76);
+}
+
+.proof-ledger-stats div {
+  padding: 16px;
+  border-right: 1px solid var(--line);
+}
+
+.proof-ledger-stats div:last-child {
+  border-right: 0;
+}
+
+.proof-ledger-stats strong {
+  display: block;
+  color: var(--gold);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+}
+
+.proof-ledger-stats span,
+.proof-ledger-status {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.proof-ledger-controls {
+  display: grid;
+  grid-template-columns: 180px minmax(220px, 1fr) auto minmax(220px, 0.9fr);
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.proof-ledger-controls label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.proof-ledger-controls select,
+.proof-ledger-controls input {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #102938;
+  color: #eef7fb;
+  padding: 0 14px;
+  font: inherit;
+  font-weight: 800;
+}
+
+.proof-ledger-controls .button {
+  min-height: 44px;
+}
+
+.proof-ledger-status {
+  align-self: center;
+  text-transform: none;
+}
+
 .proof-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1281,8 +1352,17 @@ input {
   .verify-groups,
   .verify-checks,
   .verify-health-grid,
+  .proof-ledger-stats,
   .proof-result-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .proof-ledger-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .proof-ledger-status {
+    grid-column: 1 / -1;
   }
 
   .pk-stage {
@@ -1328,10 +1408,22 @@ input {
   .verify-groups,
   .verify-checks,
   .verify-health-grid,
+  .proof-ledger-stats,
+  .proof-ledger-controls,
   .proof-result-grid,
+  .proof-grid,
   .model-grid,
   .qwen-panel {
     grid-template-columns: 1fr;
+  }
+
+  .proof-ledger-stats div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .proof-ledger-stats div:last-child {
+    border-bottom: 0;
   }
 
   .model-card {

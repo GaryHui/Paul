@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-30" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-31" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -145,6 +145,40 @@
             Official proofs also try to create an OpenTimestamps .ots receipt, so anyone can verify the same hash outside this site.
           </p>
         </div>
+        <div class="proof-ledger-stats" aria-label="Proof ledger statistics">
+          <div>
+            <strong id="proofTotalStat">0</strong>
+            <span>Total proofs</span>
+          </div>
+          <div>
+            <strong id="proofGroupStat">0</strong>
+            <span>Group stage</span>
+          </div>
+          <div>
+            <strong id="proofKnockoutStat">0</strong>
+            <span>Knockout</span>
+          </div>
+          <div>
+            <strong id="proofOtsStat">0</strong>
+            <span>OTS receipts</span>
+          </div>
+        </div>
+        <div class="proof-ledger-controls">
+          <label>
+            Round
+            <select id="proofRoundFilter">
+              <option value="All">All rounds</option>
+              <option value="Group Stage">Group stage</option>
+              <option value="Knockout">Knockout</option>
+            </select>
+          </label>
+          <label>
+            Search
+            <input id="proofSearchBox" type="search" placeholder="Match, team, hash, round..." />
+          </label>
+          <button class="button button--ghost" id="proofToggleButton" type="button" hidden>Show all proofs</button>
+          <span id="proofLedgerStatus">No locked proofs yet.</span>
+        </div>
         <div class="proof-grid" id="proofGrid">
           <article class="proof-card">
             <h3>No locked proofs yet</h3>
@@ -197,6 +231,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-30"></script>
+    <script src="app.js?v=paul-ai-31"></script>
   </body>
 </html>

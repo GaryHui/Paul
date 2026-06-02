@@ -464,6 +464,8 @@ let automationState = {
 };
 const storedPredictionKey = "paul.manualPredictions.v2";
 let publicProofEntries = [];
+let proofLedgerExpanded = false;
+const proofLedgerLimit = 12;
 
 function loadStoredPredictions() {
   try {
@@ -1292,60 +1294,110 @@ function setProofVerifierInput(value) {
   if (status) status.textContent = "Proof JSON loaded. Click Verify Proof.";
 }
 
-function renderProofs(entries) {
-  const grid = document.getElementById("proofGrid");
-  if (!grid) return;
-  publicProofEntries = entries;
-  if (!entries.length) {
-    grid.innerHTML = `
-      <article class="proof-card">
-        <h3>No locked proofs yet</h3>
-        <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
-      </article>
-    `;
-    return;
+function proofIsKnockout(entry) {
+  return entry.round && entry.round !== "Group Stage";
+}
+
+function proofMatchesLedgerFilters(entry) {
+  const roundFilter = document.getElementById("proofRoundFilter")?.value || "All";
+  const search = (document.getElementById("proofSearchBox")?.value || "").trim().toLowerCase();
+  if (roundFilter === "Group Stage" && entry.round !== "Group Stage") return false;
+  if (roundFilter === "Knockout" && !proofIsKnockout(entry)) return false;
+  if (!search) return true;
+  const haystack = [
+    entry.id,
+    entry.matchId,
+    entry.match,
+    entry.round,
+    entry.hash,
+    entry.lockedAt,
+    entry.kickoffAt,
+    entry.payload?.prediction?.winnerName,
+    entry.payload?.prediction?.winnerCode,
+    entry.payload?.teams?.home?.name,
+    entry.payload?.teams?.away?.name
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(search);
+}
+
+function updateProofLedger(entries, filteredEntries, visibleEntries) {
+  const total = entries.length;
+  const group = entries.filter((entry) => entry.round === "Group Stage").length;
+  const knockout = entries.filter(proofIsKnockout).length;
+  const ots = entries.filter((entry) => Boolean(otsProof(entry.externalProof)?.otsBase64)).length;
+  const totalStat = document.getElementById("proofTotalStat");
+  const groupStat = document.getElementById("proofGroupStat");
+  const knockoutStat = document.getElementById("proofKnockoutStat");
+  const otsStat = document.getElementById("proofOtsStat");
+  const status = document.getElementById("proofLedgerStatus");
+  const toggle = document.getElementById("proofToggleButton");
+  if (totalStat) totalStat.textContent = String(total);
+  if (groupStat) groupStat.textContent = String(group);
+  if (knockoutStat) knockoutStat.textContent = String(knockout);
+  if (otsStat) otsStat.textContent = String(ots);
+  if (toggle) {
+    toggle.hidden = filteredEntries.length <= proofLedgerLimit;
+    toggle.textContent = proofLedgerExpanded ? "Show latest 12" : `Show all ${filteredEntries.length}`;
   }
+  if (status) {
+    if (!total) {
+      status.textContent = "No locked proofs yet.";
+    } else if (!filteredEntries.length) {
+      status.textContent = `No proofs match this filter. ${total} official proofs are still retained.`;
+    } else if (visibleEntries.length === filteredEntries.length) {
+      status.textContent = `Showing ${visibleEntries.length} of ${total} retained official proofs.`;
+    } else {
+      status.textContent = `Showing latest ${visibleEntries.length} of ${filteredEntries.length} matching proofs. ${total} proofs are retained.`;
+    }
+  }
+}
 
-  grid.innerHTML = entries
-    .map((entry) => {
-      const github = githubProof(entry.externalProof);
-      const ots = otsProof(entry.externalProof);
-      const githubLine = github?.commitUrl
-        ? `<a href="${github.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
-        : github?.error
-          ? `<span>GitHub pending: ${github.error}</span>`
-          : `<span>No GitHub timestamp</span>`;
-      const otsLine = ots?.otsBase64
-        ? `<span>OpenTimestamps .ots ready (${ots.otsBytes || "N/A"} bytes)</span>`
-        : ots?.error
-          ? `<span>OpenTimestamps pending: ${ots.error}</span>`
-          : `<span>No OpenTimestamps proof</span>`;
-      return `
-        <article class="proof-card">
-          <div class="proof-card__top">
-            <span class="winner-pill">${entry.verified ? "Hash verified" : "Hash mismatch"}</span>
-            <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? "Before kickoff" : "Check time"}</span>
-          </div>
-          <h3>#${entry.matchId} ${entry.match}</h3>
-          <dl>
-            <div><dt>Locked</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
-            <div><dt>Kickoff</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
-            <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
-            <div><dt>GitHub proof</dt><dd>${githubLine}</dd></div>
-            <div><dt>OpenTimestamps</dt><dd>${otsLine}</dd></div>
-          </dl>
-          <div class="proof-card__actions">
-            <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
-            <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
-            <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">Download canonical</button>
-            ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
-            ${ots?.otsBase64 ? `<a class="button button--ghost" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">Open OTS verifier</a>` : ""}
-          </div>
-        </article>
-      `;
-    })
-    .join("");
+function proofCardMarkup(entry) {
+  const github = githubProof(entry.externalProof);
+  const ots = otsProof(entry.externalProof);
+  const prediction = entry.payload?.prediction;
+  const githubLine = github?.commitUrl
+    ? `<a href="${github.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
+    : github?.error
+      ? `<span>GitHub pending: ${github.error}</span>`
+      : `<span>No GitHub timestamp</span>`;
+  const otsLine = ots?.otsBase64
+    ? `<span>OpenTimestamps .ots ready (${ots.otsBytes || "N/A"} bytes)</span>`
+    : ots?.error
+      ? `<span>OpenTimestamps pending: ${ots.error}</span>`
+      : `<span>No OpenTimestamps proof</span>`;
+  return `
+    <article class="proof-card">
+      <div class="proof-card__top">
+        <span class="winner-pill">${entry.verified ? "Hash verified" : "Hash mismatch"}</span>
+        <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? "Before kickoff" : "Check time"}</span>
+        ${ots?.otsBase64 ? `<span class="winner-pill">OTS receipt</span>` : ""}
+      </div>
+      <h3>#${entry.matchId} ${entry.match}</h3>
+      <dl>
+        <div><dt>Round</dt><dd>${entry.round || "Unknown"}</dd></div>
+        ${prediction?.winnerName ? `<div><dt>Pick</dt><dd>${prediction.winnerName}${prediction.predictedScore ? ` · ${prediction.predictedScore}` : ""}</dd></div>` : ""}
+        <div><dt>Locked</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
+        <div><dt>Kickoff</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
+        <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
+        <div><dt>GitHub proof</dt><dd>${githubLine}</dd></div>
+        <div><dt>OpenTimestamps</dt><dd>${otsLine}</dd></div>
+      </dl>
+      <div class="proof-card__actions">
+        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy Proof JSON</button>
+        <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
+        <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">Download canonical</button>
+        ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
+        ${ots?.otsBase64 ? `<a class="button button--ghost" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">Open OTS verifier</a>` : ""}
+      </div>
+    </article>
+  `;
+}
 
+function bindProofCardActions(grid) {
   grid.querySelectorAll(".proof-copy-button").forEach((button) => {
     button.addEventListener("click", async () => {
       const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
@@ -1378,6 +1430,38 @@ function renderProofs(entries) {
       if (entry) downloadCanonicalProof(entry);
     });
   });
+}
+
+function renderProofs(entries) {
+  const grid = document.getElementById("proofGrid");
+  if (!grid) return;
+  publicProofEntries = entries;
+  const filteredEntries = entries.filter(proofMatchesLedgerFilters);
+  const visibleEntries = proofLedgerExpanded ? filteredEntries : filteredEntries.slice(0, proofLedgerLimit);
+  updateProofLedger(entries, filteredEntries, visibleEntries);
+
+  if (!entries.length) {
+    grid.innerHTML = `
+      <article class="proof-card">
+        <h3>No locked proofs yet</h3>
+        <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
+      </article>
+    `;
+    return;
+  }
+
+  if (!filteredEntries.length) {
+    grid.innerHTML = `
+      <article class="proof-card">
+        <h3>No matching proofs</h3>
+        <p>Change the round filter or search term. The official proof ledger still keeps every locked prediction.</p>
+      </article>
+    `;
+    return;
+  }
+
+  grid.innerHTML = visibleEntries.map(proofCardMarkup).join("");
+  bindProofCardActions(grid);
 }
 
 async function loadAuditProofs() {
@@ -1805,6 +1889,18 @@ function init() {
   document.getElementById("loadDemoProofButton")?.addEventListener("click", loadDemoProof);
   document.getElementById("verifyProofButton")?.addEventListener("click", verifyProofInput);
   document.getElementById("clearProofButton")?.addEventListener("click", clearProofVerifier);
+  document.getElementById("proofRoundFilter")?.addEventListener("change", () => {
+    proofLedgerExpanded = false;
+    renderProofs(publicProofEntries);
+  });
+  document.getElementById("proofSearchBox")?.addEventListener("input", () => {
+    proofLedgerExpanded = false;
+    renderProofs(publicProofEntries);
+  });
+  document.getElementById("proofToggleButton")?.addEventListener("click", () => {
+    proofLedgerExpanded = !proofLedgerExpanded;
+    renderProofs(publicProofEntries);
+  });
   updateChampionLabel();
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();
