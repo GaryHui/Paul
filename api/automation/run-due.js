@@ -7,6 +7,43 @@ const { getPredictions, getResults, setPrediction, setResult } = require("../_li
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
 
+function requestToken(req) {
+  const auth = req.headers?.authorization || "";
+  if (auth.toLowerCase().startsWith("bearer ")) return auth.slice(7).trim();
+  if (req.headers?.["x-verify-token"]) return String(req.headers["x-verify-token"]).trim();
+  try {
+    const url = new URL(req.url || "", "https://paul.local");
+    return url.searchParams.get("token") || url.searchParams.get("verify") || "";
+  } catch {
+    return "";
+  }
+}
+
+function assertOwner(req) {
+  const expected = process.env.VERIFY_TOKEN;
+  if (!expected) {
+    const error = new Error("VERIFY_TOKEN is not configured.");
+    error.status = 403;
+    throw error;
+  }
+  if (requestToken(req) !== expected) {
+    const error = new Error("Unauthorized force run.");
+    error.status = 401;
+    throw error;
+  }
+}
+
+function assertCron(req) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return;
+  const auth = req.headers?.authorization || "";
+  if (auth !== `Bearer ${secret}` && requestToken(req) !== secret && requestToken(req) !== process.env.VERIFY_TOKEN) {
+    const error = new Error("Unauthorized cron run.");
+    error.status = 401;
+    throw error;
+  }
+}
+
 function automationSummary(matches, predictions, results) {
   return {
     totalMatches: matches.length,
@@ -19,6 +56,8 @@ function automationSummary(matches, predictions, results) {
 
 module.exports = async function handler(req, res) {
   try {
+    if (req.method === "POST") assertOwner(req);
+    if (req.method === "GET") assertCron(req);
     const force = req.method === "POST" && Boolean(req.body?.force);
     const snapshot = loadSnapshot();
     const predictions = await getPredictions();
@@ -73,6 +112,6 @@ module.exports = async function handler(req, res) {
       summary: automationSummary(snapshot.matches, predictions, results)
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(error.status || 500).json({ error: error.message });
   }
 };

@@ -328,10 +328,18 @@ module.exports = async function handler(req, res) {
             }
           : null,
         proof: {
+          id: proof.id,
+          version: proof.version,
           matchId: proof.matchId,
+          match: proof.match,
+          round: proof.round,
           hash: proof.hash,
+          algorithm: proof.algorithm,
           lockedAt: proof.lockedAt,
           kickoffAt: proof.kickoffAt,
+          canonical: proof.canonical,
+          payload: proof.payload,
+          externalProof: { demo: { provider: "dry-run", note: "No OpenTimestamps receipt is created during dry-run, so this test does not consume calendar resources." } },
           verified: hashVerified
         }
       },

@@ -55,6 +55,26 @@ Verification flow:
 
 New `.ots` receipts may initially be `pending-bitcoin-confirmation`. After the calendar has anchored to Bitcoin, the proof can be upgraded and verified against a Bitcoin block.
 
+## Automation safety
+
+Production prediction/result sync is intended to run from Vercel Cron, not from public user clicks.
+
+Recommended Vercel env var:
+
+```text
+CRON_SECRET=long-random-secret
+```
+
+When `CRON_SECRET` is configured, Vercel sends it as `Authorization: Bearer <secret>` for cron invocations, and `/api/automation/run-due` rejects public GET requests. Manual POST runs always require the owner `VERIFY_TOKEN`.
+
+The owner-only demo OpenTimestamps proof endpoint is rate limited with:
+
+```text
+DEMO_OTS_COOLDOWN_SECONDS=300
+```
+
+Within the cooldown window, the site reuses the previous demo proof instead of calling OpenTimestamps calendars again.
+
 ## `market-odds.json`
 
 ```json

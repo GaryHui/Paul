@@ -1,5 +1,8 @@
 const { auditSnapshot, createAuditEntry, createOpenTimestamp, sha256 } = require("./_lib/audit");
 const { loadSnapshot } = require("./_lib/paul");
+const { getRateLimit, setRateLimit } = require("./_lib/store");
+
+const demoOtsCooldownSeconds = Number(process.env.DEMO_OTS_COOLDOWN_SECONDS || 300);
 
 function requestToken(req) {
   const auth = req.headers?.authorization || "";
@@ -23,22 +26,25 @@ function verifyAccess(req) {
 }
 
 async function demoOpenTimestampProof() {
+  const now = new Date();
+  const recent = await getRateLimit("demo-ots");
+  if (recent?.entry) return { ...recent.entry, rateLimitedReplay: true };
   const snapshot = loadSnapshot();
   const match = snapshot.matches.find((item) => item.id === 1) || snapshot.matches[0];
   const winner = match.teamA || { code: "MEX", name: "Mexico" };
   const record = {
     matchId: match.id,
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     model: "PAUL-DEMO",
     evidence: {
-      generatedAt: new Date().toISOString(),
+      generatedAt: now.toISOString(),
       hasPrimaryEvidence: true,
       missing: [],
       market: {
         source: "demo",
         provider: "server demo",
         eventId: "demo-match-1",
-        updatedAt: new Date().toISOString(),
+        updatedAt: now.toISOString(),
         bookmakerCount: 3,
         sampleBookmakers: ["DemoBook A", "DemoBook B", "DemoBook C"],
         odds: { home: 2.05, draw: 3.55, away: 3.9 },
@@ -65,11 +71,13 @@ async function demoOpenTimestampProof() {
     opentimestamps: await createOpenTimestamp(entry),
     demo: { provider: "demo", note: "Server-generated owner demo. Not stored, not official." }
   };
-  return {
+  const response = {
     ...entry,
     verified: sha256(entry.canonical) === entry.hash,
     writesProductionData: false
   };
+  await setRateLimit("demo-ots", { entry: response, createdAt: new Date().toISOString() }, demoOtsCooldownSeconds);
+  return response;
 }
 
 module.exports = async function handler(req, res) {

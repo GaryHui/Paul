@@ -1644,6 +1644,9 @@ function setupVerifyAccess() {
       // Session storage is optional.
     }
     if (status) status.textContent = "Owner verification unlocked for this browser session.";
+    document.querySelectorAll(".owner-only").forEach((element) => {
+      element.hidden = false;
+    });
   }
 }
 
@@ -1715,13 +1718,18 @@ async function runDueAutomation() {
   const button = document.getElementById("runAutomationButton");
   const statusText = document.getElementById("automationStatus");
   if (!button || !statusText) return;
+  const token = currentVerifyToken();
+  if (!token) {
+    statusText.textContent = "Owner token required. Vercel cron runs production tasks automatically.";
+    return;
+  }
 
   button.disabled = true;
   statusText.textContent = "Running due prediction and result sync tasks...";
   try {
     const response = await fetch("/api/automation/run-due", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Verify-Token": token },
       body: JSON.stringify({})
     });
     const data = await response.json();

@@ -1,6 +1,7 @@
 const predictionKey = "paul:predictions:v2";
 const resultKey = "paul:results:v1";
 const auditKey = "paul:audit:v1";
+const rateLimitPrefix = "paul:rate:";
 
 function storeConfig() {
   const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
@@ -92,12 +93,32 @@ async function setAuditEntry(entry) {
   return true;
 }
 
+async function getRateLimit(key) {
+  if (!isSharedStoreConfigured()) return null;
+  const value = await redisCommand(["GET", `${rateLimitPrefix}${key}`]);
+  if (!value) return null;
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+async function setRateLimit(key, record, ttlSeconds = 3600) {
+  if (!isSharedStoreConfigured()) return false;
+  await redisCommand(["SET", `${rateLimitPrefix}${key}`, JSON.stringify(record), "EX", ttlSeconds]);
+  return true;
+}
+
 module.exports = {
+  getRateLimit,
   getAuditLog,
   getPredictions,
   getResults,
   isSharedStoreConfigured,
   setAuditEntry,
   setPrediction,
+  setRateLimit,
   setResult
 };
