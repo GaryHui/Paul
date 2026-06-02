@@ -676,7 +676,9 @@ async function syncAutomationSnapshot() {
 
 function formatNextPrediction(nextPrediction) {
   if (!nextPrediction) return "暂无";
+  if (!nextPrediction.dueAt) return `${nextPrediction.label} · 待赛程时间确认`;
   const dueAt = new Date(nextPrediction.dueAt);
+  if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · 待赛程时间确认`;
   return `${nextPrediction.label} · ${dueAt.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`;
 }
 
