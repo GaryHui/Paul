@@ -75,6 +75,12 @@ Current PAUL Edge Engine v4 result:
 - 2010 holdout: PAUL Edge 30/56, 54% accuracy; market favorite 29/56, 52%.
 - 2018+2014+2010 holdout total: PAUL Edge 73/124, 59%; market favorite 69/124, 56%.
 
+The private backtest page also runs a stability audit:
+
+- Year-by-year holdout edge: 2018 +2, 2014 +1, 2010 +1.
+- Leave-one-year-out sensitivity: removing any one holdout year still leaves PAUL ahead of the market by +2 to +3 picks.
+- Deterministic bootstrap over the 124 holdout matches: median edge +4, p05/p50/p95 edge +1/+4/+7, with 100% non-negative resamples in the current built-in dataset.
+
 The v4 change keeps PAUL conservative on shallow underdogs: non-draw upset targets must clear a 3.10+ market-price gate. It gives up 2022 tuning-sample edge, but every listed holdout year now beats the market favorite baseline. Treat this as an audit harness, not a guarantee or promotional claim. Future algorithm changes should be judged by whether they improve holdout performance without hiding the per-year breakdown.
 
 ## OpenTimestamps proof

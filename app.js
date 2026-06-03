@@ -1983,6 +1983,16 @@ function datasetBacktestCard(run) {
   `;
 }
 
+function stabilityCard(title, value, copy, pass = true) {
+  return `
+    <article class="verify-health-card ${pass ? "is-pass" : "is-fail"}">
+      <span>${title}</span>
+      <h3>${value}</h3>
+      <p>${copy}</p>
+    </article>
+  `;
+}
+
 function renderBacktestReport(data) {
   const report = document.getElementById("backtestReport");
   if (!report) return;
@@ -1990,6 +2000,9 @@ function renderBacktestReport(data) {
   const calibration = data.calibration || {};
   const holdout = data.holdout || {};
   const holdoutMetrics = holdout.metrics || {};
+  const stability = data.stability || {};
+  const stabilitySummary = stability.summary || {};
+  const bootstrap = stability.bootstrap || {};
   report.innerHTML = `
     <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
       <strong>BACKTEST ${String(data.status || "unknown").toUpperCase()}</strong>
@@ -2015,6 +2028,50 @@ function renderBacktestReport(data) {
     <h3 class="verify-title">Dataset Breakdown</h3>
     <div class="verify-health-grid">
       ${(data.datasets || []).map(datasetBacktestCard).join("")}
+    </div>
+    <h3 class="verify-title">Stability Audit</h3>
+    <p class="verify-note">${stability.verdict || "Stability audit is not available for this run."}</p>
+    <div class="verify-health-grid">
+      ${stabilityCard(
+        "Holdout years",
+        `${stabilitySummary.nonNegativeYears ?? 0}/${stabilitySummary.holdoutYears ?? 0}`,
+        `Years where PAUL tied or beat market. Min yearly edge ${stabilitySummary.minYearEdge ?? 0}.`,
+        (stabilitySummary.nonNegativeYears ?? 0) === (stabilitySummary.holdoutYears ?? 1)
+      )}
+      ${stabilityCard(
+        "Holdout total edge",
+        `${(stabilitySummary.totalEdge ?? 0) >= 0 ? "+" : ""}${stabilitySummary.totalEdge ?? 0}`,
+        `${stabilitySummary.totalMatches ?? 0} holdout matches.`,
+        (stabilitySummary.totalEdge ?? 0) >= 0
+      )}
+      ${stabilityCard(
+        "Bootstrap edge",
+        `${bootstrap.nonNegativeRate ?? 0}%`,
+        `${bootstrap.iterations ?? 0} resamples; edge range p05/p50/p95: ${bootstrap.edgeP05 ?? 0}/${bootstrap.edgeP50 ?? 0}/${bootstrap.edgeP95 ?? 0}.`,
+        (bootstrap.nonNegativeRate ?? 0) >= 70
+      )}
+    </div>
+    <h3 class="verify-title">Year-by-Year Holdout Edge</h3>
+    <div class="verify-checks">
+      ${(stability.yearEdges || [])
+        .map((year) => `
+          <div class="verify-check ${year.edge >= 0 ? "is-pass" : "is-fail"}">
+            <span>${year.year}</span>
+            <strong>PAUL ${year.paulCorrect}/${year.matches} (${year.paulAccuracy}%) · Market ${year.marketCorrect}/${year.matches} (${year.marketAccuracy}%) · Edge ${year.edge >= 0 ? "+" : ""}${year.edge}</strong>
+          </div>
+        `)
+        .join("")}
+    </div>
+    <h3 class="verify-title">Leave-One-Year-Out Sensitivity</h3>
+    <div class="verify-checks">
+      ${(stability.leaveOneOut || [])
+        .map((item) => `
+          <div class="verify-check ${item.edge >= 0 ? "is-pass" : "is-fail"}">
+            <span>Remove ${item.removedYear}</span>
+            <strong>${item.matches} matches · PAUL ${item.paulAccuracy}% vs Market ${item.marketAccuracy}% · Edge ${item.edge >= 0 ? "+" : ""}${item.edge}</strong>
+          </div>
+        `)
+        .join("")}
     </div>
     <h3 class="verify-title">All-Dataset Baseline Comparison</h3>
     <div class="verify-health-grid">

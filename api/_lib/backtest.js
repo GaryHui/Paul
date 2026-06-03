@@ -727,14 +727,123 @@ function combineRuns(runs, label, role) {
   };
 }
 
+function seededRandom(seed = 2026) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+
+function percentile(sorted, p) {
+  if (!sorted.length) return 0;
+  const index = Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * p)));
+  return sorted[index];
+}
+
+function bootstrapEdge(trace, iterations = 1000) {
+  if (!trace.length) {
+    return {
+      iterations,
+      samples: 0,
+      edgeMean: 0,
+      edgeP05: 0,
+      edgeP50: 0,
+      edgeP95: 0,
+      nonNegativeRate: 0,
+      positiveRate: 0
+    };
+  }
+  const random = seededRandom(20260603);
+  const edges = [];
+  for (let i = 0; i < iterations; i += 1) {
+    let edge = 0;
+    for (let j = 0; j < trace.length; j += 1) {
+      const match = trace[Math.floor(random() * trace.length)];
+      const paulCorrect = match.picks?.paul === match.actual ? 1 : 0;
+      const marketCorrect = match.picks?.market === match.actual ? 1 : 0;
+      edge += paulCorrect - marketCorrect;
+    }
+    edges.push(edge);
+  }
+  edges.sort((a, b) => a - b);
+  const mean = edges.reduce((sum, edge) => sum + edge, 0) / edges.length;
+  return {
+    iterations,
+    samples: trace.length,
+    edgeMean: Number(mean.toFixed(2)),
+    edgeP05: percentile(edges, 0.05),
+    edgeP50: percentile(edges, 0.5),
+    edgeP95: percentile(edges, 0.95),
+    nonNegativeRate: Math.round((edges.filter((edge) => edge >= 0).length / edges.length) * 100),
+    positiveRate: Math.round((edges.filter((edge) => edge > 0).length / edges.length) * 100)
+  };
+}
+
+function stabilityAudit(runs, holdout) {
+  const holdoutRuns = runs.filter((run) => run.role === "holdout");
+  const yearEdges = holdoutRuns.map((run) => ({
+    year: run.year,
+    matches: run.metrics.paul.graded,
+    paulCorrect: run.metrics.paul.correct,
+    marketCorrect: run.metrics.market.correct,
+    paulAccuracy: run.metrics.paul.accuracy,
+    marketAccuracy: run.metrics.market.accuracy,
+    edge: run.edge.paulMinusMarket
+  }));
+  const leaveOneOut = holdoutRuns.map((run) => {
+    const kept = holdoutRuns.filter((candidate) => candidate.year !== run.year);
+    const combined = combineRuns(kept, `Holdout without ${run.year}`, "holdout-sensitivity");
+    return {
+      removedYear: run.year,
+      matches: combined.metrics.paul.graded,
+      paulCorrect: combined.metrics.paul.correct,
+      marketCorrect: combined.metrics.market.correct,
+      edge: combined.edge.paulMinusMarket,
+      paulAccuracy: combined.metrics.paul.accuracy,
+      marketAccuracy: combined.metrics.market.accuracy
+    };
+  });
+  const edges = yearEdges.map((year) => year.edge);
+  const positiveYears = yearEdges.filter((year) => year.edge > 0).length;
+  const nonNegativeYears = yearEdges.filter((year) => year.edge >= 0).length;
+  const minEdge = edges.length ? Math.min(...edges) : 0;
+  const bootstrap = bootstrapEdge(holdout.trace || []);
+  const pass = Boolean(
+    yearEdges.length &&
+    nonNegativeYears === yearEdges.length &&
+    holdout.edge.paulMinusMarket >= 0 &&
+    bootstrap.nonNegativeRate >= 70
+  );
+
+  return {
+    status: pass ? "stable" : "watch",
+    verdict: pass
+      ? "PAUL beats or ties the market in every listed holdout year, and bootstrap resampling usually preserves the edge."
+      : "PAUL has useful signal, but the holdout edge is not stable enough to claim broad robustness.",
+    yearEdges,
+    leaveOneOut,
+    summary: {
+      holdoutYears: yearEdges.length,
+      positiveYears,
+      nonNegativeYears,
+      minYearEdge: minEdge,
+      totalEdge: holdout.edge.paulMinusMarket,
+      totalMatches: holdout.metrics.paul.graded
+    },
+    bootstrap
+  };
+}
+
 function runBacktest() {
   const runs = datasets.map(runDataset);
   const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014/2010 holdout", "aggregate");
   const holdoutRuns = runs.filter((run) => run.role === "holdout");
   const holdout = combineRuns(holdoutRuns, "2018/2014/2010 holdout only", "holdout");
+  const stability = stabilityAudit(runs, holdout);
 
   return {
-    status: "pass",
+    status: stability.status === "stable" ? "pass" : "watch",
     generatedAt: new Date().toISOString(),
     algorithm: {
       name: "PAUL Edge Engine v4",
@@ -747,6 +856,7 @@ function runBacktest() {
     trace: aggregate.trace,
     aggregate,
     holdout,
+    stability,
     datasets: runs
   };
 }
