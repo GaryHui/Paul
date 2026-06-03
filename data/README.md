@@ -49,7 +49,9 @@ DAILY_ANALYSIS_DISABLED=1
 
 `BSD_API_KEY` is tried first because it can provide both odds and daily intelligence. `ODDS_API_IO_KEY` and `THE_ODDS_API_KEY` are tried next as specialist odds feeds. `BALLDONTLIE_API_KEY` is tried as a World Cup-specific fallback. If no live provider returns a matching event, PAUL falls back to `market-odds.json`.
 
-Vercel Cron wakes `/api/automation/run-due` every 15 minutes, but the odds fetcher only calls providers when a match reaches its refresh window. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. By default the cron checks the next 12 due scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
+The odds fetcher only calls providers when a match reaches its refresh window. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. By default the cron checks the next 12 due scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
+
+Vercel Hobby plans only allow daily Cron Jobs, so `vercel.json` keeps the built-in safety cron at once per day. To run the full cadence below, use either Vercel Pro with `*/15 * * * *`, or an external scheduler such as GitHub Actions, cron-job.org, EasyCron, or Upstash QStash to call `/api/automation/run-due` every 15 minutes with `Authorization: Bearer <CRON_SECRET>`. The endpoint is protected; public visitors cannot trigger it.
 
 Dynamic odds refresh cadence:
 
