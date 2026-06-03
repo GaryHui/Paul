@@ -3,7 +3,7 @@
   "cleanUrls": true,
   "crons": [
     {
-      "path": "/api/automation/run-due",
+      "path": "/api/automation/deep-refresh",
       "schedule": "0 8 * * *"
     }
   ],
