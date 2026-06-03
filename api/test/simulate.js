@@ -276,7 +276,7 @@ module.exports = async function handler(req, res) {
       return;
     }
     if (requestMode(req) === "backtest") {
-      res.status(200).json(runBacktest());
+      res.status(200).json(await runBacktest());
       return;
     }
     const { results, roundStats, resolved } = simulateTournament(snapshot);

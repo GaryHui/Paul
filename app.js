@@ -2371,6 +2371,10 @@ function renderBacktestReport(data) {
   const stability = data.stability || {};
   const stabilitySummary = stability.summary || {};
   const bootstrap = stability.bootstrap || {};
+  const leagueHoldout = data.leagueHoldout || null;
+  const leagueMetrics = leagueHoldout?.metrics || {};
+  const crossCompetition = data.crossCompetition || null;
+  const crossMetrics = crossCompetition?.metrics || {};
   report.innerHTML = `
     <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
       <strong>BACKTEST ${String(data.status || "unknown").toUpperCase()}</strong>
@@ -2396,6 +2400,7 @@ function renderBacktestReport(data) {
     <h3 class="verify-title">Dataset Breakdown</h3>
     <div class="verify-health-grid">
       ${(data.datasets || []).map(datasetBacktestCard).join("")}
+      ${(data.leagueDatasets || []).map(datasetBacktestCard).join("")}
     </div>
     <h3 class="verify-title">Stability Audit</h3>
     <p class="verify-note">${stability.verdict || "Stability audit is not available for this run."}</p>
@@ -2418,6 +2423,29 @@ function renderBacktestReport(data) {
         `${bootstrap.iterations ?? 0} resamples; edge range p05/p50/p95: ${bootstrap.edgeP05 ?? 0}/${bootstrap.edgeP50 ?? 0}/${bootstrap.edgeP95 ?? 0}.`,
         (bootstrap.nonNegativeRate ?? 0) >= 70
       )}
+    </div>
+    <h3 class="verify-title">Cross-Competition Holdout</h3>
+    <p class="verify-note">
+      Premier League seasons are fetched from Football-Data public CSV files when available. League matches use a conservative market-anchor mode with rolling Elo/form only from earlier matches; the World Cup holdout keeps the tournament upset layer.
+      ${data.leagueErrors?.length ? ` League fetch warnings: ${data.leagueErrors.join("; ")}.` : ""}
+    </p>
+    <div class="verify-health-grid">
+      ${leagueHoldout ? metricCard("Premier League PAUL", leagueMetrics.paul) : stabilityCard("Premier League", "N/A", "Football-Data CSV was not available for this run.", false)}
+      ${leagueHoldout ? metricCard("Premier League market", leagueMetrics.market) : ""}
+      ${leagueHoldout ? stabilityCard(
+        "League edge",
+        `${(leagueHoldout.edge?.paulMinusMarket ?? 0) >= 0 ? "+" : ""}${leagueHoldout.edge?.paulMinusMarket ?? 0}`,
+        `${leagueHoldout.dataset?.matches ?? 0} matches; PAUL is expected to tie the market in high-liquidity league mode.`,
+        (leagueHoldout.edge?.paulMinusMarket ?? -1) >= 0
+      ) : ""}
+      ${crossCompetition ? metricCard("Cross-sample PAUL", crossMetrics.paul) : ""}
+      ${crossCompetition ? metricCard("Cross-sample market", crossMetrics.market) : ""}
+      ${crossCompetition ? stabilityCard(
+        "Cross-sample edge",
+        `${(crossCompetition.edge?.paulMinusMarket ?? 0) >= 0 ? "+" : ""}${crossCompetition.edge?.paulMinusMarket ?? 0}`,
+        `${crossCompetition.dataset?.matches ?? 0} total holdout matches.`,
+        (crossCompetition.edge?.paulMinusMarket ?? -1) >= 0
+      ) : ""}
     </div>
     <h3 class="verify-title">Year-by-Year Holdout Edge</h3>
     <div class="verify-checks">

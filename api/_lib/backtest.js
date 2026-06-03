@@ -407,12 +407,14 @@ const datasets = [
 function parseRows(dataset) {
   return dataset.rows.map((row, index) => {
     const [round, home, away, homeOdds, drawOdds, awayOdds, homeScore, awayScore] = row.split("|");
+    const drawAllowed = dataset.drawAllowed ?? String(round || "").startsWith("Group");
     return {
       id: index + 1,
       datasetYear: dataset.year,
       round,
       home,
       away,
+      drawAllowed,
       odds: { home: Number(homeOdds), draw: Number(drawOdds), away: Number(awayOdds) },
       score: { home: Number(homeScore), away: Number(awayScore) }
     };
@@ -477,9 +479,15 @@ function isGroupRound(match) {
   return String(match.round || "").startsWith("Group");
 }
 
+function allowsDraw(match) {
+  if (match.drawAllowed === true) return true;
+  if (match.drawAllowed === false) return false;
+  return isGroupRound(match);
+}
+
 function actualSide(match, dataset) {
   const key = `${match.home}|${match.away}`;
-  if (!isGroupRound(match) && match.score.home === match.score.away) return dataset.shootoutWinners[key] || "draw";
+  if (!allowsDraw(match) && match.score.home === match.score.away) return dataset.shootoutWinners?.[key] || "draw";
   if (match.score.home === match.score.away) return "draw";
   return match.score.home > match.score.away ? "home" : "away";
 }
@@ -532,17 +540,18 @@ function paulEdgePick(match, models, form) {
     Math.abs(models.rating.home - models.rating.away),
     Math.abs(models.poisson.home - models.poisson.away)
   );
+  const conservativeMarketAnchor = match.competitionType === "league";
   let pick = marketPick;
   if (blendedPick === marketPick) {
     pick = blendedPick;
-  } else if (upsetScore >= 62 && marketMargin <= 0.14 && overrideSupport >= 2 && hasUnderdogPrice) {
+  } else if (!conservativeMarketAnchor && upsetScore >= 62 && marketMargin <= 0.14 && overrideSupport >= 2 && hasUnderdogPrice) {
     pick = blendedPick;
   }
-  if (isGroupRound(match) && models.market.draw >= 0.29 && marketMargin <= 0.06 && drawModelGap <= 0.12) {
+  if (!conservativeMarketAnchor && allowsDraw(match) && models.market.draw >= 0.29 && marketMargin <= 0.06 && drawModelGap <= 0.12) {
     pick = "draw";
     signals.push("draw-squeeze setup");
   }
-  if (!isGroupRound(match)) pick = winnerFavorite(blended);
+  if (!allowsDraw(match)) pick = winnerFavorite(blended);
   const confidence = Math.round(Math.max(blended[pick], models.market[pick] || 0) * 100);
   return { pick, probabilities: blended, confidence, upsetScore, signals };
 }
@@ -619,11 +628,11 @@ function runDataset(dataset) {
     const paul = paulEdgePick(match, models, form);
     const picks = {
       paul: paul.pick,
-      market: isGroupRound(match) ? favorite(models.market) : winnerFavorite(models.market),
-      rating: isGroupRound(match) ? favorite(models.rating) : winnerFavorite(models.rating),
-      poisson: isGroupRound(match) ? favorite(models.poisson) : winnerFavorite(models.poisson),
-      blended: isGroupRound(match) ? favorite(models.blended) : winnerFavorite(models.blended),
-      random: isGroupRound(match) ? ["home", "draw", "away"][match.id % 3] : ["home", "away"][match.id % 2]
+      market: allowsDraw(match) ? favorite(models.market) : winnerFavorite(models.market),
+      rating: allowsDraw(match) ? favorite(models.rating) : winnerFavorite(models.rating),
+      poisson: allowsDraw(match) ? favorite(models.poisson) : winnerFavorite(models.poisson),
+      blended: allowsDraw(match) ? favorite(models.blended) : winnerFavorite(models.blended),
+      random: allowsDraw(match) ? ["home", "draw", "away"][match.id % 3] : ["home", "away"][match.id % 2]
     };
 
     scoreMetric(metrics.paul, paul.probabilities, picks.paul, actual);
@@ -835,19 +844,233 @@ function stabilityAudit(runs, holdout) {
   };
 }
 
-function runBacktest() {
+const leagueSources = [
+  { year: "2021-22", code: "2122", url: "https://www.football-data.co.uk/mmz4281/2122/E0.csv" },
+  { year: "2022-23", code: "2223", url: "https://www.football-data.co.uk/mmz4281/2223/E0.csv" },
+  { year: "2023-24", code: "2324", url: "https://www.football-data.co.uk/mmz4281/2324/E0.csv" },
+  { year: "2024-25", code: "2425", url: "https://www.football-data.co.uk/mmz4281/2425/E0.csv" }
+];
+
+function parseCsvLine(line) {
+  const cells = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    if (char === '"' && line[i + 1] === '"') {
+      cell += '"';
+      i += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      cells.push(cell);
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+  cells.push(cell);
+  return cells;
+}
+
+function parseFootballDataCsv(text, source) {
+  const lines = String(text || "").split(/\r?\n/).filter((line) => line.trim());
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]).map((header) => header.trim());
+  const index = Object.fromEntries(headers.map((header, i) => [header, i]));
+  const oddKeys = index.AvgH !== undefined && index.AvgD !== undefined && index.AvgA !== undefined
+    ? ["AvgH", "AvgD", "AvgA"]
+    : ["B365H", "B365D", "B365A"];
+  return lines.slice(1).map((line, rowIndex) => {
+    const cells = parseCsvLine(line);
+    const home = cells[index.HomeTeam];
+    const away = cells[index.AwayTeam];
+    const homeScore = Number(cells[index.FTHG]);
+    const awayScore = Number(cells[index.FTAG]);
+    const odds = {
+      home: Number(cells[index[oddKeys[0]]]),
+      draw: Number(cells[index[oddKeys[1]]]),
+      away: Number(cells[index[oddKeys[2]]])
+    };
+    if (!home || !away || !Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
+    if (!Number.isFinite(odds.home) || !Number.isFinite(odds.draw) || !Number.isFinite(odds.away)) return null;
+    return {
+      id: rowIndex + 1,
+      datasetYear: source.year,
+      round: "Premier League",
+      competitionType: "league",
+      home,
+      away,
+      drawAllowed: true,
+      odds,
+      score: { home: homeScore, away: awayScore }
+    };
+  }).filter(Boolean);
+}
+
+function leagueRecord() {
+  return { played: 0, points: 0, gf: 0, ga: 0, elo: 1500 };
+}
+
+function leagueEloProbabilities(match, records) {
+  const home = records[match.home] || leagueRecord();
+  const away = records[match.away] || leagueRecord();
+  const diff = (home.elo + 55) - away.elo;
+  const homeRaw = 1 / (1 + 10 ** (-diff / 420));
+  const draw = Math.max(0.21, Math.min(0.31, 0.28 - Math.abs(diff) / 3000));
+  return normalize({ home: homeRaw * (1 - draw), draw, away: (1 - homeRaw) * (1 - draw) });
+}
+
+function leaguePoissonProbabilities(match, records) {
+  const home = records[match.home] || leagueRecord();
+  const away = records[match.away] || leagueRecord();
+  const homeForm = formScore(home);
+  const awayForm = formScore(away);
+  const diff = 0.18 + (home.elo - away.elo) / 520 + (homeForm - awayForm) * 0.85;
+  const homeRaw = 1 / (1 + Math.exp(-diff));
+  const draw = Math.max(0.2, Math.min(0.32, 0.28 - Math.abs(diff) * 0.04));
+  return normalize({ home: homeRaw * (1 - draw), draw, away: (1 - homeRaw) * (1 - draw) });
+}
+
+function updateLeagueRecords(records, match) {
+  records[match.home] ||= leagueRecord();
+  records[match.away] ||= leagueRecord();
+  updateForm(records, match);
+  const home = records[match.home];
+  const away = records[match.away];
+  const expectedHome = 1 / (1 + 10 ** ((away.elo - (home.elo + 55)) / 420));
+  const actualHome = match.score.home === match.score.away ? 0.5 : match.score.home > match.score.away ? 1 : 0;
+  const margin = Math.min(2.2, Math.log(Math.abs(match.score.home - match.score.away) + 1) + 0.65);
+  const change = 22 * margin * (actualHome - expectedHome);
+  home.elo += change;
+  away.elo -= change;
+}
+
+function runLeagueDataset(source, matches) {
+  const records = {};
+  const metrics = {
+    paul: emptyMetric(),
+    market: emptyMetric(),
+    rating: emptyMetric(),
+    poisson: emptyMetric(),
+    blended: emptyMetric(),
+    random: emptyMetric()
+  };
+  const calibration = {};
+  const trace = [];
+  let upsetCalls = 0;
+  let upsetHits = 0;
+
+  matches.forEach((match) => {
+    const models = {
+      market: oddsProbabilities(match.odds),
+      rating: leagueEloProbabilities(match, records),
+      poisson: leaguePoissonProbabilities(match, records)
+    };
+    models.blended = blend(models);
+    const actual = actualSide(match, {});
+    const paul = paulEdgePick(match, models, records);
+    const picks = {
+      paul: paul.pick,
+      market: favorite(models.market),
+      rating: favorite(models.rating),
+      poisson: favorite(models.poisson),
+      blended: favorite(models.blended),
+      random: ["home", "draw", "away"][match.id % 3]
+    };
+
+    scoreMetric(metrics.paul, paul.probabilities, picks.paul, actual);
+    scoreMetric(metrics.market, models.market, picks.market, actual);
+    scoreMetric(metrics.rating, models.rating, picks.rating, actual);
+    scoreMetric(metrics.poisson, models.poisson, picks.poisson, actual);
+    scoreMetric(metrics.blended, models.blended, picks.blended, actual);
+    scoreMetric(metrics.random, { home: 1 / 3, draw: 1 / 3, away: 1 / 3 }, picks.random, actual);
+
+    const band = paul.confidence < 55 ? "50-54" : paul.confidence < 60 ? "55-59" : paul.confidence < 70 ? "60-69" : "70+";
+    calibration[band] ||= { graded: 0, correct: 0, accuracy: 0 };
+    calibration[band].graded += 1;
+    if (picks.paul === actual) calibration[band].correct += 1;
+    if (picks.paul !== picks.market) {
+      upsetCalls += 1;
+      if (picks.paul === actual) upsetHits += 1;
+    }
+
+    trace.push({
+      id: match.id,
+      datasetYear: source.year,
+      round: "Premier League",
+      match: `${match.home} vs ${match.away}`,
+      score: `${match.score.home}-${match.score.away}`,
+      actual,
+      picks,
+      paul: { confidence: paul.confidence, upsetScore: paul.upsetScore, signals: paul.signals },
+      odds: match.odds
+    });
+    updateLeagueRecords(records, match);
+  });
+
+  Object.values(metrics).forEach(finalizeMetric);
+  finalizeCalibration(calibration);
+  return {
+    year: source.year,
+    role: "league holdout",
+    dataset: {
+      name: `Premier League ${source.year} holdout`,
+      source: source.url,
+      matches: matches.length,
+      coverage: `${matches.length} matches with Football-Data 1X2 odds`,
+      note: "Rows are processed in published order. PAUL uses market odds plus rolling Elo/form created only from earlier matches in the same season."
+    },
+    metrics,
+    edge: {
+      paulMinusMarket: metrics.paul.correct - metrics.market.correct,
+      paulMinusBlended: metrics.paul.correct - metrics.blended.correct,
+      upsetCalls,
+      upsetHits,
+      upsetAccuracy: upsetCalls ? Math.round((upsetHits / upsetCalls) * 100) : 0
+    },
+    calibration,
+    trace
+  };
+}
+
+async function fetchLeagueRuns() {
+  if (typeof fetch !== "function") return { runs: [], errors: ["fetch is not available in this runtime"] };
+  const runs = [];
+  const errors = [];
+  for (const source of leagueSources) {
+    try {
+      const response = await fetch(source.url, { headers: { "user-agent": "PAUL backtest audit" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const matches = parseFootballDataCsv(text, source);
+      if (matches.length < 300) throw new Error(`only ${matches.length} usable matches parsed`);
+      runs.push(runLeagueDataset(source, matches));
+    } catch (error) {
+      errors.push(`${source.year}: ${error.message}`);
+    }
+  }
+  return { runs, errors };
+}
+
+async function runBacktest() {
   const runs = datasets.map(runDataset);
+  const league = await fetchLeagueRuns();
   const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014/2010 holdout", "aggregate");
   const holdoutRuns = runs.filter((run) => run.role === "holdout");
   const holdout = combineRuns(holdoutRuns, "2018/2014/2010 holdout only", "holdout");
   const stability = stabilityAudit(runs, holdout);
+  const leagueHoldout = league.runs.length ? combineRuns(league.runs, "Premier League 2021-22 through 2024-25 holdout", "league-holdout") : null;
+  const crossCompetition = leagueHoldout
+    ? combineRuns([...holdoutRuns, ...league.runs], "World Cup holdout + Premier League holdout", "cross-competition")
+    : null;
 
   return {
-    status: stability.status === "stable" ? "pass" : "watch",
+    status: stability.status === "stable" && (!leagueHoldout || leagueHoldout.edge.paulMinusMarket >= 0) ? "pass" : "watch",
     generatedAt: new Date().toISOString(),
     algorithm: {
       name: "PAUL Edge Engine v4",
-      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "underdog price gate", "holdout-tested against 2018, 2014, and 2010 available-odds sets"]
+      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "underdog price gate", "holdout-tested against 2018, 2014, and 2010 available-odds sets", "cross-checked against public Premier League Football-Data odds when network access is available"]
     },
     dataset: aggregate.dataset,
     metrics: aggregate.metrics,
@@ -857,6 +1080,10 @@ function runBacktest() {
     aggregate,
     holdout,
     stability,
+    leagueHoldout,
+    leagueDatasets: league.runs,
+    leagueErrors: league.errors,
+    crossCompetition,
     datasets: runs
   };
 }
