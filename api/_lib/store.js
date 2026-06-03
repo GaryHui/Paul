@@ -1,6 +1,7 @@
 const predictionKey = "paul:predictions:v2";
 const resultKey = "paul:results:v1";
 const auditKey = "paul:audit:v1";
+const evidenceKey = "paul:evidence:v1";
 const rateLimitPrefix = "paul:rate:";
 
 function storeConfig() {
@@ -93,6 +94,26 @@ async function setAuditEntry(entry) {
   return true;
 }
 
+async function getEvidenceCache() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", evidenceKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+async function setEvidenceEntry(matchId, record) {
+  if (!isSharedStoreConfigured()) return false;
+  const cache = await getEvidenceCache();
+  cache[matchId] = record;
+  await redisCommand(["SET", evidenceKey, JSON.stringify(cache)]);
+  return true;
+}
+
 async function getRateLimit(key) {
   if (!isSharedStoreConfigured()) return null;
   const value = await redisCommand(["GET", `${rateLimitPrefix}${key}`]);
@@ -112,12 +133,14 @@ async function setRateLimit(key, record, ttlSeconds = 3600) {
 }
 
 module.exports = {
+  getEvidenceCache,
   getRateLimit,
   getAuditLog,
   getPredictions,
   getResults,
   isSharedStoreConfigured,
   setAuditEntry,
+  setEvidenceEntry,
   setPrediction,
   setRateLimit,
   setResult

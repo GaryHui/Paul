@@ -1,6 +1,7 @@
 const { callPaul, loadSnapshot } = require("../_lib/paul");
 const { attachAuditProof } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
+const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
 const { fetchMatchResult } = require("../_lib/results");
 const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
@@ -64,8 +65,20 @@ module.exports = async function handler(req, res) {
     const results = await getResults();
     const now = new Date();
     const events = [];
+    const resolvedMatches = resolveMatches(snapshot.matches, results);
+    const evidenceRefresh = process.env.ODDS_REFRESH_DISABLED === "1"
+      ? { checked: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
+      : await refreshMarketEvidence(resolvedMatches, { now });
+    events.push({
+      type: "evidence-refresh",
+      status: evidenceRefresh.errors ? "partial" : "ok",
+      checked: evidenceRefresh.checked,
+      ok: evidenceRefresh.ok,
+      missing: evidenceRefresh.missing,
+      errors: evidenceRefresh.errors
+    });
 
-    for (const sourceMatch of resolveMatches(snapshot.matches, results)) {
+    for (const sourceMatch of resolvedMatches) {
       const matchTime = parseMatchTime(sourceMatch);
       if (!matchTime || !sourceMatch.teamA?.code || !sourceMatch.teamB?.code) {
         if (sourceMatch.round !== "Group Stage") {
@@ -109,6 +122,7 @@ module.exports = async function handler(req, res) {
 
     res.status(200).json({
       events,
+      evidenceRefresh,
       summary: automationSummary(snapshot.matches, predictions, results)
     });
   } catch (error) {

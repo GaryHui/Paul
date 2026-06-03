@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
+const { getEvidenceCache, setEvidenceEntry } = require("./store");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -240,6 +241,13 @@ function findByMatchId(collection, matchId) {
   return collection[matchId] || collection[String(matchId)] || null;
 }
 
+function cachedEvidenceIsFresh(entry, maxHours = Number(process.env.ODDS_CACHE_MAX_HOURS || 26)) {
+  const value = entry?.market?.updatedAt || entry?.updatedAt || entry?.generatedAt;
+  const updatedAt = value ? new Date(value) : null;
+  if (!updatedAt || Number.isNaN(updatedAt.getTime())) return false;
+  return Date.now() - updatedAt.getTime() <= maxHours * 60 * 60 * 1000;
+}
+
 function findTeamRecord(collection, code) {
   if (!collection) return null;
   if (Array.isArray(collection)) {
@@ -255,8 +263,20 @@ async function collectPredictionEvidence(match, options = {}) {
   const allOdds = readJson(oddsFile, {});
   const allRatings = readJson(ratingsFile, {});
   const allForm = readJson(formFile, {});
-  const remoteOdds = options.liveOdds === false ? { record: null, errors: [] } : await fetchRemoteMarketOdds(match);
-  const oddsRecord = remoteOdds.record || findByMatchId(allOdds, match.id);
+  const evidenceCache = options.cache === false ? {} : await getEvidenceCache();
+  const cachedEvidence = findByMatchId(evidenceCache, match.id);
+  const cachedOdds = cachedEvidenceIsFresh(cachedEvidence) ? cachedEvidence.market : null;
+  const shouldFetchLive = options.liveOdds !== false && (options.forceLiveOdds || !cachedOdds);
+  const remoteOdds = shouldFetchLive ? await fetchRemoteMarketOdds(match) : { record: null, errors: [] };
+  if (remoteOdds.record) {
+    await setEvidenceEntry(match.id, {
+      matchId: match.id,
+      generatedAt: new Date().toISOString(),
+      market: remoteOdds.record,
+      marketFetchErrors: remoteOdds.errors
+    });
+  }
+  const oddsRecord = remoteOdds.record || cachedOdds || findByMatchId(allOdds, match.id);
   const marketProb = oddsToProbabilities(oddsRecord?.odds || oddsRecord);
   const ratingA = findTeamRecord(allRatings, match.teamA.code);
   const ratingB = findTeamRecord(allRatings, match.teamB.code);
@@ -300,6 +320,15 @@ async function collectPredictionEvidence(match, options = {}) {
         }
       : null,
     marketFetchErrors: remoteOdds.errors,
+    evidenceCache: cachedOdds
+      ? {
+          status: "hit",
+          updatedAt: cachedOdds.updatedAt || cachedEvidence?.updatedAt || cachedEvidence?.generatedAt || null
+        }
+      : {
+          status: shouldFetchLive ? "miss-refreshed" : "miss",
+          updatedAt: null
+        },
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
     poisson,

@@ -1111,13 +1111,16 @@ async function loadAutomationStatus() {
     const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
     const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
     const readiness = status.dataReadiness || {};
+    const evidenceState = readiness.evidenceCacheCount
+      ? `${readiness.evidenceCacheCount} odds snapshots cached${readiness.latestEvidenceAt ? `, latest ${formatProofTime(readiness.latestEvidenceAt)}` : ""}`
+      : "no cached odds snapshots yet";
     const oddsState = readiness.liveOddsProvider
       ? `live odds via ${readiness.liveOddsProvider}`
       : readiness.marketOdds
         ? "market odds loaded"
         : "market odds missing";
     const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
-    statusText.textContent = `${qwenState}; ${oddsState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
+    statusText.textContent = `${qwenState}; ${oddsState}; ${evidenceState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;
   }

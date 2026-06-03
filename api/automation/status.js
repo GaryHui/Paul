@@ -4,12 +4,19 @@ const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
 const { hasResultsProvider, providerName } = require("../_lib/results");
-const { getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
+const { getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
 module.exports = async function handler(req, res) {
   const snapshot = loadSnapshot();
   const predictions = await getPredictions();
   const results = await getResults();
+  const evidenceCache = await getEvidenceCache();
+  const evidenceEntries = Object.values(evidenceCache || {});
+  const latestEvidenceAt = evidenceEntries
+    .map((entry) => entry?.market?.updatedAt || entry?.updatedAt || entry?.generatedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || null;
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
   const auditEntries = await auditSnapshot();
@@ -39,6 +46,9 @@ module.exports = async function handler(req, res) {
         : process.env.THE_ODDS_API_KEY
           ? "theoddsapi.com"
           : null,
+      evidenceCacheCount: evidenceEntries.length,
+      latestEvidenceAt,
+      oddsRefreshHorizonDays: Number(process.env.ODDS_REFRESH_HORIZON_DAYS || 60),
       firstMatchEvidence: first
     },
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),

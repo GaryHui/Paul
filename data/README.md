@@ -29,13 +29,21 @@ ODDS_BOOKMAKERS=Bet365,Pinnacle,Unibet
 THE_ODDS_API_KEY=...
 THE_ODDS_SPORT_KEY=soccer_fifa_world_cup
 ODDS_REGIONS=us,uk,eu
+
+ODDS_REFRESH_HORIZON_DAYS=60
+ODDS_REFRESH_MAX_MATCHES=12
+ODDS_CACHE_MAX_HOURS=26
 ```
 
-`ODDS_API_IO_KEY` is tried first. `THE_ODDS_API_KEY` is tried second. If neither returns a matching event, PAUL falls back to `market-odds.json`. Live odds are fetched only when PAUL is about to create a formal prediction or when the private evidence endpoint is requested, not on every page view.
+`ODDS_API_IO_KEY` is tried first. `THE_ODDS_API_KEY` is tried second. If neither returns a matching event, PAUL falls back to `market-odds.json`.
+
+Vercel Cron refreshes market evidence once per day through `/api/automation/run-due`. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. The default cache freshness window is 26 hours. By default the cron refreshes the next 12 scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
+
+Daily odds refresh does not call PAUL/Qwen. News, team availability, and tactical context are searched by PAUL only when a formal prediction is created, so the site does not waste model/search quota scanning every fixture every day.
 
 Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 
-## PAUL Edge Engine v1
+## PAUL Edge Engine v4
 
 Formal predictions now build a fixed evidence layer before PAUL writes the final call:
 
