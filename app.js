@@ -1106,8 +1106,12 @@ function pollLabel(match, side) {
   return tr("draw") || "Draw";
 }
 
-function pollPercent(poll, side) {
-  const total = poll?.total || 0;
+function pollVisibleTotal(poll, sides) {
+  return sides.reduce((sum, side) => sum + Number(poll?.votes?.[side] || 0), 0);
+}
+
+function pollPercent(poll, side, sides = ["home", "draw", "away"]) {
+  const total = pollVisibleTotal(poll, sides);
   if (!total) return 0;
   return Math.round(((poll.votes?.[side] || 0) / total) * 100);
 }
@@ -1127,14 +1131,16 @@ function renderPollPanel(match, poll = pollState[match.id] || { votes: {}, total
   }
   const choices = storedPollChoices();
   const selected = choices[match.id] || "";
+  const pollSides = match.round === "Group Stage" ? ["home", "draw", "away"] : ["home", "away"];
+  const visibleTotal = pollVisibleTotal(poll, pollSides);
   panel.innerHTML = `
     <div class="poll-head">
       <span>${tr("fanVote")}</span>
-      <strong>${poll.total || 0} ${tr("votes")}</strong>
+      <strong>${visibleTotal} ${tr("votes")}</strong>
     </div>
     <div class="poll-options">
-      ${["home", "draw", "away"].map((side) => {
-        const percent = pollPercent(poll, side);
+      ${pollSides.map((side) => {
+        const percent = pollPercent(poll, side, pollSides);
         return `
           <button class="poll-option ${selected === side ? "is-selected" : ""}" type="button" data-side="${side}">
             <span class="poll-option__top">

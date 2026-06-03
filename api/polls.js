@@ -1,4 +1,9 @@
+const fs = require("fs");
+const path = require("path");
 const { getPoll, setPollVote } = require("./_lib/store");
+
+const dataDir = path.join(process.cwd(), "data");
+const snapshotFile = path.join(dataDir, "match-snapshot.json");
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -32,6 +37,19 @@ function normalizeVoter(value) {
     .slice(0, 80);
 }
 
+function readMatches() {
+  try {
+    return JSON.parse(fs.readFileSync(snapshotFile, "utf8")).matches || [];
+  } catch {
+    return [];
+  }
+}
+
+function matchAllowsDraw(matchId) {
+  const match = readMatches().find((item) => String(item.id) === String(matchId));
+  return !match || match.round === "Group Stage";
+}
+
 async function requestBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
   if (req.body && typeof req.body === "string") return JSON.parse(req.body);
@@ -61,6 +79,10 @@ module.exports = async function handler(req, res) {
       }
       if (!["home", "draw", "away"].includes(side)) {
         res.status(400).json({ error: "side must be home, draw, or away." });
+        return;
+      }
+      if (side === "draw" && !matchAllowsDraw(matchId)) {
+        res.status(400).json({ error: "draw is only available for group-stage polls." });
         return;
       }
       res.status(200).json(await setPollVote(matchId, voterId, side));

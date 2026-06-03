@@ -6,8 +6,8 @@ const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapsh
 const { hasResultsProvider, providerName } = require("../_lib/results");
 const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
-function sideFromMarket(probabilities = {}) {
-  const sides = ["home", "draw", "away"];
+function sideFromMarket(probabilities = {}, allowDraw = true) {
+  const sides = allowDraw ? ["home", "draw", "away"] : ["home", "away"];
   const available = sides.filter((side) => Number.isFinite(Number(probabilities[side])));
   if (!available.length) return null;
   return available.sort((a, b) => Number(probabilities[b]) - Number(probabilities[a]))[0];
@@ -23,7 +23,7 @@ function sideTeam(match, side) {
 function marketTraceEntry(match, evidence) {
   const market = evidence?.market;
   if (!market?.probabilities) return null;
-  const side = sideFromMarket(market.probabilities);
+  const side = sideFromMarket(market.probabilities, match.round === "Group Stage");
   const winner = sideTeam(match, side);
   return {
     matchId: match.id,

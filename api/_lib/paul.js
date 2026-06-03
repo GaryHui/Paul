@@ -95,9 +95,12 @@ function favoriteFromProbabilities(match, probabilities) {
   if (!probabilities) return null;
   const candidates = [
     { side: "home", winnerCode: match.teamA.code, winnerName: match.teamA.name, probability: probabilities.home },
-    { side: "draw", winnerCode: "DRAW", winnerName: "Draw", probability: probabilities.draw },
     { side: "away", winnerCode: match.teamB.code, winnerName: match.teamB.name, probability: probabilities.away }
-  ].sort((a, b) => b.probability - a.probability);
+  ];
+  if (match.round === "Group Stage") {
+    candidates.push({ side: "draw", winnerCode: "DRAW", winnerName: "Draw", probability: probabilities.draw });
+  }
+  candidates.sort((a, b) => b.probability - a.probability);
   return {
     ...candidates[0],
     probability: Number((candidates[0].probability || 0).toFixed(3))
@@ -346,6 +349,7 @@ async function collectPredictionEvidence(match, options = {}) {
 
 function buildPrompt(payload, evidence) {
   const needsSearch = !evidence.market || !evidence.hasPrimaryEvidence;
+  const knockout = payload.round !== "Group Stage";
   return [
     "You are PAUL AI, an AI octopus for pre-match football predictions.",
     needsSearch
@@ -355,7 +359,9 @@ function buildPrompt(payload, evidence) {
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
-    "Only treat DRAW as a serious PAUL pick when evidence.paulEdge.drawSqueeze is true; do not force a draw from a merely narrow market.",
+    knockout
+      ? "This is a knockout match. The final PAUL pick must be the advancing/winning team, never DRAW. If regulation time may be level, explain that as risk but still choose one team to advance."
+      : "Only treat DRAW as a serious PAUL pick when evidence.paulEdge.drawSqueeze is true; do not force a draw from a merely narrow market.",
     "Confidence should be calibrated: 50-59 is lean, 60-69 is solid, 70-79 is strong, 80+ is rare.",
     "Do not provide betting advice. Do not invent exact links, injuries, lineups, odds, or recent results that are not supported by evidence.",
     "Return strict JSON with these keys: winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed, marketBaseline, ratingBaseline, calibrationNote, upsetCase.",
@@ -366,6 +372,23 @@ function buildPrompt(payload, evidence) {
     `Team B: ${payload.teamB.code} ${payload.teamB.name}`,
     `Evidence package: ${JSON.stringify(evidence)}`
   ].join("\n");
+}
+
+function preventKnockoutDraw(payload, analysis = {}) {
+  if (payload.round === "Group Stage") return analysis;
+  const winnerCode = String(analysis.winnerCode || analysis.winner || "").toUpperCase();
+  const winnerName = String(analysis.winnerName || "").toUpperCase();
+  if (winnerCode !== "DRAW" && winnerName !== "DRAW") return analysis;
+  const probabilities = analysis.probabilities || {};
+  const home = Number(probabilities.home || 0);
+  const away = Number(probabilities.away || 0);
+  const pick = home >= away ? payload.teamA : payload.teamB;
+  return {
+    ...analysis,
+    winnerCode: pick.code,
+    winnerName: pick.name,
+    upsetRisk: analysis.upsetRisk || "Regulation draw risk, but knockout prediction must choose an advancing team."
+  };
 }
 
 async function callPaul(payload) {
@@ -411,6 +434,7 @@ async function callPaul(payload) {
   } catch {
     analysis = { reasoning: content };
   }
+  analysis = preventKnockoutDraw(payload, analysis);
   return { model: "PAUL", evidence, analysis };
 }
 
