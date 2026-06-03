@@ -5,9 +5,14 @@ on:
     - cron: "*/15 * * * *"
   workflow_dispatch:
 
+concurrency:
+  group: paul-automation-cron
+  cancel-in-progress: false
+
 jobs:
   run-due:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Run protected automation task
         env:
@@ -20,6 +25,7 @@ jobs:
           fi
           response_file="$(mktemp)"
           status_code="$(curl --show-error --silent \
+            --max-time 240 \
             --output "$response_file" \
             --write-out "%{http_code}" \
             --request GET \

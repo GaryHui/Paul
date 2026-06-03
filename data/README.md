@@ -64,7 +64,7 @@ Dynamic odds refresh cadence:
 - 6 hours to 60 minutes before kickoff: every 1 hour.
 - Final 60 minutes before kickoff: every 15 minutes.
 
-Daily odds refresh does not call PAUL/Qwen. The separate Daily PAUL Read can call PAUL/Qwen once per selected upcoming match, storing public win/draw/loss probabilities in Vercel KV under `paul:daily-analysis:v1`. Defaults are conservative: the next 4 resolved fixtures inside a 45-day horizon. Increase `DAILY_ANALYSIS_MAX_MATCHES` only when the model/search budget can handle it. Set `DAILY_ANALYSIS_DISABLED=1` to disable the daily read while keeping odds refresh, result sync, and formal proof-locked predictions active.
+Daily odds refresh does not call PAUL/Qwen. The separate Daily PAUL Read can call PAUL/Qwen once per selected upcoming match, storing public win/draw/loss probabilities in Vercel KV under `paul:daily-analysis:v1`. Defaults are conservative: the next 4 resolved fixtures inside a 45-day horizon. Daily reads are also cadence-gated: every 24 hours normally, every 6 hours inside 48 hours, and every 1 hour inside 6 hours. Increase `DAILY_ANALYSIS_MAX_MATCHES` only when the model/search budget can handle it. Set `DAILY_ANALYSIS_DISABLED=1` to disable the daily read while keeping odds refresh, result sync, and formal proof-locked predictions active.
 
 The Daily PAUL Read is not a formal proof record. Official predictions are still created only in the pre-match lock window and stored with proof records.
 

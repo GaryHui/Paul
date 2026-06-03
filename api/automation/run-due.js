@@ -86,12 +86,14 @@ module.exports = async function handler(req, res) {
     });
 
     const dailyAnalysis = process.env.DAILY_ANALYSIS_DISABLED === "1" || !(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY)
-      ? { checked: 0, ok: 0, errors: 0, disabled: true, events: [] }
-      : await refreshDailyAnalysis(resolvedMatches, { now });
+      ? { checked: 0, eligible: 0, skipped: 0, ok: 0, errors: 0, disabled: true, events: [] }
+      : await refreshDailyAnalysis(resolvedMatches, { now, force });
     events.push({
       type: "daily-analysis",
       status: dailyAnalysis.errors ? "partial" : "ok",
       checked: dailyAnalysis.checked,
+      eligible: dailyAnalysis.eligible,
+      skipped: dailyAnalysis.skipped,
       ok: dailyAnalysis.ok,
       errors: dailyAnalysis.errors,
       disabled: Boolean(dailyAnalysis.disabled)
