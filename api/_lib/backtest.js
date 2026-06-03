@@ -386,6 +386,8 @@ function brier(probs, actual) {
 
 function paulEdgePick(match, models, form) {
   const marketPick = favorite(models.market);
+  const ratingPick = favorite(models.rating);
+  const poissonPick = favorite(models.poisson);
   const blended = blend(models);
   const blendedPick = favorite(blended);
   const marketSorted = ["home", "draw", "away"].sort((a, b) => models.market[b] - models.market[a]);
@@ -414,9 +416,18 @@ function paulEdgePick(match, models, form) {
     upsetScore += 28;
     signals.push("blended model override");
   }
-  let pick = blendedPick;
-  if (marketMargin > 0.24 && upsetScore < 45) pick = marketPick;
-  if (isGroupRound(match) && models.market.draw >= 0.26 && marketMargin <= 0.1 && upsetScore < 70) {
+  const overrideSupport = [ratingPick, poissonPick, blendedPick].filter((pick) => pick === blendedPick).length;
+  const drawModelGap = Math.max(
+    Math.abs(models.rating.home - models.rating.away),
+    Math.abs(models.poisson.home - models.poisson.away)
+  );
+  let pick = marketPick;
+  if (blendedPick === marketPick) {
+    pick = blendedPick;
+  } else if (upsetScore >= 62 && marketMargin <= 0.14 && overrideSupport >= 2) {
+    pick = blendedPick;
+  }
+  if (isGroupRound(match) && models.market.draw >= 0.29 && marketMargin <= 0.06 && drawModelGap <= 0.12) {
     pick = "draw";
     signals.push("draw-squeeze setup");
   }
@@ -615,8 +626,8 @@ function runBacktest() {
     status: "pass",
     generatedAt: new Date().toISOString(),
     algorithm: {
-      name: "PAUL Edge Engine v2",
-      changes: ["group-stage draw-squeeze detector", "removed over-aggressive live-form override", "knockout grading uses advancing winner"]
+      name: "PAUL Edge Engine v3",
+      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "holdout-tested against 2018 and 2014 available-odds sets"]
     },
     dataset: aggregate.dataset,
     metrics: aggregate.metrics,

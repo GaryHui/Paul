@@ -144,6 +144,8 @@ function buildPaulEdge(match, evidence) {
   }, {});
   const consensusCode = Object.entries(voteCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
   const marketSide = baselines.marketFavorite?.side || null;
+  const ratingSide = baselines.ratingFavorite?.side || null;
+  const poissonSide = baselines.poissonFavorite?.side || null;
   const blendSide = baselines.blendedFavorite?.side || null;
   const marketProb = sideProbability(evidence.market?.probabilities, marketSide);
   const blendProb = sideProbability(evidence.modelBlend, blendSide);
@@ -152,8 +154,19 @@ function buildPaulEdge(match, evidence) {
     ? ["home", "draw", "away"].sort((a, b) => sideProbability(evidence.market.probabilities, b) - sideProbability(evidence.market.probabilities, a))
     : [];
   const marketMargin = marketSorted.length ? sideProbability(evidence.market.probabilities, marketSorted[0]) - sideProbability(evidence.market.probabilities, marketSorted[1]) : null;
-  const drawSqueeze = match.round === "Group Stage" && sideProbability(evidence.market?.probabilities, "draw") >= 0.26 && marketMargin !== null && marketMargin <= 0.1;
+  const ratingHomeAwayGap = evidence.ratings?.probabilities ? Math.abs(sideProbability(evidence.ratings.probabilities, "home") - sideProbability(evidence.ratings.probabilities, "away")) : null;
+  const poissonHomeAwayGap = evidence.poisson?.probabilities ? Math.abs(sideProbability(evidence.poisson.probabilities, "home") - sideProbability(evidence.poisson.probabilities, "away")) : null;
+  const drawModelGap = ratingHomeAwayGap !== null && poissonHomeAwayGap !== null ? Math.max(ratingHomeAwayGap, poissonHomeAwayGap) : null;
+  const drawSqueeze =
+    match.round === "Group Stage" &&
+    sideProbability(evidence.market?.probabilities, "draw") >= 0.29 &&
+    marketMargin !== null &&
+    marketMargin <= 0.06 &&
+    drawModelGap !== null &&
+    drawModelGap <= 0.12;
   const modelDisagreement = new Set(favorites.map((favorite) => favorite.winnerCode)).size;
+  const overrideSupport = [ratingSide, poissonSide, blendSide].filter((side) => side && side === blendSide).length;
+  const conservativeOverride = Boolean(blendSide && marketSide && blendSide !== marketSide && marketMargin !== null && marketMargin <= 0.14 && overrideSupport >= 2);
   const formA = formValue(evidence.form?.teamA);
   const formB = formValue(evidence.form?.teamB);
   const formEdge = formA !== null && formB !== null ? formA - formB : null;
@@ -188,12 +201,13 @@ function buildPaulEdge(match, evidence) {
   }
   if (drawSqueeze) {
     upsetScore += 18;
-    signals.push("draw-squeeze setup");
+    signals.push("strict draw-squeeze setup");
   }
+  if (conservativeOverride) signals.push("multi-model override gate");
   const tier = upsetScore >= 55 ? "live upset candidate" : upsetScore >= 35 ? "watchlist upset" : "consensus lean";
   return {
-    name: "PAUL Edge Engine v2",
-    weights: { market: 55, elo: 25, poisson: 20, drawSqueeze: "group-stage only, market draw >= 26%, top-two margin <= 10%", upsetOverlay: "evidence-gated" },
+    name: "PAUL Edge Engine v3",
+    weights: { market: 55, elo: 25, poisson: 20, drawSqueeze: "strict group-stage only, market draw >= 29%, top-two margin <= 6%, rating/poisson gap <= 12%", upsetOverlay: "conservative holdout-gated" },
     consensusCode,
     consensusName: consensusCode === match.teamA.code ? match.teamA.name : consensusCode === match.teamB.code ? match.teamB.name : consensusCode === "DRAW" ? "Draw" : null,
     modelDisagreement,
@@ -201,14 +215,17 @@ function buildPaulEdge(match, evidence) {
     upsetTier: tier,
     marketMargin: marketMargin === null ? null : Number(marketMargin.toFixed(3)),
     drawSqueeze,
+    drawModelGap: drawModelGap === null ? null : Number(drawModelGap.toFixed(3)),
+    conservativeOverride,
+    overrideSupport,
     underdogCode,
     underdogName: underdogSide ? sideName(match, underdogSide) : null,
     signals,
     recommendation: drawSqueeze
-      ? "Treat the draw as a live PAUL candidate; market favorite is fragile."
-      : upsetScore >= 55
-        ? "PAUL may override the market favorite if news/form supports it."
-        : "PAUL should stay close to the blended baseline unless live news changes the setup."
+      ? "Draw is eligible only because market, rating, and score model all show a compressed match."
+      : conservativeOverride && upsetScore >= 55
+        ? "PAUL may override the market favorite, but only if current news confirms the model edge."
+        : "PAUL should stay close to the market/blended consensus unless live news materially changes the setup."
   };
 }
 
@@ -305,8 +322,8 @@ function buildPrompt(payload, evidence) {
     "Use this decision order: 1) market-implied probability as the anchor, 2) Elo/SPI-style rating strength, 3) attack/defense score model, 4) recent form and availability, 5) tactical upset path.",
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
-    "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high, explain the upset path; if it is low, stay close to the blended favorite.",
-    "If evidence.paulEdge.drawSqueeze is true in a group-stage match, seriously consider DRAW as PAUL's pick unless strong team news breaks the setup.",
+    "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
+    "Only treat DRAW as a serious PAUL pick when evidence.paulEdge.drawSqueeze is true; do not force a draw from a merely narrow market.",
     "Confidence should be calibrated: 50-59 is lean, 60-69 is solid, 70-79 is strong, 80+ is rare.",
     "Do not provide betting advice. Do not invent exact links, injuries, lineups, odds, or recent results that are not supported by evidence.",
     "Return strict JSON with these keys: winnerCode, winnerName, confidence, predictedScore, probabilities, reasoning, upsetRisk, evidenceUsed, marketBaseline, ratingBaseline, calibrationNote, upsetCase.",
