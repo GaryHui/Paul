@@ -85,8 +85,8 @@ function compactDailyRead(match, result) {
 
 async function refreshDailyAnalysis(matches, options = {}) {
   const now = options.now || new Date();
-  const horizonDays = Number(options.horizonDays || defaultHorizonDays);
-  const limit = Number(options.limit || defaultLimit);
+  const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
+  const limit = Number(options.limit ?? defaultLimit);
   const dailyCache = await getDailyAnalysis();
   const eligible = matches
     .filter((match) => eligibleForDailyAnalysis(match, now, horizonDays))

@@ -50,8 +50,8 @@ function dueForEvidenceRefresh(match, entry, now = new Date(), options = {}) {
 
 async function refreshMarketEvidence(matches, options = {}) {
   const now = options.now || new Date();
-  const horizonDays = Number(options.horizonDays || defaultHorizonDays);
-  const limit = Number(options.limit || defaultLimit);
+  const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
+  const limit = Number(options.limit ?? defaultLimit);
   const evidenceCache = await getEvidenceCache();
   const eligible = matches
     .filter((match) => eligibleForEvidenceRefresh(match, now, horizonDays))
