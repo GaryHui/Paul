@@ -8,6 +8,10 @@ const { getPredictions, getResults, setPrediction, setResult } = require("../_li
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
+const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 2);
+const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 1);
+const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 2);
+const cronResultSyncMaxMatches = Number(process.env.CRON_RESULT_SYNC_MAX_MATCHES || 4);
 
 function requestToken(req) {
   const auth = req.headers?.authorization || "";
@@ -70,10 +74,15 @@ module.exports = async function handler(req, res) {
     const results = await getResults();
     const now = new Date();
     const events = [];
+    const cronRun = req.method === "GET" && !force;
     const resolvedMatches = resolveMatches(snapshot.matches, results);
     const evidenceRefresh = process.env.ODDS_REFRESH_DISABLED === "1"
       ? { checked: 0, eligible: 0, skipped: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
-      : await refreshMarketEvidence(resolvedMatches, { now, force });
+      : await refreshMarketEvidence(resolvedMatches, {
+        now,
+        force,
+        limit: cronRun ? cronOddsRefreshMaxMatches : undefined
+      });
     events.push({
       type: "evidence-refresh",
       status: evidenceRefresh.errors ? "partial" : "ok",
@@ -87,7 +96,11 @@ module.exports = async function handler(req, res) {
 
     const dailyAnalysis = process.env.DAILY_ANALYSIS_DISABLED === "1" || !(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY)
       ? { checked: 0, eligible: 0, skipped: 0, ok: 0, errors: 0, disabled: true, events: [] }
-      : await refreshDailyAnalysis(resolvedMatches, { now, force });
+      : await refreshDailyAnalysis(resolvedMatches, {
+        now,
+        force,
+        limit: cronRun ? cronDailyAnalysisMaxMatches : undefined
+      });
     events.push({
       type: "daily-analysis",
       status: dailyAnalysis.errors ? "partial" : "ok",
@@ -98,6 +111,9 @@ module.exports = async function handler(req, res) {
       errors: dailyAnalysis.errors,
       disabled: Boolean(dailyAnalysis.disabled)
     });
+
+    let predictionAttempts = 0;
+    let resultAttempts = 0;
 
     for (const sourceMatch of resolvedMatches) {
       const matchTime = parseMatchTime(sourceMatch);
@@ -110,7 +126,9 @@ module.exports = async function handler(req, res) {
 
       const predictAt = new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000);
       const shouldPredict = force || (now >= predictAt && now < matchTime);
-      if (shouldPredict && !predictions[sourceMatch.id]) {
+      const canAttemptPrediction = force || predictionAttempts < cronPredictionMaxMatches;
+      if (shouldPredict && !predictions[sourceMatch.id] && canAttemptPrediction) {
+        predictionAttempts += 1;
         try {
           const record = await attachAuditProof(sourceMatch, {
             matchId: sourceMatch.id,
@@ -127,7 +145,9 @@ module.exports = async function handler(req, res) {
 
       const resultAt = new Date(matchTime.getTime() + resultSyncDelayHours * 60 * 60 * 1000);
       const shouldSyncResult = force || now >= resultAt;
-      if (shouldSyncResult && !results[sourceMatch.id]) {
+      const canAttemptResult = force || resultAttempts < cronResultSyncMaxMatches;
+      if (shouldSyncResult && !results[sourceMatch.id] && canAttemptResult) {
+        resultAttempts += 1;
         try {
           const result = await fetchMatchResult(sourceMatch);
           if (result) {

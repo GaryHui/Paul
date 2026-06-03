@@ -55,6 +55,8 @@ Vercel Hobby plans only allow daily Cron Jobs, so `vercel.json` keeps the built-
 
 The `.github/workflows/paul-cron.yml` workflow is kept for manual owner testing only. It no longer runs on a schedule.
 
+Cron GET runs are intentionally small-batch to stay under cron-job.org's default 30-second execution window. Defaults: `CRON_ODDS_REFRESH_MAX_MATCHES=2`, `CRON_DAILY_ANALYSIS_MAX_MATCHES=1`, `CRON_PREDICTION_MAX_MATCHES=2`, and `CRON_RESULT_SYNC_MAX_MATCHES=4`. Owner POST force runs can still process more work for manual verification.
+
 Dynamic odds refresh cadence:
 
 - More than 30 days before kickoff: every 48 hours.
