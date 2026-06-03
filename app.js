@@ -1765,21 +1765,54 @@ function metricCard(name, metric) {
   `;
 }
 
+function datasetBacktestCard(run) {
+  const paul = run.metrics?.paul || {};
+  const market = run.metrics?.market || {};
+  const edge = run.edge?.paulMinusMarket ?? 0;
+  return `
+    <article class="verify-health-card ${edge >= 0 ? "is-pass" : "is-fail"}">
+      <span>${run.year} · ${run.role}</span>
+      <h3>${paul.accuracy ?? 0}%</h3>
+      <p>PAUL ${paul.correct ?? 0}/${paul.graded ?? 0} · Market ${market.correct ?? 0}/${market.graded ?? 0} · Edge ${edge >= 0 ? "+" : ""}${edge}</p>
+      <p>${run.dataset?.coverage || ""}</p>
+    </article>
+  `;
+}
+
 function renderBacktestReport(data) {
   const report = document.getElementById("backtestReport");
   if (!report) return;
   const metrics = data.metrics || {};
   const calibration = data.calibration || {};
+  const holdout = data.holdout || {};
+  const holdoutMetrics = holdout.metrics || {};
   report.innerHTML = `
     <div class="verify-summary ${data.status === "pass" ? "is-pass" : "is-fail"}">
       <strong>BACKTEST ${String(data.status || "unknown").toUpperCase()}</strong>
       <span>${data.algorithm?.name || "PAUL Edge"} · ${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
     </div>
     <p class="verify-note">
-      Source: odds from ${data.dataset?.odds || "N/A"}. ${data.dataset?.note || ""}
+      Source: CheckBestOdds archived 1X2 odds plus stored final scores. 2022 is the tuning sample; 2018 and 2014 are holdout checks with only the public archived odds coverage shown below.
       ${data.algorithm?.changes?.length ? `Changes: ${data.algorithm.changes.join("; ")}.` : ""}
     </p>
-    <h3 class="verify-title">Baseline Comparison</h3>
+    <h3 class="verify-title">Holdout Summary</h3>
+    <div class="verify-health-grid">
+      ${metricCard("PAUL Edge holdout", holdoutMetrics.paul)}
+      ${metricCard("Market holdout", holdoutMetrics.market)}
+      ${metricCard("Rating holdout", holdoutMetrics.rating)}
+      ${metricCard("Poisson holdout", holdoutMetrics.poisson)}
+      ${metricCard("Blended holdout", holdoutMetrics.blended)}
+      <article class="verify-health-card ${(holdout.edge?.paulMinusMarket ?? 0) >= 0 ? "is-pass" : "is-fail"}">
+        <span>Holdout edge</span>
+        <h3>${(holdout.edge?.paulMinusMarket ?? 0) >= 0 ? "+" : ""}${holdout.edge?.paulMinusMarket ?? 0}</h3>
+        <p>PAUL vs market · ${holdout.edge?.upsetHits ?? 0}/${holdout.edge?.upsetCalls ?? 0} override hits</p>
+      </article>
+    </div>
+    <h3 class="verify-title">Dataset Breakdown</h3>
+    <div class="verify-health-grid">
+      ${(data.datasets || []).map(datasetBacktestCard).join("")}
+    </div>
+    <h3 class="verify-title">All-Dataset Baseline Comparison</h3>
     <div class="verify-health-grid">
       ${metricCard("PAUL Edge", metrics.paul)}
       ${metricCard("Market favorite", metrics.market)}
@@ -1821,7 +1854,7 @@ function renderBacktestReport(data) {
           .slice(0, 16)
           .map((match) => `
             <div class="verify-match">
-              <span>#${match.id}</span>
+              <span>${match.datasetYear || ""} #${match.id}</span>
               <strong>${match.match} ${match.score}</strong>
               <em>Actual ${match.actual}; PAUL ${match.picks.paul}; Market ${match.picks.market}; Edge ${match.paul.upsetScore}</em>
             </div>
@@ -1945,7 +1978,7 @@ async function runHistoricalBacktest() {
     return;
   }
   button.disabled = true;
-  status.textContent = "Running historical 2022 backtest...";
+  status.textContent = "Running historical 2022 sample plus 2018/2014 holdout backtest...";
   try {
     try {
       sessionStorage.setItem("paul.verifyToken", token);

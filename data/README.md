@@ -49,19 +49,18 @@ The public proof payload stores `evidence.baselines` and `evidence.paulEdge`, so
 
 ## Historical backtest
 
-The private Verify page includes a 2022 World Cup backtest powered by `api/_lib/backtest.js`.
+The private Verify page includes a historical backtest powered by `api/_lib/backtest.js`.
 
-The built-in dataset contains 64 matches, 1X2 historical odds from CheckBestOdds, pre-tournament rank priors, and final scores. The runner processes matches in order, so PAUL Edge can use only prior tournament form, never future results.
+The runner processes matches in listed order, so PAUL Edge can use only prior tournament form, never future results. 2022 is treated as the tuning sample. 2018 and 2014 are displayed as holdout checks, using only the archived matches where public CheckBestOdds 1X2 odds were found.
 
-Current PAUL Edge Engine v2 result on that dataset:
+Current PAUL Edge Engine v2 result:
 
-- PAUL Edge: 42/64, 66% accuracy, Brier 0.516.
-- Market favorite: 38/64, 59% accuracy, Brier 0.501.
-- Blended baseline: 39/64, 61% accuracy, Brier 0.516.
-- Random baseline: 21/64, 33% accuracy.
-- PAUL Edge override calls: 5/9 hit, 56%.
+- 2022 tuning sample: PAUL Edge 42/64, 66% accuracy; market favorite 38/64, 59%.
+- 2018 holdout: PAUL Edge 23/43, 53% accuracy; market favorite 26/43, 60%.
+- 2014 holdout: PAUL Edge 13/25, 52% accuracy; market favorite 14/25, 56%.
+- 2018+2014 holdout total: PAUL Edge 36/68, 53%; market favorite 40/68, 59%.
 
-This is a validation harness, not a guarantee. The next useful step is adding 2018 and 2014 datasets, then tuning only on past tournaments and holding out one tournament for evaluation.
+That means v2 is not yet robust: it beats the 2022 sample, but its upset overlay underperforms on the 2018/2014 holdout. Treat this as an audit harness, not a guarantee or promotional claim. Future algorithm changes should be judged by whether they improve holdout performance without hiding the per-year breakdown.
 
 ## OpenTimestamps proof
 
