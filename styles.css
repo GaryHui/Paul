@@ -1763,12 +1763,18 @@ input {
       "right";
   }
 
+  .pk-panel[data-direction="right"] .pk-stage {
+    grid-template-areas:
+      "left"
+      "lane"
+      "right";
+  }
+
   .octopus-lane {
     min-height: 220px;
   }
 
   .crawler {
-    --crawl-x: 0%;
     width: min(520px, 82vw);
     max-height: 260px;
   }

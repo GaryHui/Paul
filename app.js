@@ -1574,13 +1574,17 @@ function renderPK() {
   const leftWon = Boolean(official && resolved.aCode && officialPick === resolved.aCode);
   const rightWon = Boolean(official && resolved.bCode && officialPick === resolved.bCode);
   const mode = matchMode(match);
+  const pkPanel = document.getElementById("pkPanel");
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
-  const crawlX = leftWon ? "-34%" : rightWon ? "34%" : "0%";
+  const direction = leftWon ? "left" : rightWon ? "right" : "center";
+  const compactStage = window.matchMedia?.("(max-width: 980px)").matches;
+  const crawlX = leftWon ? (compactStage ? "-8%" : "-34%") : rightWon ? (compactStage ? "8%" : "34%") : "0%";
   const shouldCrawl = leftWon || rightWon;
   const crawlerAsset = "assets/real-paul-side-cutout.png";
 
-  document.getElementById("pkPanel").dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
+  pkPanel.dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
+  pkPanel.dataset.direction = direction;
   document.getElementById("pkMeta").textContent = `${mode} · Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
   document.getElementById("pkConfidence").innerHTML = official
     ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
@@ -1591,7 +1595,7 @@ function renderPK() {
   document.getElementById("leftTeam").innerHTML = resolved.aCode ? teamMarkup(resolved.aCode) + teamLocaleMarkup(resolved.aCode) : slotMarkup(slotLabel(match, "a"));
   document.getElementById("rightTeam").innerHTML = resolved.bCode ? teamMarkup(resolved.bCode) + teamLocaleMarkup(resolved.bCode) : slotMarkup(slotLabel(match, "b"));
   lane.style.setProperty("--crawl-x", crawlX);
-  lane.dataset.direction = leftWon ? "left" : rightWon ? "right" : "center";
+  lane.dataset.direction = direction;
   if (!crawler.getAttribute("src")?.includes(crawlerAsset)) {
     crawler.setAttribute("src", crawlerAsset);
   }
