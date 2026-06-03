@@ -51,9 +51,9 @@ DAILY_ANALYSIS_DISABLED=1
 
 The odds fetcher only calls providers when a match reaches its refresh window. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. By default the cron checks the next 12 due scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
 
-Vercel Hobby plans only allow daily Cron Jobs, so `vercel.json` keeps the built-in safety cron at once per day. To run the full cadence below, use either Vercel Pro with `*/15 * * * *`, or an external scheduler such as GitHub Actions, cron-job.org, EasyCron, or Upstash QStash to call `/api/automation/run-due` every 15 minutes with `Authorization: Bearer <CRON_SECRET>`. The endpoint is protected; public visitors cannot trigger it.
+Vercel Hobby plans only allow daily Cron Jobs, so `vercel.json` keeps the built-in safety cron at once per day. The primary external scheduler is cron-job.org, calling `/api/automation/run-due` every 20 minutes with `Authorization: Bearer <CRON_SECRET>`. cron-job.org's default API limit is 100 requests per day, so 20 minutes is safer than 15 minutes while still waking the app often enough; the endpoint itself decides whether provider calls are actually due. Public visitors cannot trigger it.
 
-This repository includes `.github/workflows/paul-cron.yml` for the external scheduler path. Add a GitHub repository secret named `CRON_SECRET` with the same value as Vercel Production `CRON_SECRET`; GitHub Actions will then wake the protected endpoint every 15 minutes while the app code decides whether any provider calls are actually due.
+The `.github/workflows/paul-cron.yml` workflow is kept for manual owner testing only. It no longer runs on a schedule.
 
 Dynamic odds refresh cadence:
 
