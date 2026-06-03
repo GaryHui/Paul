@@ -1983,6 +1983,19 @@ function datasetBacktestCard(run) {
   `;
 }
 
+function pickDisplay(match, side) {
+  if (side === "home") return match.match?.split(" vs ")[0] || "Home";
+  if (side === "away") return match.match?.split(" vs ")[1] || "Away";
+  if (side === "draw") return "Draw";
+  return side || "N/A";
+}
+
+function marketImpact(match) {
+  const paulCorrect = match.picks?.paul === match.actual ? 1 : 0;
+  const marketCorrect = match.picks?.market === match.actual ? 1 : 0;
+  return paulCorrect - marketCorrect;
+}
+
 function stabilityCard(title, value, copy, pass = true) {
   return `
     <article class="verify-health-card ${pass ? "is-pass" : "is-fail"}">
@@ -2113,13 +2126,22 @@ function renderBacktestReport(data) {
       <article class="verify-round">
         ${(data.trace || [])
           .slice(0, 16)
-          .map((match) => `
-            <div class="verify-match">
-              <span>${match.datasetYear || ""} #${match.id}</span>
-              <strong>${match.match} ${match.score}</strong>
-              <em>Actual ${match.actual}; PAUL ${match.picks.paul}; Market ${match.picks.market}; Edge ${match.paul.upsetScore}</em>
-            </div>
-          `)
+          .map((match) => {
+            const impact = marketImpact(match);
+            return `
+              <div class="verify-match">
+                <span>${match.datasetYear || ""} #${match.id}</span>
+                <strong>${match.match} ${match.score}</strong>
+                <em>
+                  Actual: ${pickDisplay(match, match.actual)} ·
+                  PAUL: ${pickDisplay(match, match.picks.paul)} ·
+                  Market: ${pickDisplay(match, match.picks.market)} ·
+                  Upset signal: ${match.paul.upsetScore}/100 ·
+                  Market impact: ${impact >= 0 ? "+" : ""}${impact}
+                </em>
+              </div>
+            `;
+          })
           .join("")}
       </article>
     </div>
