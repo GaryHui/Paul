@@ -7,8 +7,10 @@ The site now refuses to create a formal prediction unless it has real input data
 Use at least one primary source:
 
 - Live odds provider env vars, preferred:
+  - `BSD_API_KEY`: BSD/Bzzoiro token. The app checks football events and pulls consensus 1X2 odds plus injuries, form, H2H, coaches, and tactical fields when available.
   - `ODDS_API_IO_KEY`: Odds-API.io key. The app checks football events, finds the matching fixture, then pulls 1X2 odds.
   - `THE_ODDS_API_KEY`: TheOddsAPI key. Used as a secondary live odds provider.
+  - `BALLDONTLIE_API_KEY`: BALLDONTLIE FIFA World Cup key. Used as a World Cup-specific fallback for match odds and official tournament context.
 - `market-odds.json`: local 1X2 market odds or probabilities, used only when live providers are not configured or no matching event is found.
 - `team-ratings.json`: real team ratings such as Elo/SPI plus optional attack/defense values.
 
@@ -22,6 +24,9 @@ Optional but useful:
 Keep all keys server-side in Vercel Production env vars. Never put them in `app.js` or `index.html`.
 
 ```text
+BSD_API_KEY=...
+BSD_API_BASE_URL=https://sports.bzzoiro.com/api
+
 ODDS_API_IO_KEY=...
 ODDS_API_IO_SPORT=football
 ODDS_BOOKMAKERS=Bet365,Pinnacle,Unibet
@@ -29,6 +34,9 @@ ODDS_BOOKMAKERS=Bet365,Pinnacle,Unibet
 THE_ODDS_API_KEY=...
 THE_ODDS_SPORT_KEY=soccer_fifa_world_cup
 ODDS_REGIONS=us,uk,eu
+
+BALLDONTLIE_API_KEY=...
+BALLDONTLIE_BASE_URL=https://api.balldontlie.io/fifa/worldcup/v1
 
 ODDS_REFRESH_HORIZON_DAYS=60
 ODDS_REFRESH_MAX_MATCHES=12
@@ -39,7 +47,7 @@ DAILY_ANALYSIS_MAX_MATCHES=4
 DAILY_ANALYSIS_DISABLED=1
 ```
 
-`ODDS_API_IO_KEY` is tried first. `THE_ODDS_API_KEY` is tried second. If neither returns a matching event, PAUL falls back to `market-odds.json`.
+`BSD_API_KEY` is tried first because it can provide both odds and daily intelligence. `ODDS_API_IO_KEY` and `THE_ODDS_API_KEY` are tried next as specialist odds feeds. `BALLDONTLIE_API_KEY` is tried as a World Cup-specific fallback. If no live provider returns a matching event, PAUL falls back to `market-odds.json`.
 
 Vercel Cron refreshes market evidence once per day through `/api/automation/run-due`. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. The default cache freshness window is 26 hours. By default the cron refreshes the next 12 scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
 

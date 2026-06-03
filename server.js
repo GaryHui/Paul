@@ -494,11 +494,12 @@ async function dataReadiness(matches) {
     marketOdds: fs.existsSync(oddsFile),
     teamRatings: fs.existsSync(ratingsFile),
     recentForm: fs.existsSync(formFile),
-    liveOddsProvider: process.env.ODDS_API_IO_KEY
-      ? "odds-api.io"
-      : process.env.THE_ODDS_API_KEY
-        ? "theoddsapi.com"
-        : null,
+    liveOddsProvider: [
+      process.env.BSD_API_KEY ? "bsd" : null,
+      process.env.ODDS_API_IO_KEY ? "odds-api.io" : null,
+      process.env.THE_ODDS_API_KEY ? "theoddsapi.com" : null,
+      process.env.BALLDONTLIE_API_KEY ? "balldontlie" : null
+    ].filter(Boolean).join(",") || null,
     firstMatchEvidence: first
   };
 }

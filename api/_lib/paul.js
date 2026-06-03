@@ -281,10 +281,11 @@ async function collectPredictionEvidence(match, options = {}) {
   }
   const oddsRecord = remoteOdds.record || cachedOdds || findByMatchId(allOdds, match.id);
   const marketProb = oddsToProbabilities(oddsRecord?.odds || oddsRecord);
+  const providerIntelligence = oddsRecord?.intelligence || null;
   const ratingA = findTeamRecord(allRatings, match.teamA.code);
   const ratingB = findTeamRecord(allRatings, match.teamB.code);
-  const formA = findTeamRecord(allForm, match.teamA.code);
-  const formB = findTeamRecord(allForm, match.teamB.code);
+  const formA = findTeamRecord(allForm, match.teamA.code) || providerIntelligence?.form?.teamA || null;
+  const formB = findTeamRecord(allForm, match.teamB.code) || providerIntelligence?.form?.teamB || null;
   const allowDraw = match.round === "Group Stage";
   const eloProb = ratingA?.elo && ratingB?.elo ? eloProbabilities(ratingA.elo, ratingB.elo, allowDraw) : null;
   let poisson = null;
@@ -299,7 +300,7 @@ async function collectPredictionEvidence(match, options = {}) {
     { name: "elo", probabilities: eloProb, weight: 25 },
     { name: "poisson", probabilities: poisson?.probabilities, weight: 20 }
   ]);
-  const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson);
+  const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson || providerIntelligence);
   const missing = [];
   if (!marketProb) missing.push("market odds");
   if (!(ratingA?.elo && ratingB?.elo)) missing.push("real Elo or team ratings");
@@ -319,7 +320,8 @@ async function collectPredictionEvidence(match, options = {}) {
           bookmakerCount: oddsRecord.bookmakerCount || null,
           sampleBookmakers: oddsRecord.sampleBookmakers || null,
           odds: oddsRecord?.odds || oddsRecord,
-          probabilities: marketProb
+          probabilities: marketProb,
+          intelligence: providerIntelligence
         }
       : null,
     marketFetchErrors: remoteOdds.errors,
@@ -334,6 +336,7 @@ async function collectPredictionEvidence(match, options = {}) {
         },
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
+    intelligence: providerIntelligence,
     poisson,
     modelBlend,
     baselines: {

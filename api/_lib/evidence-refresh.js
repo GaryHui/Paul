@@ -28,11 +28,14 @@ async function refreshMarketEvidence(matches, options = {}) {
         forceLiveOdds: true,
         cache: false
       });
+      const hasEvidence = Boolean(evidence.market || evidence.intelligence);
       events.push({
         type: "evidence",
         matchId: match.id,
-        status: evidence.market ? "ok" : "missing",
-        provider: evidence.market?.provider || null,
+        status: hasEvidence ? "ok" : "missing",
+        provider: evidence.market?.provider || evidence.intelligence?.source || null,
+        hasOdds: Boolean(evidence.market),
+        hasIntelligence: Boolean(evidence.intelligence),
         bookmakerCount: evidence.market?.bookmakerCount || 0,
         updatedAt: evidence.market?.updatedAt || evidence.generatedAt
       });
