@@ -292,6 +292,57 @@ Object.entries(recordSectionCopy).forEach(([key, copy]) => {
   Object.assign(languageCopy[key], copy);
 });
 
+Object.assign(languageCopy.es, {
+  fanVote: "Voto de aficionados",
+  bracketSlotPending: "Casilla del cuadro pendiente",
+  votes: "votos",
+  dailyRead: "Lectura diaria de PAUL",
+  waitingTeams: "Esperando equipos",
+  nextRefreshPending: "Próxima actualización pendiente",
+  dailyRefreshCopy: "PAUL actualizará este partido automáticamente cuando entre en la ventana diaria de análisis.",
+  currentLean: "Tendencia actual",
+  confidence: "confianza",
+  draw: "Empate",
+  correct: "Correcto",
+  missed: "Fallado",
+  final: "Final",
+  locked: "Bloqueado",
+  proofLocked: "Prueba bloqueada",
+  notLocked: "No bloqueado",
+  lockedAt: "Bloqueado",
+  kickoff: "Inicio",
+  generatedAt: "Generado",
+  updated: "Actualizado",
+  officialConfidence: "Confianza oficial",
+  officialPredictionPending: "Predicción oficial pendiente",
+  officialPredictionNotLocked: "La predicción oficial de PAUL aún no está bloqueada.",
+  bracketNotResolved: "Esta casilla del cuadro aún no está resuelta.",
+  kickoffCountdown: "Cuenta regresiva",
+  finalScorePending: "El resultado final aún no se ha sincronizado. La precisión se actualizará después del final.",
+  predictedScore: "Marcador previsto",
+  officialPaulPick: "Elección oficial de PAUL",
+  upsetWatch: "Alerta de sorpresa",
+  proofStatus: "Estado de la prueba",
+  upsetRisk: "Riesgo de sorpresa",
+  proofLockedPublicRecord: "Después del final, esta elección se suma al registro público de PAUL.",
+  finalScoresVerify: "El resultado final verificará esta elección después del partido.",
+  officialPredictionFallback: "PAUL ha devuelto una predicción oficial.",
+  lockedWithoutDetails: "PAUL ha bloqueado esta elección sin una explicación detallada.",
+  awaitingGroups: "Esperando fase de grupos",
+  awaitingGroupPick: "Esperando predicción de PAUL en fase de grupos",
+  awaitingKnockoutPick: "Esperando oráculo de PAUL en eliminatorias",
+  waitingBracketResults: "Esperando resultados del cuadro",
+  pendingGroupPickCopy: "Esta predicción de fase de grupos se probará y bloqueará antes del inicio, y contará en el registro público base de PAUL.",
+  pendingKnockoutPickCopy: "El modo Oráculo de eliminatorias bloqueará esta elección de vida o muerte antes del inicio, con riesgo de sorpresa y lectura del camino del cuadro.",
+  unresolvedSlotCopy: "Esta casilla eliminatoria será predecible cuando los resultados reales anteriores completen el cuadro oficial.",
+  pendingModelCopy: "La predicción oficial con prueba aún está pendiente. Las probabilidades diarias de PAUL pueden actualizarse arriba antes de la ventana de bloqueo.",
+  unresolvedModelCopy: "Este partido será predecible cuando se conozcan los ganadores anteriores.",
+  knockoutFixturesPending: "Los partidos eliminatorios aparecerán solo cuando existan resultados reales de la fase de grupos y el cuadro oficial.",
+  groupStageRecord: "Registro de fase de grupos",
+  knockoutOracleMode: "Modo Oráculo eliminatorio",
+  all: "Todo"
+});
+
 let currentLanguage = (() => {
   try {
     return localStorage.getItem(languageKey) || "en";
@@ -306,6 +357,20 @@ function tr(key) {
 
 function currentLocale() {
   return languageOptions.find((item) => item[0] === currentLanguage)?.[2] || "en-US";
+}
+
+function roundLabel(round) {
+  const labels = {
+    All: { en: "All", es: "Todo", zh: "全部" },
+    "Group Stage": { en: "Group stage", es: "Fase de grupos", zh: "小组赛" },
+    "Round of 32": { en: "Round of 32", es: "Dieciseisavos", zh: "32 强" },
+    "Round of 16": { en: "Round of 16", es: "Octavos", zh: "16 强" },
+    Quarterfinal: { en: "Quarterfinal", es: "Cuartos de final", zh: "四分之一决赛" },
+    Semifinal: { en: "Semifinal", es: "Semifinal", zh: "半决赛" },
+    "Third Place": { en: "Third Place", es: "Tercer puesto", zh: "季军赛" },
+    Final: { en: "Final", es: "Final", zh: "决赛" }
+  };
+  return labels[round]?.[currentLanguage] || labels[round]?.en || roundLabels[round] || round;
 }
 
 const groupDates = {
@@ -798,6 +863,15 @@ function formatDisplayDateTime(value, options = {}) {
   }).format(date);
 }
 
+function formatMatchDate(match) {
+  const kickoff = matchKickoffTime(match);
+  if (Number.isNaN(kickoff.getTime())) return match?.date || "";
+  return new Intl.DateTimeFormat(currentLocale(), {
+    month: "short",
+    day: "numeric"
+  }).format(kickoff);
+}
+
 function setupLanguageSelect() {
   const select = document.getElementById("languageSelect");
   if (!select) return;
@@ -1200,18 +1274,18 @@ function renderDailyRead(match) {
 
   const probabilities = read.probabilities || {};
   const pickCode = read.pick?.winnerCode;
-  const pickName = read.pick?.winnerName || teams[pickCode]?.name || "No clear pick";
-  const updatedAt = read.generatedAt ? formatProofTime(read.generatedAt) : "N/A";
+  const pickName = read.pick?.winnerName || teams[pickCode]?.name || tr("pending");
+  const updatedAt = read.generatedAt ? formatProofTime(read.generatedAt) : tr("unknown");
   const rows = [
-    { side: "home", label: teams[resolved.aCode]?.name || "Home", value: probabilities.home },
-    { side: "draw", label: "Draw", value: probabilities.draw },
-    { side: "away", label: teams[resolved.bCode]?.name || "Away", value: probabilities.away }
+    { side: "home", label: teams[resolved.aCode]?.name || slotLabel(match, "a"), value: probabilities.home },
+    { side: "draw", label: tr("draw"), value: probabilities.draw },
+    { side: "away", label: teams[resolved.bCode]?.name || slotLabel(match, "b"), value: probabilities.away }
   ];
 
   panel.innerHTML = `
     <div class="daily-read__head">
       <span>${tr("dailyRead")}</span>
-      <strong>Updated ${escapeHtml(updatedAt)}</strong>
+      <strong>${tr("updated")} ${escapeHtml(updatedAt)}</strong>
     </div>
     <div class="daily-read__pick">
       <span>${tr("currentLean")}</span>
@@ -1395,7 +1469,7 @@ function renderPublicTrace() {
           <div class="trace-row" role="row">
             <span>
               <strong>#${match.id} ${escapeHtml(matchName)}</strong>
-              <em>${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</em>
+              <em>${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</em>
             </span>
             <span>
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
@@ -1538,7 +1612,7 @@ function renderMatchList() {
             <span class="match-flags">${flags}</span>
             <span>${aLabel} vs ${bLabel}</span>
           </span>
-          <span class="match-sub">${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</span>
+          <span class="match-sub">${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</span>
           <span class="match-countdown">${countdownMarkup(match)}</span>
           <span class="mode-pill ${modeClass(match)}">${matchMode(match)}</span>
         </span>
@@ -1588,10 +1662,7 @@ function renderPK() {
 
   pkPanel.dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
   pkPanel.dataset.direction = direction;
-  document.getElementById("pkMeta").textContent = `${mode} · Match ${match.id} · ${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}`;
-  document.getElementById("pkConfidence").innerHTML = official
-    ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
-    : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${countdownMarkup(match)}`;
+  document.getElementById("pkMeta").textContent = `${mode} · ${tr("match")} ${match.id} · ${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}`;
   document.getElementById("pkConfidence").innerHTML = official
     ? `${tr("officialConfidence")} ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
     : `${resolved.aCode && resolved.bCode ? tr("officialPredictionPending") : tr("bracketSlotPending")} · ${countdownMarkup(match)}`;
@@ -2940,7 +3011,7 @@ function refreshFilterOptions() {
   const groupFilter = document.getElementById("groupFilter");
   if (roundFilter) {
     const current = roundFilter.value || "All";
-    roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${round === "All" ? tr("all") : roundLabels[round] || round}</option>`).join("");
+    roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabel(round)}</option>`).join("");
     roundFilter.value = current;
   }
   if (groupFilter) {
