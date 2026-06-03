@@ -6,6 +6,41 @@ const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapsh
 const { hasResultsProvider, providerName } = require("../_lib/results");
 const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
+function sideFromMarket(probabilities = {}) {
+  const sides = ["home", "draw", "away"];
+  const available = sides.filter((side) => Number.isFinite(Number(probabilities[side])));
+  if (!available.length) return null;
+  return available.sort((a, b) => Number(probabilities[b]) - Number(probabilities[a]))[0];
+}
+
+function sideTeam(match, side) {
+  if (side === "draw") return { code: "DRAW", name: "Draw" };
+  if (side === "home") return match?.teamA ? { code: match.teamA.code, name: match.teamA.name } : null;
+  if (side === "away") return match?.teamB ? { code: match.teamB.code, name: match.teamB.name } : null;
+  return null;
+}
+
+function marketTraceEntry(match, evidence) {
+  const market = evidence?.market;
+  if (!market?.probabilities) return null;
+  const side = sideFromMarket(market.probabilities);
+  const winner = sideTeam(match, side);
+  return {
+    matchId: match.id,
+    provider: market.provider || market.source || null,
+    updatedAt: market.updatedAt || evidence.generatedAt || null,
+    bookmakerCount: market.bookmakerCount || null,
+    favoriteSide: side,
+    favoriteCode: winner?.code || null,
+    favoriteName: winner?.name || null,
+    probabilities: {
+      home: market.probabilities.home ?? null,
+      draw: market.probabilities.draw ?? null,
+      away: market.probabilities.away ?? null
+    }
+  };
+}
+
 module.exports = async function handler(req, res) {
   const snapshot = loadSnapshot();
   const predictions = await getPredictions();
@@ -26,6 +61,15 @@ module.exports = async function handler(req, res) {
     .at(-1) || null;
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
+  const resolvedById = Object.fromEntries(resolvedMatches.map((match) => [String(match.id), match]));
+  const marketTrace = Object.fromEntries(Object.entries(evidenceCache || {})
+    .map(([matchId, evidence]) => {
+      const match = resolvedById[String(matchId)];
+      if (!match) return null;
+      const entry = marketTraceEntry(match, evidence);
+      return entry ? [String(matchId), entry] : null;
+    })
+    .filter(Boolean));
   const auditEntries = await auditSnapshot();
   const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
   const first = firstResolved ? await collectPredictionEvidence(firstResolved, { liveOdds: false }) : null;
@@ -40,6 +84,7 @@ module.exports = async function handler(req, res) {
     predictions,
     results,
     dailyAnalysis,
+    marketTrace,
     resolvedMatches: resolvedMatches.map((match) => ({
       id: match.id,
       teamA: match.teamA || null,

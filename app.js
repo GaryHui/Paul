@@ -455,6 +455,7 @@ let automationState = {
   predictions: {},
   results: {},
   dailyAnalysis: {},
+  marketTrace: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
   stageAccuracy: {
     group: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
@@ -828,6 +829,10 @@ function dailyReadFor(match) {
   return automationState.dailyAnalysis?.[match.id] || automationState.dailyAnalysis?.[String(match.id)] || null;
 }
 
+function marketTraceFor(match) {
+  return automationState.marketTrace?.[match.id] || automationState.marketTrace?.[String(match.id)] || null;
+}
+
 function dailyReadPercent(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return "Pending";
@@ -887,6 +892,181 @@ function renderDailyRead(match) {
             <span>${escapeHtml(row.label)}</span>
             <strong>${dailyReadPercent(row.value)}</strong>
             <i style="width: ${pct}%"></i>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function teamNameForCode(code, match) {
+  if (!code) return "Pending";
+  if (code === "DRAW") return "Draw";
+  if (teams[code]) return teams[code].name;
+  const resolved = match ? resolvedTeams(match) : {};
+  if (code === resolved.aCode) return teams[resolved.aCode]?.name || code;
+  if (code === resolved.bCode) return teams[resolved.bCode]?.name || code;
+  return code;
+}
+
+function traceProbability(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "";
+  const percent = number <= 1 ? number * 100 : number;
+  return `${Math.round(percent)}%`;
+}
+
+function sideToCode(match, side) {
+  const resolved = resolvedTeams(match);
+  if (side === "draw") return "DRAW";
+  if (side === "home") return resolved.aCode || null;
+  if (side === "away") return resolved.bCode || null;
+  return null;
+}
+
+function favoriteFromProbabilities(match, probabilities = {}) {
+  const sides = ["home", "draw", "away"].filter((side) => Number.isFinite(Number(probabilities[side])));
+  if (!sides.length) return null;
+  const side = sides.sort((a, b) => Number(probabilities[b]) - Number(probabilities[a]))[0];
+  const code = sideToCode(match, side);
+  return {
+    side,
+    code,
+    name: teamNameForCode(code, match),
+    probability: probabilities[side]
+  };
+}
+
+function officialMarketTrace(match, official) {
+  const market = official?.proof?.payload?.evidence?.market || official?.evidence?.market || null;
+  if (!market?.probabilities) return null;
+  const favorite = favoriteFromProbabilities(match, market.probabilities);
+  if (!favorite) return null;
+  return {
+    matchId: match.id,
+    provider: market.provider || market.source || null,
+    updatedAt: market.updatedAt || null,
+    favoriteSide: favorite.side,
+    favoriteCode: favorite.code,
+    favoriteName: favorite.name,
+    probabilities: market.probabilities,
+    bookmakerCount: market.bookmakerCount || null
+  };
+}
+
+function tracePaulPick(match, official, daily) {
+  if (official) {
+    const code = officialPickCode(official);
+    return {
+      code,
+      name: official.analysis?.winnerName || teamNameForCode(code, match),
+      confidence: official.analysis?.confidence || null,
+      status: "Official locked"
+    };
+  }
+  if (daily?.pick?.winnerCode) {
+    return {
+      code: daily.pick.winnerCode,
+      name: daily.pick.winnerName || teamNameForCode(daily.pick.winnerCode, match),
+      confidence: daily.pick.confidence || null,
+      status: "Daily read"
+    };
+  }
+  return { code: null, name: "Pending", confidence: null, status: "Pending" };
+}
+
+function traceResult(match, result) {
+  if (!result?.status || result.status !== "final") return { label: "Pending", winnerCode: null };
+  const resolved = resolvedTeams(match);
+  const winnerCode = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore)
+    ? "DRAW"
+    : Number(result.homeScore) > Number(result.awayScore)
+      ? resolved.aCode
+      : resolved.bCode);
+  return {
+    label: `${teams[resolved.aCode]?.name || "Home"} ${result.homeScore}-${result.awayScore} ${teams[resolved.bCode]?.name || "Away"}`,
+    winnerCode
+  };
+}
+
+function traceMarketImpact(paulCode, marketCode, winnerCode) {
+  if (!paulCode || !marketCode || !winnerCode) return "Pending";
+  const paulCorrect = String(paulCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
+  const marketCorrect = String(marketCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
+  const impact = paulCorrect - marketCorrect;
+  return `${impact >= 0 ? "+" : ""}${impact}`;
+}
+
+function renderPublicTrace() {
+  const container = document.getElementById("publicTrace");
+  const summary = document.getElementById("publicTraceSummary");
+  if (!container) return;
+  const rows = tournament.matches
+    .filter((match) => {
+      const resolved = resolvedTeams(match);
+      return resolved.aCode && resolved.bCode;
+    })
+    .map((match) => {
+      const official = officialPrediction(match);
+      const daily = dailyReadFor(match);
+      const market = marketTraceFor(match) || officialMarketTrace(match, official);
+      const paul = tracePaulPick(match, official, daily);
+      const result = traceResult(match, officialResult(match));
+      return { match, official, daily, market, paul, result };
+    });
+
+  const officialCount = rows.filter((row) => row.official).length;
+  const dailyCount = rows.filter((row) => !row.official && row.daily).length;
+  const marketCount = rows.filter((row) => row.market).length;
+  const resultCount = rows.filter((row) => row.result.winnerCode).length;
+  if (summary) {
+    summary.innerHTML = `
+      <article><strong>${rows.length}</strong><span>Playable fixtures</span></article>
+      <article><strong>${officialCount}</strong><span>Official PAUL locks</span></article>
+      <article><strong>${dailyCount}</strong><span>Daily PAUL reads</span></article>
+      <article><strong>${marketCount}</strong><span>Market references</span></article>
+      <article><strong>${resultCount}</strong><span>Final results</span></article>
+    `;
+  }
+
+  container.innerHTML = `
+    <div class="trace-table" role="table" aria-label="2026 PAUL public match trace">
+      <div class="trace-row trace-row--head" role="row">
+        <span>Match</span>
+        <span>PAUL</span>
+        <span>Market</span>
+        <span>Result</span>
+        <span>Impact</span>
+      </div>
+      ${rows.map(({ match, market, paul, result }) => {
+        const resolved = resolvedTeams(match);
+        const matchName = `${teams[resolved.aCode]?.name || slotLabel(match, "a")} vs ${teams[resolved.bCode]?.name || slotLabel(match, "b")}`;
+        const marketName = market?.favoriteName || teamNameForCode(market?.favoriteCode, match);
+        const marketProb = market?.favoriteSide ? traceProbability(market.probabilities?.[market.favoriteSide]) : "";
+        const paulConfidence = paul.confidence ? ` · ${traceProbability(paul.confidence)}` : "";
+        const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
+        return `
+          <div class="trace-row" role="row">
+            <span>
+              <strong>#${match.id} ${escapeHtml(matchName)}</strong>
+              <em>${roundLabels[match.round] || match.round} · ${match.date} · ${match.venue}</em>
+            </span>
+            <span>
+              <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
+              <em>${paul.status}</em>
+            </span>
+            <span>
+              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : "Pending"}</strong>
+              <em>${market?.provider ? `${escapeHtml(market.provider)}${market.bookmakerCount ? ` · ${market.bookmakerCount} books` : ""}` : "No market reference yet"}</em>
+            </span>
+            <span>
+              <strong>${escapeHtml(result.label)}</strong>
+              <em>${result.winnerCode ? `Winner: ${escapeHtml(teamNameForCode(result.winnerCode, match))}` : countdownMarkup(match)}</em>
+            </span>
+            <span class="${impact.startsWith("+1") ? "trace-impact--win" : impact.startsWith("-") ? "trace-impact--loss" : ""}">
+              <strong>${impact}</strong>
+              <em>PAUL vs market</em>
+            </span>
           </div>
         `;
       }).join("")}
@@ -1299,12 +1479,14 @@ async function loadAutomationStatus() {
       predictions: mergedPredictions,
       results: status.results || {},
       dailyAnalysis: status.dailyAnalysis || automationState.dailyAnalysis || {},
+      marketTrace: status.marketTrace || automationState.marketTrace || {},
       accuracy: status.accuracy || automationState.accuracy,
       stageAccuracy
     };
     updateChampionLabel();
     renderMatchList();
     renderPK();
+    renderPublicTrace();
 
     const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
     const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
