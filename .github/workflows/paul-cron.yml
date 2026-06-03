@@ -18,7 +18,16 @@ jobs:
             echo "CRON_SECRET GitHub secret is not configured."
             exit 1
           fi
-          curl --fail --show-error --silent \
+          response_file="$(mktemp)"
+          status_code="$(curl --show-error --silent \
+            --output "$response_file" \
+            --write-out "%{http_code}" \
             --request GET \
             --header "Authorization: Bearer $CRON_SECRET" \
-            "$PAUL_AUTOMATION_URL"
+            "$PAUL_AUTOMATION_URL")"
+          echo "HTTP status: $status_code"
+          cat "$response_file"
+          echo
+          if [ "$status_code" -lt 200 ] || [ "$status_code" -ge 300 ]; then
+            exit 1
+          fi
