@@ -131,7 +131,18 @@ async function getDailyAnalysis() {
 async function setDailyAnalysisEntry(matchId, record) {
   if (!isSharedStoreConfigured()) return false;
   const cache = await getDailyAnalysis();
-  cache[matchId] = record;
+  const previous = cache[matchId] || cache[String(matchId)] || {};
+  const historyItem = {
+    generatedAt: record.generatedAt,
+    pick: record.pick || null,
+    probabilities: record.probabilities || null,
+    freshness: record.freshness || null
+  };
+  const history = Array.isArray(previous.history) ? previous.history.slice(-89) : [];
+  if (!history.some((entry) => entry.generatedAt === historyItem.generatedAt)) {
+    history.push(historyItem);
+  }
+  cache[matchId] = { ...record, history };
   await redisCommand(["SET", dailyAnalysisKey, JSON.stringify(cache)]);
   return true;
 }
