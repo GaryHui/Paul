@@ -1578,8 +1578,11 @@ function renderPK() {
   const lane = document.getElementById("octopusLane");
   const crawler = document.getElementById("crawler");
   const direction = leftWon ? "left" : rightWon ? "right" : "center";
+  const phoneStage = window.matchMedia?.("(max-width: 700px)").matches;
   const compactStage = window.matchMedia?.("(max-width: 980px)").matches;
-  const crawlX = leftWon ? (compactStage ? "-8%" : "-34%") : rightWon ? (compactStage ? "8%" : "34%") : "0%";
+  const leftCrawl = phoneStage ? "-24%" : compactStage ? "-8%" : "-34%";
+  const rightCrawl = phoneStage ? "24%" : compactStage ? "8%" : "34%";
+  const crawlX = leftWon ? leftCrawl : rightWon ? rightCrawl : "0%";
   const shouldCrawl = leftWon || rightWon;
   const crawlerAsset = "assets/real-paul-side-cutout.png";
 

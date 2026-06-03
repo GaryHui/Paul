@@ -1982,10 +1982,20 @@ input {
     padding: 14px;
     gap: 12px;
     min-height: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "lane lane"
+      "left right";
+  }
+
+  .pk-panel[data-direction="right"] .pk-stage {
+    grid-template-areas:
+      "lane lane"
+      "left right";
   }
 
   .octopus-lane {
-    min-height: 172px;
+    min-height: 176px;
   }
 
   .lane-line {
@@ -1994,28 +2004,33 @@ input {
   }
 
   .crawler {
-    width: min(320px, 74vw);
+    width: min(330px, 78vw);
     max-height: 168px;
   }
 
   .team-side {
     min-height: 0;
-    padding: 14px;
-    gap: 14px;
+    padding: 12px;
+    gap: 12px;
+    justify-content: flex-start;
   }
 
   .flag-frame {
-    max-width: 96px;
+    max-width: 82px;
   }
 
   .team-name {
-    font-size: 28px;
+    font-size: clamp(18px, 5vw, 23px);
     overflow-wrap: anywhere;
+  }
+
+  .team-code {
+    font-size: 12px;
   }
 
   .language,
   .local-language {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .prediction-copy,
@@ -2218,20 +2233,20 @@ input {
   }
 
   .octopus-lane {
-    min-height: 146px;
+    min-height: 150px;
   }
 
   .crawler {
-    width: min(280px, 78vw);
+    width: min(292px, 80vw);
     max-height: 144px;
   }
 
   .team-name {
-    font-size: 24px;
+    font-size: 20px;
   }
 
   .flag-frame {
-    max-width: 82px;
+    max-width: 72px;
   }
 
   .daily-read__row,
