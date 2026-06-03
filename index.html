@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-38" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-39" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -58,28 +58,27 @@
 
       <section class="accuracy-lab band" aria-label="PAUL edge metrics">
         <div class="section-head">
-          <p class="eyebrow">PAUL Edge Engine</p>
-          <h2>Transparent accuracy against real baselines.</h2>
+          <p class="eyebrow">PAUL Record</p>
+          <h2>Public accuracy, tracked match by match.</h2>
           <p>
-            PAUL is judged against market favorites, Elo-style ratings, score modeling, calibration, and upset calls.
-            The goal is not hidden magic; it is a proof-locked model that can beat simple favorites over time.
+            Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.
           </p>
         </div>
         <div class="accuracy-lab-grid">
           <article>
-            <span>Market favorite</span>
+            <span>Public favorite</span>
             <strong id="marketBaselineStat">Pending</strong>
-            <p>Consensus odds baseline.</p>
+            <p>Reference record.</p>
           </article>
           <article>
-            <span>Elo baseline</span>
+            <span>Team read</span>
             <strong id="ratingBaselineStat">Pending</strong>
-            <p>Team-strength baseline.</p>
+            <p>Reference record.</p>
           </article>
           <article>
-            <span>PAUL edge</span>
+            <span>PAUL gain</span>
             <strong id="paulEdgeStat">Pending</strong>
-            <p>Correct picks gained vs market.</p>
+            <p>Extra correct picks.</p>
           </article>
           <article>
             <span>Calibration</span>
@@ -131,6 +130,7 @@
               <article class="team-side team-side--right" id="rightTeam"></article>
             </div>
             <div class="prediction-copy" id="predictionCopy"></div>
+            <div class="poll-panel" id="pollPanel"></div>
             <div class="model-grid" id="modelGrid"></div>
           </section>
         </div>
@@ -266,6 +266,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-38"></script>
+    <script src="app.js?v=paul-ai-39"></script>
   </body>
 </html>

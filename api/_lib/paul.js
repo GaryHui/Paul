@@ -345,11 +345,11 @@ async function collectPredictionEvidence(match, options = {}) {
 }
 
 function buildPrompt(payload, evidence) {
-  const needsSearch = !evidence.hasPrimaryEvidence;
+  const needsSearch = !evidence.market || !evidence.hasPrimaryEvidence;
   return [
-    "You are PAUL AI, an AI octopus for pre-match FIFA World Cup predictions.",
+    "You are PAUL AI, an AI octopus for pre-match football predictions.",
     needsSearch
-      ? "Local odds/Elo evidence is missing. Use web search to find recent public information before making the prediction."
+      ? "Local market odds or model evidence is missing. Use web search to find recent public information, team news, likely lineups, injuries, form, and expert previews before making the prediction."
       : "Base the prediction on the real evidence object first, and use web search only to supplement the latest context.",
     "Use this decision order: 1) market-implied probability as the anchor, 2) Elo/SPI-style rating strength, 3) attack/defense score model, 4) recent form and availability, 5) tactical upset path.",
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
@@ -376,7 +376,7 @@ async function callPaul(payload) {
     throw error;
   }
   const evidence = await collectPredictionEvidence(payload);
-  const useSearchFallback = !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
+  const useSearchFallback = !evidence.market || !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
   evidence.searchFallback = useSearchFallback;
   const requestBody = {
     model: qwenModel,

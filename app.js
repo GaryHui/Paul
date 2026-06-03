@@ -463,6 +463,9 @@ let automationState = {
   }
 };
 const storedPredictionKey = "paul.manualPredictions.v2";
+const pollVoterKey = "paul.pollVoter.v1";
+const pollChoiceKey = "paul.pollChoices.v1";
+const pollState = {};
 let publicProofEntries = [];
 let proofLedgerExpanded = false;
 const proofLedgerLimit = 12;
@@ -727,6 +730,124 @@ function officialPickCode(record) {
   return record.analysis.winnerCode || record.analysis.winner || null;
 }
 
+function pollVoterId() {
+  try {
+    let id = localStorage.getItem(pollVoterKey);
+    if (!id) {
+      id = `v_${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(16).slice(2)}`}`;
+      localStorage.setItem(pollVoterKey, id);
+    }
+    return id;
+  } catch {
+    return `session_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  }
+}
+
+function storedPollChoices() {
+  try {
+    return JSON.parse(localStorage.getItem(pollChoiceKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function setStoredPollChoice(matchId, side) {
+  try {
+    const choices = storedPollChoices();
+    choices[matchId] = side;
+    localStorage.setItem(pollChoiceKey, JSON.stringify(choices));
+  } catch {
+    // Poll still works server-side without local display memory.
+  }
+}
+
+function pollLabel(match, side) {
+  const resolved = resolvedTeams(match);
+  if (side === "home") return resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
+  if (side === "away") return resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
+  return "Draw";
+}
+
+function pollPercent(poll, side) {
+  const total = poll?.total || 0;
+  if (!total) return 0;
+  return Math.round(((poll.votes?.[side] || 0) / total) * 100);
+}
+
+function renderPollPanel(match, poll = pollState[match.id] || { votes: {}, total: 0 }) {
+  const panel = document.getElementById("pollPanel");
+  if (!panel) return;
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode) {
+    panel.innerHTML = `
+      <div class="poll-head">
+        <span>Fan Vote</span>
+        <strong>Bracket slot pending</strong>
+      </div>
+    `;
+    return;
+  }
+  const choices = storedPollChoices();
+  const selected = choices[match.id] || "";
+  panel.innerHTML = `
+    <div class="poll-head">
+      <span>Fan Vote</span>
+      <strong>${poll.total || 0} votes</strong>
+    </div>
+    <div class="poll-options">
+      ${["home", "draw", "away"].map((side) => {
+        const percent = pollPercent(poll, side);
+        return `
+          <button class="poll-option ${selected === side ? "is-selected" : ""}" type="button" data-side="${side}">
+            <span class="poll-option__top">
+              <strong>${pollLabel(match, side)}</strong>
+              <em>${percent}%</em>
+            </span>
+            <span class="poll-bar"><i style="width: ${percent}%"></i></span>
+          </button>
+        `;
+      }).join("")}
+    </div>
+  `;
+  panel.querySelectorAll(".poll-option").forEach((button) => {
+    button.addEventListener("click", () => submitPollVote(match.id, button.dataset.side));
+  });
+}
+
+async function loadPoll(matchId) {
+  try {
+    const response = await fetch(`/api/polls?matchId=${encodeURIComponent(matchId)}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Poll failed.");
+    pollState[matchId] = data;
+    if (activeMatchId === matchId) {
+      const match = tournament.matches.find((item) => item.id === matchId);
+      if (match) renderPollPanel(match, data);
+    }
+  } catch {
+    // Polling is optional; predictions should remain usable if it fails.
+  }
+}
+
+async function submitPollVote(matchId, side) {
+  setStoredPollChoice(matchId, side);
+  const match = tournament.matches.find((item) => item.id === matchId);
+  if (match) renderPollPanel(match, pollState[matchId]);
+  try {
+    const response = await fetch("/api/polls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ matchId, side, voterId: pollVoterId() })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Vote failed.");
+    pollState[matchId] = data;
+    if (match && activeMatchId === matchId) renderPollPanel(match, data);
+  } catch {
+    if (match) renderPollPanel(match, pollState[matchId]);
+  }
+}
+
 function predictionStatus(match) {
   const record = officialPrediction(match);
   const result = officialResult(match);
@@ -753,9 +874,6 @@ function resultLabel(match) {
 }
 
 function officialModelCards(official, match) {
-  const baselines = official.evidence?.baselines || official.proof?.payload?.evidence?.baselines || {};
-  const edge = official.evidence?.paulEdge || official.proof?.payload?.evidence?.paulEdge || {};
-  const baselineLabel = (favorite) => favorite?.winnerName ? `${favorite.winnerName} · ${Math.round((favorite.probability || 0) * 100)}%` : "N/A";
   return `
     <article class="model-card">
       <h3>Official PAUL Pick</h3>
@@ -763,24 +881,19 @@ function officialModelCards(official, match) {
       <p>${official.analysis?.reasoning || "PAUL has returned an official prediction."}</p>
     </article>
     <article class="model-card">
-      <h3>Market Baseline</h3>
-      <div class="vote">${baselineLabel(baselines.marketFavorite)}</div>
-      <p>${official.analysis?.marketBaseline || "Consensus odds anchor for PAUL's calibrated pick."}</p>
-    </article>
-    <article class="model-card">
-      <h3>Rating Baseline</h3>
-      <div class="vote">${baselineLabel(baselines.ratingFavorite || baselines.blendedFavorite)}</div>
-      <p>${official.analysis?.ratingBaseline || "Elo and score-model baseline used for comparison."}</p>
-    </article>
-    <article class="model-card">
-      <h3>PAUL Edge</h3>
-      <div class="vote">${edge.upsetScore ?? "N/A"} · ${edge.upsetTier || official.analysis?.upsetRisk || "N/A"}</div>
-      <p>${official.analysis?.upsetCase || edge.signals?.join(", ") || "Final scores will verify this pick after the match."}</p>
-    </article>
-    <article class="model-card model-card--wide">
-      <h3>Calibration</h3>
+      <h3>Predicted Score</h3>
       <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-      <p>${official.analysis?.calibrationNote || `Generated at ${new Date(official.generatedAt).toLocaleString()}.`}</p>
+      <p>Locked at ${new Date(official.generatedAt).toLocaleString()}.</p>
+    </article>
+    <article class="model-card">
+      <h3>Upset Watch</h3>
+      <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
+      <p>${official.analysis?.upsetCase || "PAUL will be judged by the final score."}</p>
+    </article>
+    <article class="model-card">
+      <h3>Proof Status</h3>
+      <div class="vote">${official.proof?.hash ? "Proof locked" : "Locked"}</div>
+      <p>After full time, this pick is added to PAUL's public record.</p>
     </article>
   `;
 }
@@ -930,6 +1043,9 @@ function renderPK() {
   if (official) {
     document.getElementById("modelGrid").innerHTML = officialModelCards(official, match);
   }
+
+  renderPollPanel(match);
+  loadPoll(match.id);
 
   const qwenResult = document.getElementById("qwenResult");
   if (qwenResult) {

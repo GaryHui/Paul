@@ -2,6 +2,7 @@ const predictionKey = "paul:predictions:v2";
 const resultKey = "paul:results:v1";
 const auditKey = "paul:audit:v1";
 const evidenceKey = "paul:evidence:v1";
+const pollKey = "paul:polls:v1";
 const rateLimitPrefix = "paul:rate:";
 
 function storeConfig() {
@@ -114,6 +115,55 @@ async function setEvidenceEntry(matchId, record) {
   return true;
 }
 
+async function getPolls() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", pollKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+function publicPoll(record = {}) {
+  const votes = {
+    home: Number(record.votes?.home || 0),
+    draw: Number(record.votes?.draw || 0),
+    away: Number(record.votes?.away || 0)
+  };
+  return {
+    votes,
+    total: votes.home + votes.draw + votes.away,
+    updatedAt: record.updatedAt || null
+  };
+}
+
+async function getPoll(matchId) {
+  const polls = await getPolls();
+  return publicPoll(polls[matchId] || polls[String(matchId)]);
+}
+
+async function setPollVote(matchId, voterId, side) {
+  if (!isSharedStoreConfigured()) return publicPoll();
+  const allowed = new Set(["home", "draw", "away"]);
+  if (!allowed.has(side)) throw new Error("Invalid poll side.");
+  const polls = await getPolls();
+  const key = String(matchId);
+  const record = polls[key] || { votes: { home: 0, draw: 0, away: 0 }, voters: {}, updatedAt: null };
+  record.votes ||= { home: 0, draw: 0, away: 0 };
+  record.voters ||= {};
+  const previous = record.voters[voterId];
+  if (previous && allowed.has(previous) && record.votes[previous] > 0) record.votes[previous] -= 1;
+  record.voters[voterId] = side;
+  record.votes[side] = Number(record.votes[side] || 0) + 1;
+  record.updatedAt = new Date().toISOString();
+  polls[key] = record;
+  await redisCommand(["SET", pollKey, JSON.stringify(polls)]);
+  return publicPoll(record);
+}
+
 async function getRateLimit(key) {
   if (!isSharedStoreConfigured()) return null;
   const value = await redisCommand(["GET", `${rateLimitPrefix}${key}`]);
@@ -134,6 +184,7 @@ async function setRateLimit(key, record, ttlSeconds = 3600) {
 
 module.exports = {
   getEvidenceCache,
+  getPoll,
   getRateLimit,
   getAuditLog,
   getPredictions,
@@ -141,6 +192,7 @@ module.exports = {
   isSharedStoreConfigured,
   setAuditEntry,
   setEvidenceEntry,
+  setPollVote,
   setPrediction,
   setRateLimit,
   setResult
