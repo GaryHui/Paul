@@ -33,13 +33,19 @@ ODDS_REGIONS=us,uk,eu
 ODDS_REFRESH_HORIZON_DAYS=60
 ODDS_REFRESH_MAX_MATCHES=12
 ODDS_CACHE_MAX_HOURS=26
+
+DAILY_ANALYSIS_HORIZON_DAYS=45
+DAILY_ANALYSIS_MAX_MATCHES=4
+DAILY_ANALYSIS_DISABLED=1
 ```
 
 `ODDS_API_IO_KEY` is tried first. `THE_ODDS_API_KEY` is tried second. If neither returns a matching event, PAUL falls back to `market-odds.json`.
 
 Vercel Cron refreshes market evidence once per day through `/api/automation/run-due`. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. The default cache freshness window is 26 hours. By default the cron refreshes the next 12 scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
 
-Daily odds refresh does not call PAUL/Qwen. News, team availability, and tactical context are searched by PAUL only when a formal prediction is created, so the site does not waste model/search quota scanning every fixture every day.
+Daily odds refresh does not call PAUL/Qwen. The separate Daily PAUL Read can call PAUL/Qwen once per selected upcoming match, storing public win/draw/loss probabilities in Vercel KV under `paul:daily-analysis:v1`. Defaults are conservative: the next 4 resolved fixtures inside a 45-day horizon. Increase `DAILY_ANALYSIS_MAX_MATCHES` only when the model/search budget can handle it. Set `DAILY_ANALYSIS_DISABLED=1` to disable the daily read while keeping odds refresh, result sync, and formal proof-locked predictions active.
+
+The Daily PAUL Read is not a formal proof record. Official predictions are still created only in the pre-match lock window and stored with proof records.
 
 Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 

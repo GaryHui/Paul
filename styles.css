@@ -645,6 +645,98 @@ input {
   color: var(--gold);
 }
 
+.daily-read {
+  padding: 0 24px 22px;
+  border-top: 1px solid var(--line);
+}
+
+.daily-read__head,
+.daily-read__pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.daily-read__head {
+  padding: 16px 0 12px;
+}
+
+.daily-read__head span,
+.daily-read__pick span {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily-read__head strong,
+.daily-read__pick strong {
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+
+.daily-read__pick {
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.daily-read__pick strong {
+  color: #f4fbff;
+}
+
+.daily-read__bars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.daily-read__row {
+  position: relative;
+  min-height: 78px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.daily-read__row span,
+.daily-read__row strong {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.daily-read__row span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.daily-read__row strong {
+  margin-top: 8px;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.daily-read__row i {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+
+.daily-read__empty {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
 .poll-panel {
   padding: 0 24px 22px;
   border-top: 1px solid var(--line);
@@ -1557,6 +1649,7 @@ input {
   .proof-grid,
   .model-grid,
   .poll-options,
+  .daily-read__bars,
   .qwen-panel {
     grid-template-columns: 1fr;
   }

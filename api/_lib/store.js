@@ -2,6 +2,7 @@ const predictionKey = "paul:predictions:v2";
 const resultKey = "paul:results:v1";
 const auditKey = "paul:audit:v1";
 const evidenceKey = "paul:evidence:v1";
+const dailyAnalysisKey = "paul:daily-analysis:v1";
 const pollKey = "paul:polls:v1";
 const rateLimitPrefix = "paul:rate:";
 
@@ -115,6 +116,26 @@ async function setEvidenceEntry(matchId, record) {
   return true;
 }
 
+async function getDailyAnalysis() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", dailyAnalysisKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+async function setDailyAnalysisEntry(matchId, record) {
+  if (!isSharedStoreConfigured()) return false;
+  const cache = await getDailyAnalysis();
+  cache[matchId] = record;
+  await redisCommand(["SET", dailyAnalysisKey, JSON.stringify(cache)]);
+  return true;
+}
+
 async function getPolls() {
   if (!isSharedStoreConfigured()) return {};
   const value = await redisCommand(["GET", pollKey]);
@@ -183,6 +204,7 @@ async function setRateLimit(key, record, ttlSeconds = 3600) {
 }
 
 module.exports = {
+  getDailyAnalysis,
   getEvidenceCache,
   getPoll,
   getRateLimit,
@@ -191,6 +213,7 @@ module.exports = {
   getResults,
   isSharedStoreConfigured,
   setAuditEntry,
+  setDailyAnalysisEntry,
   setEvidenceEntry,
   setPollVote,
   setPrediction,

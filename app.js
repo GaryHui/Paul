@@ -454,6 +454,7 @@ let activeMatchId = 1;
 let automationState = {
   predictions: {},
   results: {},
+  dailyAnalysis: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
   stageAccuracy: {
     group: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
@@ -515,6 +516,15 @@ function matchKickoffTime(match) {
 function setText(id, value) {
   const element = document.getElementById(id);
   if (element) element.textContent = value;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function matchMode(match) {
@@ -814,6 +824,76 @@ function renderPollPanel(match, poll = pollState[match.id] || { votes: {}, total
   });
 }
 
+function dailyReadFor(match) {
+  return automationState.dailyAnalysis?.[match.id] || automationState.dailyAnalysis?.[String(match.id)] || null;
+}
+
+function dailyReadPercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "Pending";
+  return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
+}
+
+function renderDailyRead(match) {
+  const panel = document.getElementById("dailyRead");
+  if (!panel) return;
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode) {
+    panel.innerHTML = `
+      <div class="daily-read__head">
+        <span>Daily PAUL Read</span>
+        <strong>Waiting for teams</strong>
+      </div>
+    `;
+    return;
+  }
+
+  const read = dailyReadFor(match);
+  if (!read) {
+    panel.innerHTML = `
+      <div class="daily-read__head">
+        <span>Daily PAUL Read</span>
+        <strong>Next refresh pending</strong>
+      </div>
+      <p class="daily-read__empty">PAUL will refresh this matchup automatically when it enters the daily analysis window.</p>
+    `;
+    return;
+  }
+
+  const probabilities = read.probabilities || {};
+  const pickCode = read.pick?.winnerCode;
+  const pickName = read.pick?.winnerName || teams[pickCode]?.name || "No clear pick";
+  const updatedAt = read.generatedAt ? formatProofTime(read.generatedAt) : "N/A";
+  const rows = [
+    { side: "home", label: teams[resolved.aCode]?.name || "Home", value: probabilities.home },
+    { side: "draw", label: "Draw", value: probabilities.draw },
+    { side: "away", label: teams[resolved.bCode]?.name || "Away", value: probabilities.away }
+  ];
+
+  panel.innerHTML = `
+    <div class="daily-read__head">
+      <span>Daily PAUL Read</span>
+      <strong>Updated ${escapeHtml(updatedAt)}</strong>
+    </div>
+    <div class="daily-read__pick">
+      <span>Current lean</span>
+      <strong>${escapeHtml(pickName)}${read.pick?.confidence ? ` · ${dailyReadPercent(read.pick.confidence)} confidence` : ""}</strong>
+    </div>
+    <div class="daily-read__bars">
+      ${rows.map((row) => {
+        const pct = Number.isFinite(Number(row.value)) ? Math.max(0, Math.min(100, Math.round(Number(row.value)))) : 0;
+        return `
+          <div class="daily-read__row">
+            <span>${escapeHtml(row.label)}</span>
+            <strong>${dailyReadPercent(row.value)}</strong>
+            <i style="width: ${pct}%"></i>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
 async function loadPoll(matchId) {
   try {
     const response = await fetch(`/api/polls?matchId=${encodeURIComponent(matchId)}`);
@@ -1036,7 +1116,7 @@ function renderPK() {
       <article class="model-card model-card--wide">
         <h3>${match.round === "Group Stage" ? "Awaiting Group-stage PAUL Pick" : "Awaiting Knockout Oracle Pick"}</h3>
         <div class="vote">${resolved.aCode && resolved.bCode ? "Not locked" : "Waiting for bracket results"}</div>
-        <p>${resolved.aCode && resolved.bCode ? "No simulated reference is shown before the official lock." : "This match will become predictable after the earlier winners are known."}</p>
+        <p>${resolved.aCode && resolved.bCode ? "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window." : "This match will become predictable after the earlier winners are known."}</p>
       </article>
     `;
 
@@ -1044,6 +1124,7 @@ function renderPK() {
     document.getElementById("modelGrid").innerHTML = officialModelCards(official, match);
   }
 
+  renderDailyRead(match);
   renderPollPanel(match);
   loadPoll(match.id);
 
@@ -1217,6 +1298,7 @@ async function loadAutomationStatus() {
     automationState = {
       predictions: mergedPredictions,
       results: status.results || {},
+      dailyAnalysis: status.dailyAnalysis || automationState.dailyAnalysis || {},
       accuracy: status.accuracy || automationState.accuracy,
       stageAccuracy
     };
@@ -1230,13 +1312,16 @@ async function loadAutomationStatus() {
     const evidenceState = readiness.evidenceCacheCount
       ? `${readiness.evidenceCacheCount} odds snapshots cached${readiness.latestEvidenceAt ? `, latest ${formatProofTime(readiness.latestEvidenceAt)}` : ""}`
       : "no cached odds snapshots yet";
+    const dailyState = readiness.dailyAnalysisCount
+      ? `${readiness.dailyAnalysisCount} daily PAUL reads cached${readiness.latestDailyReadAt ? `, latest ${formatProofTime(readiness.latestDailyReadAt)}` : ""}`
+      : "no daily PAUL reads yet";
     const oddsState = readiness.liveOddsProvider
       ? `live odds via ${readiness.liveOddsProvider}`
       : readiness.marketOdds
         ? "market odds loaded"
         : "market odds missing";
     const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
-    statusText.textContent = `${qwenState}; ${oddsState}; ${evidenceState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
+    statusText.textContent = `${qwenState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;
   }

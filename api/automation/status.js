@@ -4,16 +4,23 @@ const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
 const { hasResultsProvider, providerName } = require("../_lib/results");
-const { getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
+const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
 module.exports = async function handler(req, res) {
   const snapshot = loadSnapshot();
   const predictions = await getPredictions();
   const results = await getResults();
   const evidenceCache = await getEvidenceCache();
+  const dailyAnalysis = await getDailyAnalysis();
   const evidenceEntries = Object.values(evidenceCache || {});
+  const dailyEntries = Object.values(dailyAnalysis || {});
   const latestEvidenceAt = evidenceEntries
     .map((entry) => entry?.market?.updatedAt || entry?.updatedAt || entry?.generatedAt)
+    .filter(Boolean)
+    .sort()
+    .at(-1) || null;
+  const latestDailyReadAt = dailyEntries
+    .map((entry) => entry?.generatedAt)
     .filter(Boolean)
     .sort()
     .at(-1) || null;
@@ -32,6 +39,7 @@ module.exports = async function handler(req, res) {
     stageAccuracy: stageAccuracySnapshot(predictions, results, resolvedMatches),
     predictions,
     results,
+    dailyAnalysis,
     resolvedMatches: resolvedMatches.map((match) => ({
       id: match.id,
       teamA: match.teamA || null,
@@ -49,6 +57,10 @@ module.exports = async function handler(req, res) {
       evidenceCacheCount: evidenceEntries.length,
       latestEvidenceAt,
       oddsRefreshHorizonDays: Number(process.env.ODDS_REFRESH_HORIZON_DAYS || 60),
+      dailyAnalysisCount: dailyEntries.length,
+      latestDailyReadAt,
+      dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 4),
+      dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
       firstMatchEvidence: first
     },
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),

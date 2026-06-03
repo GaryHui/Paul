@@ -1,6 +1,7 @@
 const { callPaul, loadSnapshot } = require("../_lib/paul");
 const { attachAuditProof } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
+const { refreshDailyAnalysis } = require("../_lib/daily-analysis");
 const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
 const { fetchMatchResult } = require("../_lib/results");
 const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
@@ -78,6 +79,18 @@ module.exports = async function handler(req, res) {
       errors: evidenceRefresh.errors
     });
 
+    const dailyAnalysis = process.env.DAILY_ANALYSIS_DISABLED === "1" || !(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY)
+      ? { checked: 0, ok: 0, errors: 0, disabled: true, events: [] }
+      : await refreshDailyAnalysis(resolvedMatches, { now });
+    events.push({
+      type: "daily-analysis",
+      status: dailyAnalysis.errors ? "partial" : "ok",
+      checked: dailyAnalysis.checked,
+      ok: dailyAnalysis.ok,
+      errors: dailyAnalysis.errors,
+      disabled: Boolean(dailyAnalysis.disabled)
+    });
+
     for (const sourceMatch of resolvedMatches) {
       const matchTime = parseMatchTime(sourceMatch);
       if (!matchTime || !sourceMatch.teamA?.code || !sourceMatch.teamB?.code) {
@@ -123,6 +136,7 @@ module.exports = async function handler(req, res) {
     res.status(200).json({
       events,
       evidenceRefresh,
+      dailyAnalysis,
       summary: automationSummary(snapshot.matches, predictions, results)
     });
   } catch (error) {
