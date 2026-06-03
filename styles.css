@@ -1792,39 +1792,35 @@ input {
 
   .nav__links {
     width: 100%;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 8px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    font-size: 13px;
-    padding-bottom: 4px;
-  }
-
-  .nav__links::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+    font-size: 12px;
   }
 
   .nav__links a,
   .nav__language {
-    flex: 0 0 auto;
+    min-width: 0;
     min-height: 36px;
     border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.07);
-    padding: 8px 12px;
+    padding: 8px 9px;
     color: #dbe9ef;
+    text-align: center;
   }
 
   .nav__language {
-    width: auto;
+    grid-column: 1 / -1;
+    width: 100%;
     align-items: center;
+    justify-content: space-between;
     gap: 7px;
+    text-align: left;
   }
 
   .nav__language select {
-    width: 118px;
+    width: min(58vw, 240px);
     min-height: 28px;
     border: 0;
     background: transparent;
@@ -2169,16 +2165,21 @@ input {
     font-size: 18px;
   }
 
+  .nav__links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    font-size: 11px;
+  }
+
   .nav__links a,
   .nav__language {
     min-height: 34px;
-    padding: 7px 10px;
-    font-size: 12px;
+    padding: 7px 8px;
+    font-size: 11px;
   }
 
   .nav__language select {
-    width: 104px;
-    font-size: 12px;
+    width: min(54vw, 190px);
+    font-size: 11px;
   }
 
   .hero {
