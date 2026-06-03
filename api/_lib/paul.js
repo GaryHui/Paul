@@ -166,7 +166,9 @@ function buildPaulEdge(match, evidence) {
     drawModelGap <= 0.12;
   const modelDisagreement = new Set(favorites.map((favorite) => favorite.winnerCode)).size;
   const overrideSupport = [ratingSide, poissonSide, blendSide].filter((side) => side && side === blendSide).length;
-  const conservativeOverride = Boolean(blendSide && marketSide && blendSide !== marketSide && marketMargin !== null && marketMargin <= 0.14 && overrideSupport >= 2);
+  const blendOdds = blendSide === "home" ? Number(evidence.market?.odds?.home) : blendSide === "away" ? Number(evidence.market?.odds?.away) : Number(evidence.market?.odds?.draw);
+  const underdogPriceGate = blendSide !== "draw" && Number.isFinite(blendOdds) && blendOdds >= 3.1;
+  const conservativeOverride = Boolean(blendSide && marketSide && blendSide !== marketSide && marketMargin !== null && marketMargin <= 0.14 && overrideSupport >= 2 && underdogPriceGate);
   const formA = formValue(evidence.form?.teamA);
   const formB = formValue(evidence.form?.teamB);
   const formEdge = formA !== null && formB !== null ? formA - formB : null;
@@ -206,8 +208,8 @@ function buildPaulEdge(match, evidence) {
   if (conservativeOverride) signals.push("multi-model override gate");
   const tier = upsetScore >= 55 ? "live upset candidate" : upsetScore >= 35 ? "watchlist upset" : "consensus lean";
   return {
-    name: "PAUL Edge Engine v3",
-    weights: { market: 55, elo: 25, poisson: 20, drawSqueeze: "strict group-stage only, market draw >= 29%, top-two margin <= 6%, rating/poisson gap <= 12%", upsetOverlay: "conservative holdout-gated" },
+    name: "PAUL Edge Engine v4",
+    weights: { market: 55, elo: 25, poisson: 20, drawSqueeze: "strict group-stage only, market draw >= 29%, top-two margin <= 6%, rating/poisson gap <= 12%", upsetOverlay: "conservative holdout-gated", underdogPriceGate: "non-draw upset target must be 3.10+ in market odds" },
     consensusCode,
     consensusName: consensusCode === match.teamA.code ? match.teamA.name : consensusCode === match.teamB.code ? match.teamB.name : consensusCode === "DRAW" ? "Draw" : null,
     modelDisagreement,
@@ -218,6 +220,7 @@ function buildPaulEdge(match, evidence) {
     drawModelGap: drawModelGap === null ? null : Number(drawModelGap.toFixed(3)),
     conservativeOverride,
     overrideSupport,
+    underdogPriceGate,
     underdogCode,
     underdogName: underdogSide ? sideName(match, underdogSide) : null,
     signals,

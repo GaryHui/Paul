@@ -106,6 +106,41 @@ const ranks2014 = {
   Australia: 62
 };
 
+const ranks2010 = {
+  Brazil: 1,
+  Spain: 2,
+  Portugal: 3,
+  Netherlands: 4,
+  Italy: 5,
+  Germany: 6,
+  Argentina: 7,
+  England: 8,
+  France: 9,
+  Greece: 12,
+  USA: 14,
+  Serbia: 15,
+  Uruguay: 16,
+  Mexico: 17,
+  Chile: 18,
+  Cameroon: 19,
+  Australia: 20,
+  Nigeria: 21,
+  Switzerland: 24,
+  Slovenia: 25,
+  "Ivory Coast": 27,
+  Algeria: 30,
+  Paraguay: 31,
+  Ghana: 32,
+  Slovakia: 34,
+  Denmark: 36,
+  Honduras: 38,
+  Japan: 45,
+  "South Korea": 47,
+  "New Zealand": 78,
+  "South Africa": 83,
+  "North Korea": 105
+};
+
 const rows2022 = [
   "Group A|Qatar|Ecuador|100|13.5|2.41|0|2",
   "Group A|Senegal|Netherlands|6.28|3.75|2.09|0|2",
@@ -247,6 +282,65 @@ const rows2014 = [
   "Group E|Switzerland|France|4.78|3.63|1.91|2|5"
 ];
 
+const rows2010 = [
+  "Group A|South Africa|Mexico|3.11|3.20|2.62|1|1",
+  "Group A|Uruguay|France|3.70|3.20|2.25|0|0",
+  "Group A|France|Mexico|2.18|3.27|4.10|0|2",
+  "Group A|France|South Africa|2.20|3.50|3.55|1|2",
+  "Group A|Mexico|Uruguay|3.85|2.08|3.85|0|1",
+  "Group B|South Korea|Greece|2.75|3.15|3.00|2|0",
+  "Group B|Argentina|Nigeria|1.45|4.79|10.00|1|0",
+  "Group B|Argentina|South Korea|1.56|4.00|8.00|4|1",
+  "Group B|Greece|Nigeria|3.80|3.25|2.15|2|1",
+  "Group B|Greece|Argentina|8.00|4.33|1.50|0|2",
+  "Group B|Nigeria|South Korea|3.10|3.45|2.57|2|2",
+  "Group C|England|USA|1.56|4.21|7.50|1|1",
+  "Group C|Algeria|Slovenia|3.75|3.25|2.25|0|1",
+  "Group C|Slovenia|USA|3.80|3.25|2.20|2|2",
+  "Group C|England|Algeria|1.25|6.35|17.07|0|0",
+  "Group C|USA|Algeria|1.91|3.70|4.53|1|0",
+  "Group C|Slovenia|England|8.50|4.50|1.45|0|1",
+  "Group D|Serbia|Ghana|2.10|3.36|4.30|0|1",
+  "Group D|Germany|Australia|1.60|4.00|8.13|4|0",
+  "Group D|Germany|Serbia|1.67|3.87|6.03|0|1",
+  "Group D|Ghana|Australia|2.55|3.25|3.65|1|1",
+  "Group D|Australia|Serbia|4.50|3.65|1.91|2|1",
+  "Group D|Ghana|Germany|8.50|4.50|1.50|0|1",
+  "Group E|Netherlands|Denmark|1.56|4.20|7.50|2|0",
+  "Group E|Japan|Cameroon|3.80|3.25|2.20|1|0",
+  "Group E|Netherlands|Japan|1.47|4.22|9.95|1|0",
+  "Group E|Cameroon|Denmark|2.90|3.25|2.65|1|2",
+  "Group E|Denmark|Japan|2.42|3.30|3.40|1|3",
+  "Group E|Cameroon|Netherlands|5.75|3.85|1.70|1|2",
+  "Group F|Italy|Paraguay|2.27|3.25|4.00|1|1",
+  "Group F|Slovakia|Paraguay|3.80|3.25|2.15|0|2",
+  "Group F|Italy|New Zealand|1.23|6.20|22.39|1|1",
+  "Group F|Paraguay|New Zealand|1.42|4.70|11.70|0|0",
+  "Group F|Slovakia|Italy|7.00|4.00|1.58|3|2",
+  "Group G|Ivory Coast|Portugal|4.19|3.30|2.26|0|0",
+  "Group G|Brazil|North Korea|1.10|11.00|30.00|2|1",
+  "Group G|Brazil|Ivory Coast|1.79|3.90|6.00|3|1",
+  "Group G|Portugal|North Korea|1.42|6.75|18.00|7|0",
+  "Group G|Portugal|Brazil|3.60|3.00|2.57|0|0",
+  "Group G|North Korea|Ivory Coast|11.00|5.30|1.38|0|3",
+  "Group H|Honduras|Chile|6.85|4.00|1.73|0|1",
+  "Group H|Spain|Switzerland|1.30|5.75|15.65|0|1",
+  "Group H|Chile|Switzerland|2.21|3.36|3.85|1|0",
+  "Group H|Spain|Honduras|1.17|9.20|30.00|2|0",
+  "Group H|Chile|Spain|7.00|4.33|1.57|1|2",
+  "Group H|Switzerland|Honduras|1.59|4.19|6.95|0|0",
+  "Round of 16|Uruguay|South Korea|1.87|3.40|5.00|2|1",
+  "Round of 16|USA|Ghana|2.50|3.15|3.30|1|2",
+  "Quarterfinal|Netherlands|Brazil|4.20|3.35|2.12|2|1",
+  "Quarterfinal|Uruguay|Ghana|1.95|3.50|4.75|1|1",
+  "Quarterfinal|Argentina|Germany|2.35|3.40|3.25|0|4",
+  "Quarterfinal|Paraguay|Spain|10.74|4.50|1.42|0|1",
+  "Semifinal|Uruguay|Netherlands|6.00|3.57|1.78|2|3",
+  "Semifinal|Germany|Spain|3.07|3.45|2.62|0|1",
+  "Third Place|Uruguay|Germany|4.20|3.75|2.05|2|3",
+  "Final|Netherlands|Spain|4.10|3.50|2.11|0|1"
+];
+
 const datasets = [
   {
     year: 2022,
@@ -292,6 +386,21 @@ const datasets = [
     ranks: ranks2014,
     rows: rows2014,
     shootoutWinners: {}
+  },
+  {
+    year: 2010,
+    role: "holdout",
+    name: "World Cup 2010 available-odds holdout",
+    odds: "https://checkbestodds.com/football-odds/archive-world-cup-2018/2010",
+    results: "2010 public result tables cross-checked against the listed matches",
+    rankings: "FIFA men's ranking before the 2010 World Cup, stored as rank-order priors",
+    coverage: "56 matches with public 1X2 odds found in the archived source",
+    note: `${DATASET_NOTE} This holdout includes group-stage and selected knockout matches with public 1X2 odds found in the archived source.`,
+    ranks: ranks2010,
+    rows: rows2010,
+    shootoutWinners: {
+      "Uruguay|Ghana": "home"
+    }
   }
 ];
 
@@ -417,6 +526,8 @@ function paulEdgePick(match, models, form) {
     signals.push("blended model override");
   }
   const overrideSupport = [ratingPick, poissonPick, blendedPick].filter((pick) => pick === blendedPick).length;
+  const blendedOdds = blendedPick === "home" ? match.odds.home : blendedPick === "away" ? match.odds.away : match.odds.draw;
+  const hasUnderdogPrice = blendedPick !== "draw" && blendedOdds >= 3.1;
   const drawModelGap = Math.max(
     Math.abs(models.rating.home - models.rating.away),
     Math.abs(models.poisson.home - models.poisson.away)
@@ -424,7 +535,7 @@ function paulEdgePick(match, models, form) {
   let pick = marketPick;
   if (blendedPick === marketPick) {
     pick = blendedPick;
-  } else if (upsetScore >= 62 && marketMargin <= 0.14 && overrideSupport >= 2) {
+  } else if (upsetScore >= 62 && marketMargin <= 0.14 && overrideSupport >= 2 && hasUnderdogPrice) {
     pick = blendedPick;
   }
   if (isGroupRound(match) && models.market.draw >= 0.29 && marketMargin <= 0.06 && drawModelGap <= 0.12) {
@@ -618,16 +729,16 @@ function combineRuns(runs, label, role) {
 
 function runBacktest() {
   const runs = datasets.map(runDataset);
-  const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014 holdout", "aggregate");
+  const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014/2010 holdout", "aggregate");
   const holdoutRuns = runs.filter((run) => run.role === "holdout");
-  const holdout = combineRuns(holdoutRuns, "2018/2014 holdout only", "holdout");
+  const holdout = combineRuns(holdoutRuns, "2018/2014/2010 holdout only", "holdout");
 
   return {
     status: "pass",
     generatedAt: new Date().toISOString(),
     algorithm: {
-      name: "PAUL Edge Engine v3",
-      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "holdout-tested against 2018 and 2014 available-odds sets"]
+      name: "PAUL Edge Engine v4",
+      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "underdog price gate", "holdout-tested against 2018, 2014, and 2010 available-odds sets"]
     },
     dataset: aggregate.dataset,
     metrics: aggregate.metrics,

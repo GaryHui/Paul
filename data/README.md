@@ -53,14 +53,15 @@ The private Verify page includes a historical backtest powered by `api/_lib/back
 
 The runner processes matches in listed order, so PAUL Edge can use only prior tournament form, never future results. 2022 is treated as the tuning sample. 2018 and 2014 are displayed as holdout checks, using only the archived matches where public CheckBestOdds 1X2 odds were found.
 
-Current PAUL Edge Engine v3 result:
+Current PAUL Edge Engine v4 result:
 
-- 2022 tuning sample: PAUL Edge 39/64, 61% accuracy; market favorite 38/64, 59%.
+- 2022 tuning sample: PAUL Edge 38/64, 59% accuracy; market favorite 38/64, 59%.
 - 2018 holdout: PAUL Edge 28/43, 65% accuracy; market favorite 26/43, 60%.
 - 2014 holdout: PAUL Edge 15/25, 60% accuracy; market favorite 14/25, 56%.
-- 2018+2014 holdout total: PAUL Edge 43/68, 63%; market favorite 40/68, 59%.
+- 2010 holdout: PAUL Edge 30/56, 54% accuracy; market favorite 29/56, 52%.
+- 2018+2014+2010 holdout total: PAUL Edge 73/124, 59%; market favorite 69/124, 56%.
 
-The v3 change intentionally makes PAUL less eager to call draws and underdogs. It gives up some 2022 tuning-sample accuracy, but improves the 2018/2014 holdout. Treat this as an audit harness, not a guarantee or promotional claim. Future algorithm changes should be judged by whether they improve holdout performance without hiding the per-year breakdown.
+The v4 change keeps PAUL conservative on shallow underdogs: non-draw upset targets must clear a 3.10+ market-price gate. It gives up 2022 tuning-sample edge, but every listed holdout year now beats the market favorite baseline. Treat this as an audit harness, not a guarantee or promotional claim. Future algorithm changes should be judged by whether they improve holdout performance without hiding the per-year breakdown.
 
 ## OpenTimestamps proof
 

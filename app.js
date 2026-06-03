@@ -1792,7 +1792,7 @@ function renderBacktestReport(data) {
       <span>${data.algorithm?.name || "PAUL Edge"} · ${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
     </div>
     <p class="verify-note">
-      Source: CheckBestOdds archived 1X2 odds plus stored final scores. 2022 is the tuning sample; 2018 and 2014 are holdout checks with only the public archived odds coverage shown below.
+      Source: CheckBestOdds archived 1X2 odds plus stored final scores. 2022 is the tuning sample; 2018, 2014, and 2010 are holdout checks with only the public archived odds coverage shown below.
       ${data.algorithm?.changes?.length ? `Changes: ${data.algorithm.changes.join("; ")}.` : ""}
     </p>
     <h3 class="verify-title">Holdout Summary</h3>
