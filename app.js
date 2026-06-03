@@ -144,6 +144,154 @@ Object.assign(languageCopy.zh, {
     languageCopy[key][copyKey] ||= value;
   });
 });
+
+const recordSectionCopy = {
+  es: {
+    entertainmentNoticeTitle: "Solo entretenimiento",
+    entertainmentNoticeCopy: "Este sitio es solo para entretenimiento y referencia. Las predicciones de PAUL no son asesoramiento de apuestas ni financiero.",
+    recordEyebrow: "Registro de PAUL",
+    recordTitle: "Precision publica, partido a partido.",
+    recordCopy: "Cada prediccion bloqueada se cuenta despues del resultado final. El registro permanece publico, enlazado a pruebas y consistente para todos.",
+    publicFavorite: "Favorito publico",
+    teamRead: "Lectura del equipo",
+    paulGain: "Ventaja PAUL",
+    calibration: "Calibracion",
+    referenceRecord: "Registro de referencia.",
+    extraCorrectPicks: "Aciertos adicionales.",
+    actualVsConfidence: "Precision real vs confianza."
+  },
+  fr: {
+    entertainmentNoticeTitle: "Divertissement seulement",
+    entertainmentNoticeCopy: "Ce site est fourni a titre de divertissement et de reference. Les predictions de PAUL ne sont pas des conseils de pari ou financiers.",
+    recordEyebrow: "Bilan PAUL",
+    recordTitle: "Precision publique, match par match.",
+    recordCopy: "Chaque choix verrouille est compte apres le score final. Le bilan reste public, lie aux preuves et identique pour chaque visiteur.",
+    publicFavorite: "Favori public",
+    teamRead: "Lecture d'equipe",
+    paulGain: "Gain PAUL",
+    calibration: "Calibration",
+    referenceRecord: "Bilan de reference.",
+    extraCorrectPicks: "Choix corrects en plus.",
+    actualVsConfidence: "Precision reelle vs confiance."
+  },
+  de: {
+    entertainmentNoticeTitle: "Nur Unterhaltung",
+    entertainmentNoticeCopy: "Diese Website dient nur der Unterhaltung und Orientierung. PAUL-Prognosen sind keine Wett- oder Finanzberatung.",
+    recordEyebrow: "PAUL Bilanz",
+    recordTitle: "Offentliche Genauigkeit, Spiel fur Spiel.",
+    recordCopy: "Jeder gesperrte Tipp wird nach dem Endstand gezahlt. Die Bilanz bleibt offentlich, beweisverknupft und fur alle Besucher gleich.",
+    publicFavorite: "Offentlicher Favorit",
+    teamRead: "Team-Einschatzung",
+    paulGain: "PAUL Vorteil",
+    calibration: "Kalibrierung",
+    referenceRecord: "Referenzbilanz.",
+    extraCorrectPicks: "Zusatzlich richtige Tipps.",
+    actualVsConfidence: "Reale Genauigkeit vs Vertrauen."
+  },
+  pt: {
+    entertainmentNoticeTitle: "Apenas entretenimento",
+    entertainmentNoticeCopy: "Este site e apenas para entretenimento e referencia. As previsoes de PAUL nao sao aconselhamento de apostas ou financeiro.",
+    recordEyebrow: "Historico PAUL",
+    recordTitle: "Precisao publica, jogo a jogo.",
+    recordCopy: "Cada palpite travado e contado apos o placar final. O historico permanece publico, ligado a provas e igual para todos.",
+    publicFavorite: "Favorito publico",
+    teamRead: "Leitura da equipe",
+    paulGain: "Ganho PAUL",
+    calibration: "Calibracao",
+    referenceRecord: "Historico de referencia.",
+    extraCorrectPicks: "Acertos extras.",
+    actualVsConfidence: "Precisao real vs confianca."
+  },
+  it: {
+    entertainmentNoticeTitle: "Solo intrattenimento",
+    entertainmentNoticeCopy: "Questo sito e solo per intrattenimento e riferimento. Le previsioni di PAUL non sono consigli di scommessa o finanziari.",
+    recordEyebrow: "Record PAUL",
+    recordTitle: "Precisione pubblica, partita per partita.",
+    recordCopy: "Ogni pronostico bloccato viene conteggiato dopo il risultato finale. Il record resta pubblico, collegato alle prove e uguale per tutti.",
+    publicFavorite: "Favorito pubblico",
+    teamRead: "Lettura squadra",
+    paulGain: "Vantaggio PAUL",
+    calibration: "Calibrazione",
+    referenceRecord: "Record di riferimento.",
+    extraCorrectPicks: "Pronostici corretti extra.",
+    actualVsConfidence: "Precisione reale vs fiducia."
+  },
+  nl: {
+    entertainmentNoticeTitle: "Alleen entertainment",
+    entertainmentNoticeCopy: "Deze site is alleen voor entertainment en referentie. PAUL-voorspellingen zijn geen gok- of financieel advies.",
+    recordEyebrow: "PAUL record",
+    recordTitle: "Publieke nauwkeurigheid, wedstrijd voor wedstrijd.",
+    recordCopy: "Elke vergrendelde pick telt mee na de eindstand. Het record blijft publiek, bewijsgekoppeld en gelijk voor elke bezoeker.",
+    publicFavorite: "Publieke favoriet",
+    teamRead: "Teamlezing",
+    paulGain: "PAUL voordeel",
+    calibration: "Kalibratie",
+    referenceRecord: "Referentierecord.",
+    extraCorrectPicks: "Extra juiste picks.",
+    actualVsConfidence: "Werkelijke nauwkeurigheid vs vertrouwen."
+  },
+  tr: {
+    entertainmentNoticeTitle: "Sadece eglence",
+    entertainmentNoticeCopy: "Bu site yalnizca eglence ve referans amaclidir. PAUL tahminleri bahis veya finans tavsiyesi degildir.",
+    recordEyebrow: "PAUL kaydi",
+    recordTitle: "Herkese acik dogruluk, mac mac.",
+    recordCopy: "Kilitlenen her tahmin final skorundan sonra sayilir. Kayit herkese acik, kanit baglantili ve tum ziyaretciler icin aynidir.",
+    publicFavorite: "Halk favorisi",
+    teamRead: "Takim okuması",
+    paulGain: "PAUL avantaji",
+    calibration: "Kalibrasyon",
+    referenceRecord: "Referans kaydi.",
+    extraCorrectPicks: "Ek dogru tahminler.",
+    actualVsConfidence: "Gercek dogruluk vs guven."
+  },
+  ar: {
+    entertainmentNoticeTitle: "للترفيه فقط",
+    entertainmentNoticeCopy: "هذا الموقع للترفيه والمرجع فقط. توقعات PAUL ليست نصيحة مراهنة أو نصيحة مالية.",
+    recordEyebrow: "سجل PAUL",
+    recordTitle: "دقة علنية، مباراة بمباراة.",
+    recordCopy: "كل توقع مقفل يتم احتسابه بعد النتيجة النهائية. يبقى السجل علنيا ومرتبطا بالدليل ومتطابقا لكل زائر.",
+    publicFavorite: "المرشح العام",
+    teamRead: "قراءة الفريق",
+    paulGain: "ميزة PAUL",
+    calibration: "المعايرة",
+    referenceRecord: "سجل مرجعي.",
+    extraCorrectPicks: "اختيارات صحيحة إضافية.",
+    actualVsConfidence: "الدقة الفعلية مقابل الثقة."
+  },
+  ja: {
+    entertainmentNoticeTitle: "娯楽目的のみ",
+    entertainmentNoticeCopy: "このサイトは娯楽と参考のためのものです。PAUL の予測は賭けや金融の助言ではありません。",
+    recordEyebrow: "PAUL 成績",
+    recordTitle: "公開精度を試合ごとに追跡。",
+    recordCopy: "ロックされた予測は最終結果後に集計されます。記録は公開され、証明に紐づき、全訪問者で同じです。",
+    publicFavorite: "公開人気",
+    teamRead: "チーム判定",
+    paulGain: "PAUL 増分",
+    calibration: "較正",
+    referenceRecord: "参考記録。",
+    extraCorrectPicks: "追加的中数。",
+    actualVsConfidence: "実際の精度 vs 信頼度。"
+  },
+  ko: {
+    entertainmentNoticeTitle: "오락 참고용",
+    entertainmentNoticeCopy: "이 사이트는 오락과 참고용입니다. PAUL 예측은 베팅 또는 금융 조언이 아닙니다.",
+    recordEyebrow: "PAUL 기록",
+    recordTitle: "공개 정확도, 경기별 추적.",
+    recordCopy: "잠긴 예측은 최종 스코어 후 기록됩니다. 기록은 공개되고 증명과 연결되며 모든 방문자에게 동일합니다.",
+    publicFavorite: "공개 인기",
+    teamRead: "팀 분석",
+    paulGain: "PAUL 이득",
+    calibration: "보정",
+    referenceRecord: "참고 기록.",
+    extraCorrectPicks: "추가 적중.",
+    actualVsConfidence: "실제 정확도 vs 신뢰도."
+  }
+};
+
+Object.entries(recordSectionCopy).forEach(([key, copy]) => {
+  Object.assign(languageCopy[key], copy);
+});
+
 let currentLanguage = (() => {
   try {
     return localStorage.getItem(languageKey) || "en";
@@ -612,6 +760,32 @@ function setText(id, value) {
   if (element) element.textContent = value;
 }
 
+function syncPendingLabel(id) {
+  const element = document.getElementById(id);
+  if (!element) return;
+  const pendingValues = new Set([
+    "Pending",
+    "待定",
+    "未定",
+    "Pendiente",
+    "En attente",
+    "Ausstehend",
+    "Pendente",
+    "قيد الانتظار",
+    "대기",
+    "In attesa",
+    "In afwachting",
+    "Bekliyor"
+  ]);
+  if (pendingValues.has(element.textContent.trim())) {
+    element.textContent = tr("pending");
+  }
+}
+
+function syncLanguageSensitiveStats() {
+  ["marketBaselineStat", "ratingBaselineStat", "paulEdgeStat", "calibrationStat", "autoNext"].forEach(syncPendingLabel);
+}
+
 function formatDisplayDateTime(value, options = {}) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return String(value || "");
@@ -640,6 +814,7 @@ function setupLanguageSelect() {
       // Language persistence is optional.
     }
     applyLanguage();
+    syncLanguageSensitiveStats();
     refreshFilterOptions();
     renderGroups();
     renderMatchList();
@@ -668,6 +843,7 @@ function applyLanguage() {
     `;
     proofRoundFilter.value = current;
   }
+  syncLanguageSensitiveStats();
 }
 
 function escapeHtml(value) {
@@ -1620,6 +1796,17 @@ function formatLocalizedNextPrediction(nextPrediction) {
   if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · ${tr("timePending")}`;
   return `${nextPrediction.label} · ${formatDisplayDateTime(dueAt)}`;
 }
+
+function formatNextPredictionSynced(nextPrediction) {
+  if (!nextPrediction) return tr("none");
+  if (!nextPrediction.dueAt) return `${nextPrediction.label} · ${tr("timePending")}`;
+  const dueAt = new Date(nextPrediction.dueAt);
+  if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · ${tr("timePending")}`;
+  return `${nextPrediction.label} · ${formatDisplayDateTime(dueAt)}`;
+}
+
+formatNextPrediction = formatNextPredictionSynced;
+formatLocalizedNextPrediction = formatNextPredictionSynced;
 
 async function loadAutomationStatus() {
   const statusText = document.getElementById("automationStatus");
