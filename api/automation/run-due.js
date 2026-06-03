@@ -37,7 +37,11 @@ function assertOwner(req) {
 
 function assertCron(req) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return;
+  if (!secret) {
+    const error = new Error("CRON_SECRET is not configured.");
+    error.status = 403;
+    throw error;
+  }
   const auth = req.headers?.authorization || "";
   if (auth !== `Bearer ${secret}` && requestToken(req) !== secret && requestToken(req) !== process.env.VERIFY_TOKEN) {
     const error = new Error("Unauthorized cron run.");

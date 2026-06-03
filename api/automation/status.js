@@ -111,6 +111,7 @@ module.exports = async function handler(req, res) {
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
     hasResultsApi: hasResultsProvider(),
     resultsProvider: providerName(),
-    hasSharedStore: isSharedStoreConfigured()
+    hasSharedStore: isSharedStoreConfigured(),
+    cronProtected: Boolean(process.env.CRON_SECRET)
   });
 };

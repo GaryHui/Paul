@@ -1872,13 +1872,14 @@ async function loadAutomationStatus() {
     const dailyState = readiness.dailyAnalysisCount
       ? `${readiness.dailyAnalysisCount} daily PAUL reads cached${readiness.latestDailyReadAt ? `, latest ${formatProofTime(readiness.latestDailyReadAt)}` : ""}`
       : "no daily PAUL reads yet";
+    const cronState = status.cronProtected ? "Cron protected" : "Cron secret missing";
     const oddsState = readiness.liveOddsProvider
       ? `live odds via ${readiness.liveOddsProvider}`
       : readiness.marketOdds
         ? "market odds loaded"
         : "market odds missing";
     const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
-    statusText.textContent = `${qwenState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
+    statusText.textContent = `${qwenState}; ${cronState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;
   }
