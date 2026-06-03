@@ -107,6 +107,41 @@ Object.assign(languageCopy.ko, { navPredictions: "예측", navTrace: "추적", n
 Object.assign(languageCopy.it, { navPredictions: "Pronostici", navTrace: "Traccia", navAutomation: "Automazione", navProof: "Prova", navGroups: "Gruppi", heroEyebrow: "Laboratorio IA Mondiale 2026", heroTitle: "PAUL prevede ogni partita e poi entra in modalità eliminazione.", openPredictor: "Apri pronostici", viewTeams: "Vedi 48 squadre", groupAccuracy: "Precisione gironi", knockoutAccuracy: "Precisione eliminazione", upsetCallsHit: "Sorpese centrate", proofVerifiedPicks: "Pronostici verificati", traceEyebrow: "Traccia 2026", traceTitle: "Segui PAUL contro il mercato, partita per partita.", playableFixtures: "Partite tracciate", officialLocks: "Blocchi ufficiali", dailyReads: "Letture giornaliere", marketReferences: "Riferimenti mercato", finalResults: "Risultati finali", match: "Partita", market: "Mercato", result: "Risultato", impact: "Impatto", pending: "In attesa", timePending: "Ora in attesa", none: "Nessuno", winner: "Vincitore", startsIn: "Inizia tra", liveNow: "In diretta", fullTimeWindowPassed: "Finestra conclusa", kickoffTba: "Orario da confermare", paulVsMarket: "PAUL vs mercato", noMarket: "Nessun riferimento mercato" });
 Object.assign(languageCopy.nl, { navPredictions: "Voorspellingen", navTrace: "Trace", navAutomation: "Automatisering", navProof: "Bewijs", navGroups: "Groepen", heroEyebrow: "WK 2026 AI-voorspellab", heroTitle: "PAUL voorspelt elke wedstrijd en gaat daarna in knock-outmodus.", openPredictor: "Open predictor", viewTeams: "Bekijk 48 teams", groupAccuracy: "Groepsnauwkeurigheid", knockoutAccuracy: "Knock-outnauwkeurigheid", upsetCallsHit: "Verrassingen raak", proofVerifiedPicks: "Geverifieerde picks", traceEyebrow: "Wedstrijdtrace 2026", traceTitle: "Volg PAUL tegen de markt, wedstrijd voor wedstrijd.", playableFixtures: "Tracebare wedstrijden", officialLocks: "Officiële locks", dailyReads: "Dagelijkse reads", marketReferences: "Marktreferenties", finalResults: "Einduitslagen", match: "Wedstrijd", market: "Markt", result: "Uitslag", impact: "Impact", pending: "In afwachting", timePending: "Tijd onbekend", none: "Geen", winner: "Winnaar", startsIn: "Start over", liveNow: "Live", fullTimeWindowPassed: "Wedstrijdvenster voorbij", kickoffTba: "Aftrap onbekend", paulVsMarket: "PAUL vs markt", noMarket: "Nog geen marktreferentie" });
 Object.assign(languageCopy.tr, { navPredictions: "Tahminler", navTrace: "İz", navAutomation: "Otomasyon", navProof: "Kanıt", navGroups: "Gruplar", heroEyebrow: "2026 Dünya Kupası AI Tahmin Laboratuvarı", heroTitle: "PAUL her maçı tahmin eder, sonra eleme moduna geçer.", openPredictor: "Tahmini aç", viewTeams: "48 takımı gör", groupAccuracy: "Grup doğruluğu", knockoutAccuracy: "Eleme doğruluğu", upsetCallsHit: "Sürpriz isabetleri", proofVerifiedPicks: "Kanıtlı tahminler", traceEyebrow: "2026 Maç İzi", traceTitle: "PAUL'u piyasaya karşı maç maç izle.", playableFixtures: "İzlenen maçlar", officialLocks: "Resmi kilitler", dailyReads: "Günlük okumalar", marketReferences: "Piyasa referansları", finalResults: "Final sonuçları", match: "Maç", market: "Piyasa", result: "Sonuç", impact: "Etki", pending: "Bekliyor", timePending: "Saat bekliyor", none: "Yok", winner: "Kazanan", startsIn: "Başlamasına", liveNow: "Canlı", fullTimeWindowPassed: "Maç penceresi geçti", kickoffTba: "Başlama saati belirsiz", paulVsMarket: "PAUL vs piyasa", noMarket: "Piyasa referansı yok" });
+Object.assign(languageCopy.en, {
+  recordEyebrow: "PAUL Record", recordTitle: "Public accuracy, tracked match by match.", recordCopy: "Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.",
+  publicFavorite: "Public favorite", teamRead: "Team read", paulGain: "PAUL gain", calibration: "Calibration", referenceRecord: "Reference record.", extraCorrectPicks: "Extra correct picks.", actualVsConfidence: "Actual accuracy vs confidence.",
+  predictorEyebrow: "PK Predictor", predictorTitle: "Group-stage record first, knockout oracle after qualification.", predictorCopy: "PAUL still predicts every playable match before kickoff, including the group stage. The public showpiece begins when the Round of 32 bracket is resolved and every pick becomes a win-or-go-home call.",
+  round: "Round", group: "Group", groupLabel: "Group", search: "Search", searchPlaceholder: "Team, country, match number...",
+  automationEyebrow: "Automation Engine", automationTitle: "Daily odds refresh, result sync, bracket advancement, and pre-match predictions.", automationCopy: "Vercel Cron refreshes market odds snapshots, checks for final scores, records winners, fills the next knockout round, locks PAUL predictions before each playable match, and keeps the public accuracy record consistent for every visitor.",
+  lockedPredictions: "Locked predictions", syncedResults: "Synced results", predictionAccuracy: "Prediction accuracy", nextScheduledPick: "Next scheduled pick", runDueTasks: "Run Due Tasks", loadingAutomation: "Loading automation status...",
+  proofEyebrow: "Proof of Prediction", proofTitle: "Every PAUL pick gets a public hash and timestamp proof.", proofCopy: "When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256. Official proofs also try to create an OpenTimestamps .ots receipt, so anyone can verify the same hash outside this site.",
+  totalProofs: "Total proofs", allRounds: "All rounds", groupStage: "Group stage", knockout: "Knockout", otsReceipts: "OTS receipts", noLockedProofs: "No locked proofs yet", proofsAppear: "Proof records will appear here as soon as PAUL locks an official prediction.", proofSearchPlaceholder: "Match, team, hash, round...", showAllProofs: "Show all proofs",
+  groupsEyebrow: "48-Team Field", groupsTitle: "Groups A-L", groupsCopy: "Each team card includes its flag, group, and local-language line for the PK page.",
+  primaryLanguages: "Primary languages", localLanguage: "Local language", bracketStatus: "Bracket status", slotFilled: "This slot will be filled automatically after earlier results are synced.",
+  fanVote: "Fan Vote", bracketSlotPending: "Bracket slot pending", votes: "votes", dailyRead: "Daily PAUL Read", waitingTeams: "Waiting for teams", nextRefreshPending: "Next refresh pending", dailyRefreshCopy: "PAUL will refresh this matchup automatically when it enters the daily analysis window.", currentLean: "Current lean", confidence: "confidence", draw: "Draw",
+  correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
+  , all: "All"
+});
+Object.assign(languageCopy.zh, {
+  recordEyebrow: "PAUL 战绩", recordTitle: "逐场公开统计命中率。", recordCopy: "每个赛前锁定预测都会在赛后计入战绩。所有访客看到同一份公开、带证明、可追踪的记录。",
+  publicFavorite: "市场热门", teamRead: "球队判断", paulGain: "PAUL 增益", calibration: "校准", referenceRecord: "参考战绩。", extraCorrectPicks: "比参考多命中的场次。", actualVsConfidence: "实际命中率对比信心值。",
+  predictorEyebrow: "PK 预测器", predictorTitle: "先积累小组赛战绩，再进入淘汰赛神谕模式。", predictorCopy: "PAUL 会在开赛前预测每一场可预测比赛，包括小组赛。32 强签表确定后，每个预测都会变成一场定生死的淘汰赛判断。",
+  round: "轮次", group: "小组", groupLabel: "小组", search: "搜索", searchPlaceholder: "球队、国家、比赛编号...",
+  automationEyebrow: "自动化引擎", automationTitle: "每日刷新赔率、同步赛果、推进签表，并在赛前锁定预测。", automationCopy: "Vercel Cron 会刷新市场赔率快照、检查最终比分、记录胜者、填充下一轮淘汰赛，并在每场比赛前锁定 PAUL 预测，让所有访客看到一致的公开战绩。",
+  lockedPredictions: "已锁定预测", syncedResults: "已同步赛果", predictionAccuracy: "预测命中率", nextScheduledPick: "下一次赛前预测", runDueTasks: "运行到期任务", loadingAutomation: "正在加载自动化状态...",
+  proofEyebrow: "预测证明", proofTitle: "每个 PAUL 预测都会生成公开哈希和时间戳证明。", proofCopy: "当 PAUL 锁定预测后，完整预测内容会转换为标准 JSON 并计算 SHA-256 哈希。正式预测还会尝试生成 OpenTimestamps .ots 收据，方便任何人在站外验证同一个哈希。",
+  totalProofs: "总证明数", allRounds: "全部轮次", groupStage: "小组赛", knockout: "淘汰赛", otsReceipts: "OTS 收据", noLockedProofs: "还没有锁定证明", proofsAppear: "PAUL 锁定正式预测后，证明记录会显示在这里。", proofSearchPlaceholder: "比赛、球队、哈希、轮次...", showAllProofs: "显示全部证明",
+  groupsEyebrow: "48 支球队", groupsTitle: "A-L 小组", groupsCopy: "每张球队卡包含国旗、小组，以及 PK 页使用的本国语言文本。",
+  primaryLanguages: "主要语言", localLanguage: "本国语言", bracketStatus: "签表状态", slotFilled: "前序比赛结果同步后，这个席位会自动填充。",
+  fanVote: "观众投票", bracketSlotPending: "签表席位待定", votes: "票", dailyRead: "PAUL 每日判断", waitingTeams: "等待球队确定", nextRefreshPending: "等待下次刷新", dailyRefreshCopy: "当这场比赛进入每日分析窗口后，PAUL 会自动刷新这一场对阵。", currentLean: "当前倾向", confidence: "信心", draw: "平局",
+  correct: "命中", missed: "未命中", final: "已完赛", locked: "已锁定", proofLocked: "证明已锁定", notLocked: "未锁定", lockedAt: "锁定时间", kickoff: "开赛时间", generatedAt: "生成时间", updated: "已更新", officialConfidence: "正式信心", officialPredictionPending: "正式预测待定", officialPredictionNotLocked: "PAUL 正式预测还未锁定。", bracketNotResolved: "这个签表席位还没有确定。", kickoffCountdown: "开赛倒计时", finalScorePending: "最终比分还未同步。完赛后会更新命中率。", predictedScore: "预测比分", officialPaulPick: "PAUL 正式选择", upsetWatch: "冷门观察", proofStatus: "证明状态", upsetRisk: "冷门风险", proofLockedPublicRecord: "完赛后，这个预测会计入 PAUL 公开战绩。", finalScoresVerify: "赛后比分会验证这个预测。", officialPredictionFallback: "PAUL 已返回正式预测。", lockedWithoutDetails: "PAUL 已锁定本场预测，但没有提供详细说明。", awaitingGroups: "等待小组赛", awaitingGroupPick: "等待小组赛 PAUL 预测", awaitingKnockoutPick: "等待淘汰赛 PAUL 神谕", waitingBracketResults: "等待签表结果", pendingGroupPickCopy: "这场小组赛预测会在开赛前生成证明并锁定，并计入 PAUL 公开基础战绩。", pendingKnockoutPickCopy: "淘汰赛神谕模式会在开赛前锁定这场定生死预测，并考虑冷门风险和签表路径。", unresolvedSlotCopy: "前序真实赛果填充正式签表后，这个淘汰赛席位才会进入可预测状态。", pendingModelCopy: "正式证明预测仍在等待锁定。锁定窗口前，上方每日概率仍可更新。", unresolvedModelCopy: "前序胜者确定后，这场比赛才会进入可预测状态。", knockoutFixturesPending: "真实小组赛结果和正式签表可用后，淘汰赛列表才会显示。", groupStageRecord: "小组赛战绩", knockoutOracleMode: "淘汰赛神谕模式", noMatchingProofs: "没有匹配的证明", noProofsMatchCopy: "请更换轮次筛选或搜索词。正式证明账本仍会保留每一个锁定预测。", proofServiceUnavailable: "证明服务暂时不可用", copy: "复制", loadInVerifier: "载入验证器", downloadCanonical: "下载标准 JSON", downloadOts: "下载 .ots", copiedProofJson: "证明 JSON 已复制。", copiedProofForMatch: "已复制比赛证明", proofJsonLoaded: "证明 JSON 已载入。点击验证证明。", demoProofLoaded: "固定演示证明和内置 .ots 已载入。点击验证证明。", proofVerificationComplete: "证明已在本浏览器本地验证完成。", proofInputPlaceholder: "在这里粘贴证明 JSON...", proofVerifierEyebrow: "公开证明验证器", proofVerifierTitle: "自己验证 PAUL 证明。", proofVerifierCopy: "粘贴任意卡片中的证明 JSON。浏览器会在本地重新计算 SHA-256，检查标准内容一致性，并显示 GitHub/OpenTimestamps 证据。", loadDemoProof: "载入演示证明", verifyProof: "验证证明", clear: "清空", noProofLoaded: "还没有载入证明。", showLatest: "显示最新", showAll: "显示全部", retainedProofs: "条已保留正式证明", matchingProofs: "条匹配证明", showing: "显示", latest: "最新", of: "/", hashVerified: "哈希已验证", hashMismatch: "哈希不匹配", beforeKickoff: "早于开赛", checkTime: "检查时间", otsReceipt: "OTS 收据", unknown: "未知", pick: "选择", githubProof: "GitHub 证明", noGithubTimestamp: "暂无 GitHub 时间戳", githubPending: "GitHub 待处理", noOtsProof: "暂无 OpenTimestamps 证明", otsPending: "OpenTimestamps 待处理", openOtsVerifier: "打开 OTS 验证器"
+  , all: "全部"
+});
+["es", "fr", "de", "pt", "ar", "ja", "ko", "it", "nl", "tr"].forEach((key) => {
+  Object.entries(languageCopy.en).forEach(([copyKey, value]) => {
+    languageCopy[key][copyKey] ||= value;
+  });
+});
 let currentLanguage = (() => {
   try {
     return localStorage.getItem(languageKey) || "en";
@@ -603,6 +638,9 @@ function setupLanguageSelect() {
       // Language persistence is optional.
     }
     applyLanguage();
+    refreshFilterOptions();
+    renderGroups();
+    renderMatchList();
     renderPublicTrace();
     renderPK();
     loadAutomationStatus();
@@ -615,6 +653,19 @@ function applyLanguage() {
   document.querySelectorAll("[data-i18n]").forEach((element) => {
     element.textContent = tr(element.dataset.i18n);
   });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", tr(element.dataset.i18nPlaceholder));
+  });
+  const proofRoundFilter = document.getElementById("proofRoundFilter");
+  if (proofRoundFilter) {
+    const current = proofRoundFilter.value || "All";
+    proofRoundFilter.innerHTML = `
+      <option value="All">${tr("allRounds")}</option>
+      <option value="Group Stage">${tr("groupStage")}</option>
+      <option value="Knockout">${tr("knockout")}</option>
+    `;
+    proofRoundFilter.value = current;
+  }
 }
 
 function escapeHtml(value) {
@@ -627,7 +678,7 @@ function escapeHtml(value) {
 }
 
 function matchMode(match) {
-  return match.round === "Group Stage" ? "Group-stage record" : "Knockout Oracle Mode";
+  return match.round === "Group Stage" ? tr("groupStageRecord") : tr("knockoutOracleMode");
 }
 
 function modeClass(match) {
@@ -785,7 +836,7 @@ function teamLocaleMarkup(code) {
   if (!locale) return "";
   return `
     <p class="local-language">
-      <strong>Local language:</strong>
+      <strong>${tr("localLanguage")}:</strong>
       <span>${locale.language}</span>
       <em>${locale.phrase}</em>
     </p>
@@ -799,10 +850,10 @@ function teamMarkup(code) {
       ${flagImage(code)}
       <div>
         <div class="team-name">${team.name}</div>
-        <div class="team-code">${code} · Group ${team.group}</div>
+        <div class="team-code">${code} · ${tr("groupLabel")} ${team.group}</div>
       </div>
     </div>
-    <p class="language"><strong>Primary languages:</strong><br>${team.languages}</p>
+    <p class="language"><strong>${tr("primaryLanguages")}:</strong><br>${team.languages}</p>
   `;
 }
 
@@ -812,10 +863,10 @@ function slotMarkup(label) {
       <span class="flag-frame flag-frame--slot">TBD</span>
       <div>
         <div class="team-name">${label}</div>
-        <div class="team-code">Awaiting official result</div>
+        <div class="team-code">${tr("pending")}</div>
       </div>
     </div>
-    <p class="language"><strong>Bracket status:</strong><br>This slot will be filled automatically after earlier results are synced.</p>
+    <p class="language"><strong>${tr("bracketStatus")}:</strong><br>${tr("slotFilled")}</p>
   `;
 }
 
@@ -874,7 +925,7 @@ function pollLabel(match, side) {
   const resolved = resolvedTeams(match);
   if (side === "home") return resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
   if (side === "away") return resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
-  return "Draw";
+  return tr("draw") || "Draw";
 }
 
 function pollPercent(poll, side) {
@@ -890,8 +941,8 @@ function renderPollPanel(match, poll = pollState[match.id] || { votes: {}, total
   if (!resolved.aCode || !resolved.bCode) {
     panel.innerHTML = `
       <div class="poll-head">
-        <span>Fan Vote</span>
-        <strong>Bracket slot pending</strong>
+        <span>${tr("fanVote")}</span>
+        <strong>${tr("bracketSlotPending")}</strong>
       </div>
     `;
     return;
@@ -900,8 +951,8 @@ function renderPollPanel(match, poll = pollState[match.id] || { votes: {}, total
   const selected = choices[match.id] || "";
   panel.innerHTML = `
     <div class="poll-head">
-      <span>Fan Vote</span>
-      <strong>${poll.total || 0} votes</strong>
+      <span>${tr("fanVote")}</span>
+      <strong>${poll.total || 0} ${tr("votes")}</strong>
     </div>
     <div class="poll-options">
       ${["home", "draw", "away"].map((side) => {
@@ -933,7 +984,7 @@ function marketTraceFor(match) {
 
 function dailyReadPercent(value) {
   const number = Number(value);
-  if (!Number.isFinite(number)) return "Pending";
+  if (!Number.isFinite(number)) return tr("pending");
   return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
 }
 
@@ -944,8 +995,8 @@ function renderDailyRead(match) {
   if (!resolved.aCode || !resolved.bCode) {
     panel.innerHTML = `
       <div class="daily-read__head">
-        <span>Daily PAUL Read</span>
-        <strong>Waiting for teams</strong>
+        <span>${tr("dailyRead")}</span>
+        <strong>${tr("waitingTeams")}</strong>
       </div>
     `;
     return;
@@ -955,10 +1006,10 @@ function renderDailyRead(match) {
   if (!read) {
     panel.innerHTML = `
       <div class="daily-read__head">
-        <span>Daily PAUL Read</span>
-        <strong>Next refresh pending</strong>
+        <span>${tr("dailyRead")}</span>
+        <strong>${tr("nextRefreshPending")}</strong>
       </div>
-      <p class="daily-read__empty">PAUL will refresh this matchup automatically when it enters the daily analysis window.</p>
+      <p class="daily-read__empty">${tr("dailyRefreshCopy")}</p>
     `;
     return;
   }
@@ -975,12 +1026,12 @@ function renderDailyRead(match) {
 
   panel.innerHTML = `
     <div class="daily-read__head">
-      <span>Daily PAUL Read</span>
+      <span>${tr("dailyRead")}</span>
       <strong>Updated ${escapeHtml(updatedAt)}</strong>
     </div>
     <div class="daily-read__pick">
-      <span>Current lean</span>
-      <strong>${escapeHtml(pickName)}${read.pick?.confidence ? ` · ${dailyReadPercent(read.pick.confidence)} confidence` : ""}</strong>
+      <span>${tr("currentLean")}</span>
+      <strong>${escapeHtml(pickName)}${read.pick?.confidence ? ` · ${dailyReadPercent(read.pick.confidence)} ${tr("confidence")}` : ""}</strong>
     </div>
     <div class="daily-read__bars">
       ${rows.map((row) => {
@@ -998,8 +1049,8 @@ function renderDailyRead(match) {
 }
 
 function teamNameForCode(code, match) {
-  if (!code) return "Pending";
-  if (code === "DRAW") return "Draw";
+  if (!code) return tr("pending");
+  if (code === "DRAW") return tr("draw");
   if (teams[code]) return teams[code].name;
   const resolved = match ? resolvedTeams(match) : {};
   if (code === resolved.aCode) return teams[resolved.aCode]?.name || code;
@@ -1099,7 +1150,7 @@ function traceResult(match, result) {
 }
 
 function traceMarketImpact(paulCode, marketCode, winnerCode) {
-  if (!paulCode || !marketCode || !winnerCode) return "Pending";
+  if (!paulCode || !marketCode || !winnerCode) return tr("pending");
   const paulCorrect = String(paulCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const marketCorrect = String(marketCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const impact = paulCorrect - marketCorrect;
@@ -1223,54 +1274,54 @@ function predictionStatus(match) {
   const record = officialPrediction(match);
   const result = officialResult(match);
   if (result?.status === "final" && record) {
-    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? "Correct" : "Missed";
+    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? tr("correct") : tr("missed");
   }
-  if (result?.status === "final") return "Final";
-  if (record) return "Locked";
-  return "Pending";
+  if (result?.status === "final") return tr("final");
+  if (record) return tr("locked");
+  return tr("pending");
 }
 
 function resultLabel(match) {
   const result = officialResult(match);
   if (result?.status === "final") {
     const winner = result.winnerCode || resultWinner(result);
-    const winnerName = winner === "DRAW" ? "Draw" : teams[winner]?.name || "Final";
+    const winnerName = winner === "DRAW" ? tr("draw") : teams[winner]?.name || tr("final");
     return `${winnerName} ${result.homeScore}-${result.awayScore}`;
   }
   const record = officialPrediction(match);
-  if (!record) return "Pending";
+  if (!record) return tr("pending");
   const pick = officialPickCode(record);
-  if (!pick || pick === "DRAW") return "Draw";
-  return teams[pick]?.name || record.analysis.winnerName || "Locked";
+  if (!pick || pick === "DRAW") return tr("draw");
+  return teams[pick]?.name || record.analysis.winnerName || tr("locked");
 }
 
 function officialModelCards(official, match) {
   return `
     <article class="model-card">
-      <h3>Official PAUL Pick</h3>
+      <h3>${tr("officialPaulPick")}</h3>
       <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
-      <p>${official.analysis?.reasoning || "PAUL has returned an official prediction."}</p>
+      <p>${official.analysis?.reasoning || tr("officialPredictionFallback")}</p>
     </article>
     <article class="model-card">
-      <h3>Predicted Score</h3>
+      <h3>${tr("predictedScore")}</h3>
       <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-      <p>Locked at ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}.</p>
+      <p>${tr("lockedAt")}: ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}.</p>
     </article>
     <article class="model-card">
-      <h3>Upset Watch</h3>
+      <h3>${tr("upsetWatch")}</h3>
       <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
-      <p>${official.analysis?.upsetCase || "PAUL will be judged by the final score."}</p>
+      <p>${official.analysis?.upsetCase || tr("finalScoresVerify")}</p>
     </article>
     <article class="model-card">
-      <h3>Proof Status</h3>
-      <div class="vote">${official.proof?.hash ? "Proof locked" : "Locked"}</div>
-      <p>After full time, this pick is added to PAUL's public record.</p>
+      <h3>${tr("proofStatus")}</h3>
+      <div class="vote">${official.proof?.hash ? tr("proofLocked") : tr("locked")}</div>
+      <p>${tr("proofLockedPublicRecord")}</p>
     </article>
   `;
 }
 
 function updateChampionLabel() {
-  setText("championName", "Awaiting groups");
+  setText("championName", tr("awaitingGroups"));
 }
 
 function renderMatchList() {
@@ -1316,7 +1367,7 @@ function renderMatchList() {
   if (!filtered.length) {
     list.innerHTML = `
       <div class="empty-list">
-        Knockout fixtures will appear only after real group-stage results and the official bracket are available.
+        ${tr("knockoutFixturesPending")}
       </div>
     `;
   }
@@ -1350,6 +1401,9 @@ function renderPK() {
   document.getElementById("pkConfidence").innerHTML = official
     ? `Official confidence ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
     : `${resolved.aCode && resolved.bCode ? "Official prediction pending" : "Bracket slot pending"} · ${countdownMarkup(match)}`;
+  document.getElementById("pkConfidence").innerHTML = official
+    ? `${tr("officialConfidence")} ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
+    : `${resolved.aCode && resolved.bCode ? tr("officialPredictionPending") : tr("bracketSlotPending")} · ${countdownMarkup(match)}`;
   document.getElementById("leftTeam").innerHTML = resolved.aCode ? teamMarkup(resolved.aCode) + teamLocaleMarkup(resolved.aCode) : slotMarkup(slotLabel(match, "a"));
   document.getElementById("rightTeam").innerHTML = resolved.bCode ? teamMarkup(resolved.bCode) + teamLocaleMarkup(resolved.bCode) : slotMarkup(slotLabel(match, "b"));
   lane.style.setProperty("--crawl-x", crawlX);
@@ -1362,52 +1416,52 @@ function renderPK() {
   crawler.style.animation = shouldCrawl ? "" : "none";
 
   if (official) {
-    const pickName = officialPick === "DRAW" ? "Draw" : teams[officialPick]?.name || official.analysis?.winnerName || "N/A";
-    const verdict = officialPick === "DRAW" ? "PAUL officially predicts a draw" : `PAUL officially crawls toward ${pickName}`;
+    const pickName = officialPick === "DRAW" ? tr("draw") : teams[officialPick]?.name || official.analysis?.winnerName || "N/A";
+    const verdict = officialPick === "DRAW" ? `${tr("paul")} ${tr("winner")}: ${tr("draw")}` : `${tr("paul")} ${tr("winner")}: ${pickName}`;
     const resultCopy = finalResult?.status === "final"
-      ? `Final score: ${teams[resolved.aCode]?.name || slotLabel(match, "a")} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[resolved.bCode]?.name || slotLabel(match, "b")}. Status: ${predictionStatus(match)}.`
-      : "Final score has not synced yet. Accuracy will update after full time.";
+      ? `${tr("final")}: ${teams[resolved.aCode]?.name || slotLabel(match, "a")} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[resolved.bCode]?.name || slotLabel(match, "b")}. ${predictionStatus(match)}.`
+      : tr("finalScorePending");
     document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>${verdict}</strong> · Predicted score: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
-      <p>${official.analysis?.reasoning || "PAUL has locked this pick without a detailed explanation."}</p>
+      <p><strong>${verdict}</strong> · ${tr("predictedScore")}: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
+      <p>${official.analysis?.reasoning || tr("lockedWithoutDetails")}</p>
       <p>${resultCopy}</p>
     `;
   } else {
     const pendingCopy = resolved.aCode && resolved.bCode
       ? match.round === "Group Stage"
-        ? "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record."
-        : "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning."
-      : "This knockout slot will become predictable after earlier real results fill the official bracket.";
+        ? tr("pendingGroupPickCopy")
+        : tr("pendingKnockoutPickCopy")
+      : tr("unresolvedSlotCopy");
     document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>${resolved.aCode && resolved.bCode ? "Official PAUL prediction is not locked yet." : "This bracket slot is not resolved yet."}</strong></p>
+      <p><strong>${resolved.aCode && resolved.bCode ? tr("officialPredictionNotLocked") : tr("bracketNotResolved")}</strong></p>
       <p>${pendingCopy}</p>
-      <p class="countdown-detail">Kickoff countdown: <strong>${countdownMarkup(match)}</strong></p>
+      <p class="countdown-detail">${tr("kickoffCountdown")}: <strong>${countdownMarkup(match)}</strong></p>
     `;
   }
 
   document.getElementById("modelGrid").innerHTML = official
     ? `
       <article class="model-card">
-        <h3>Official PAUL Pick</h3>
+        <h3>${tr("officialPaulPick")}</h3>
         <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
-        <p>${official.analysis?.reasoning || "PAUL has returned an official prediction."}</p>
+        <p>${official.analysis?.reasoning || tr("officialPredictionFallback")}</p>
       </article>
       <article class="model-card">
-        <h3>Predicted Score</h3>
+        <h3>${tr("predictedScore")}</h3>
         <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-        <p>Generated at ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}</p>
+        <p>${tr("generatedAt")}: ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}</p>
       </article>
       <article class="model-card">
-        <h3>Upset Risk</h3>
+        <h3>${tr("upsetRisk")}</h3>
         <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
-        <p>Final scores will verify this pick after the match.</p>
+        <p>${tr("finalScoresVerify")}</p>
       </article>
     `
     : `
       <article class="model-card model-card--wide">
-        <h3>${match.round === "Group Stage" ? "Awaiting Group-stage PAUL Pick" : "Awaiting Knockout Oracle Pick"}</h3>
-        <div class="vote">${resolved.aCode && resolved.bCode ? "Not locked" : "Waiting for bracket results"}</div>
-        <p>${resolved.aCode && resolved.bCode ? "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window." : "This match will become predictable after the earlier winners are known."}</p>
+        <h3>${match.round === "Group Stage" ? tr("awaitingGroupPick") : tr("awaitingKnockoutPick")}</h3>
+        <div class="vote">${resolved.aCode && resolved.bCode ? tr("notLocked") : tr("waitingBracketResults")}</div>
+        <p>${resolved.aCode && resolved.bCode ? tr("pendingModelCopy") : tr("unresolvedModelCopy")}</p>
       </article>
     `;
 
@@ -1585,14 +1639,14 @@ async function loadAutomationStatus() {
     setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
     setText("proofVerifiedStat", stageAccuracy.proofVerified || status.auditCount || 0);
     const baselines = stageAccuracy.baselines || {};
-    setText("marketBaselineStat", baselines.market?.graded ? `${baselines.market.accuracy}%` : "Pending");
-    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : "Pending");
+    setText("marketBaselineStat", baselines.market?.graded ? `${baselines.market.accuracy}%` : tr("pending"));
+    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : tr("pending"));
     const edge = baselines.paulVsMarket?.edge;
-    setText("paulEdgeStat", Number.isFinite(edge) ? `${edge >= 0 ? "+" : ""}${edge}` : "Pending");
+    setText("paulEdgeStat", Number.isFinite(edge) ? `${edge >= 0 ? "+" : ""}${edge}` : tr("pending"));
     const calibration = stageAccuracy.calibration || {};
     setText(
       "calibrationStat",
-      calibration.graded ? `${calibration.actualAccuracy}% / ${calibration.averageConfidence}%` : "Pending"
+      calibration.graded ? `${calibration.actualAccuracy}% / ${calibration.averageConfidence}%` : tr("pending")
     );
     automationState = {
       predictions: mergedPredictions,
@@ -1836,14 +1890,14 @@ async function copyText(value) {
 async function loadDemoProof() {
   const status = document.getElementById("copyProofStatus");
   setProofVerifierInput(demoProofJson());
-  if (status) status.textContent = "Fixed demo proof with bundled .ots loaded. Click Verify Proof.";
+  if (status) status.textContent = tr("demoProofLoaded");
 }
 
 function setProofVerifierInput(value) {
   const input = document.getElementById("proofInput");
   const status = document.getElementById("copyProofStatus");
   if (input) input.value = value;
-  if (status) status.textContent = "Proof JSON loaded. Click Verify Proof.";
+  if (status) status.textContent = tr("proofJsonLoaded");
 }
 
 function proofIsKnockout(entry) {
@@ -1892,17 +1946,17 @@ function updateProofLedger(entries, filteredEntries, visibleEntries) {
   if (otsStat) otsStat.textContent = String(ots);
   if (toggle) {
     toggle.hidden = filteredEntries.length <= proofLedgerLimit;
-    toggle.textContent = proofLedgerExpanded ? "Show latest 12" : `Show all ${filteredEntries.length}`;
+    toggle.textContent = proofLedgerExpanded ? `${tr("showLatest")} ${proofLedgerLimit}` : `${tr("showAll")} ${filteredEntries.length}`;
   }
   if (status) {
     if (!total) {
-      status.textContent = "No locked proofs yet.";
+      status.textContent = tr("noLockedProofs");
     } else if (!filteredEntries.length) {
-      status.textContent = `No proofs match this filter. ${total} official proofs are still retained.`;
+      status.textContent = `${tr("noMatchingProofs")}. ${total} ${tr("retainedProofs")}.`;
     } else if (visibleEntries.length === filteredEntries.length) {
-      status.textContent = `Showing ${visibleEntries.length} of ${total} retained official proofs.`;
+      status.textContent = `${tr("showing")} ${visibleEntries.length} ${tr("of")} ${total} ${tr("retainedProofs")}.`;
     } else {
-      status.textContent = `Showing latest ${visibleEntries.length} of ${filteredEntries.length} matching proofs. ${total} proofs are retained.`;
+      status.textContent = `${tr("showing")} ${tr("latest")} ${visibleEntries.length} ${tr("of")} ${filteredEntries.length} ${tr("matchingProofs")}. ${total} ${tr("retainedProofs")}.`;
     }
   }
 }
@@ -1914,38 +1968,38 @@ function proofCardMarkup(entry) {
   const githubLine = github?.commitUrl
     ? `<a href="${github.commitUrl}" target="_blank" rel="noreferrer">GitHub commit</a>`
     : github?.error
-      ? `<span>GitHub pending: ${github.error}</span>`
-      : `<span>No GitHub timestamp</span>`;
+      ? `<span>${tr("githubPending")}: ${github.error}</span>`
+      : `<span>${tr("noGithubTimestamp")}</span>`;
   const otsLine = ots?.otsBase64
     ? `<span>OpenTimestamps .ots ready (${ots.otsBytes || "N/A"} bytes)</span>`
     : ots?.error
-      ? `<span>OpenTimestamps pending: ${ots.error}</span>`
-      : `<span>No OpenTimestamps proof</span>`;
+      ? `<span>${tr("otsPending")}: ${ots.error}</span>`
+      : `<span>${tr("noOtsProof")}</span>`;
   return `
     <article class="proof-card">
       <div class="proof-card__top">
-        <span class="winner-pill">${entry.verified ? "Hash verified" : "Hash mismatch"}</span>
-        <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? "Before kickoff" : "Check time"}</span>
-        ${ots?.otsBase64 ? `<span class="winner-pill">OTS receipt</span>` : ""}
+        <span class="winner-pill">${entry.verified ? tr("hashVerified") : tr("hashMismatch")}</span>
+        <span class="winner-pill ${entry.isBeforeKickoff ? "" : "winner-pill--warn"}">${entry.isBeforeKickoff ? tr("beforeKickoff") : tr("checkTime")}</span>
+        ${ots?.otsBase64 ? `<span class="winner-pill">${tr("otsReceipt")}</span>` : ""}
       </div>
       <div class="proof-card__heading">
         <h3>#${entry.matchId} ${entry.match}</h3>
-        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">Copy</button>
+        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">${tr("copy")}</button>
       </div>
       <dl>
-        <div><dt>Round</dt><dd>${entry.round || "Unknown"}</dd></div>
-        ${prediction?.winnerName ? `<div><dt>Pick</dt><dd>${prediction.winnerName}${prediction.predictedScore ? ` · ${prediction.predictedScore}` : ""}</dd></div>` : ""}
-        <div><dt>Locked</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
-        <div><dt>Kickoff</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
+        <div><dt>${tr("round")}</dt><dd>${entry.round || tr("unknown")}</dd></div>
+        ${prediction?.winnerName ? `<div><dt>${tr("pick")}</dt><dd>${prediction.winnerName}${prediction.predictedScore ? ` · ${prediction.predictedScore}` : ""}</dd></div>` : ""}
+        <div><dt>${tr("lockedAt")}</dt><dd>${formatProofTime(entry.lockedAt)}</dd></div>
+        <div><dt>${tr("kickoff")}</dt><dd>${formatProofTime(entry.kickoffAt)}</dd></div>
         <div><dt>SHA-256</dt><dd><code>${shortHash(entry.hash)}</code></dd></div>
-        <div><dt>GitHub proof</dt><dd>${githubLine}</dd></div>
+        <div><dt>${tr("githubProof")}</dt><dd>${githubLine}</dd></div>
         <div><dt>OpenTimestamps</dt><dd>${otsLine}</dd></div>
       </dl>
       <div class="proof-card__actions">
-        <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">Load in Verifier</button>
-        <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">Download canonical</button>
-        ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">Download .ots</button>` : ""}
-        ${ots?.otsBase64 ? `<a class="button button--ghost" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">Open OTS verifier</a>` : ""}
+        <button class="button button--ghost proof-load-button" type="button" data-proof-id="${entry.id}">${tr("loadInVerifier")}</button>
+        <button class="button button--ghost proof-canonical-button" type="button" data-proof-id="${entry.id}">${tr("downloadCanonical")}</button>
+        ${ots?.otsBase64 ? `<button class="button button--ghost proof-ots-button" type="button" data-proof-id="${entry.id}">${tr("downloadOts")}</button>` : ""}
+        ${ots?.otsBase64 ? `<a class="button button--ghost" href="https://opentimestamps.org/" target="_blank" rel="noreferrer">${tr("openOtsVerifier")}</a>` : ""}
       </div>
     </article>
   `;
@@ -1958,7 +2012,7 @@ function bindProofCardActions(grid) {
       if (!entry) return;
       await copyText(publicProofJson(entry));
       const status = document.getElementById("copyProofStatus");
-      if (status) status.textContent = `Copied proof for match #${entry.matchId}.`;
+      if (status) status.textContent = `${tr("copiedProofForMatch")} #${entry.matchId}.`;
     });
   });
 
@@ -1997,8 +2051,8 @@ function renderProofs(entries) {
   if (!entries.length) {
     grid.innerHTML = `
       <article class="proof-card">
-        <h3>No locked proofs yet</h3>
-        <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
+        <h3>${tr("noLockedProofs")}</h3>
+        <p>${tr("proofsAppear")}</p>
       </article>
     `;
     return;
@@ -2007,8 +2061,8 @@ function renderProofs(entries) {
   if (!filteredEntries.length) {
     grid.innerHTML = `
       <article class="proof-card">
-        <h3>No matching proofs</h3>
-        <p>Change the round filter or search term. The official proof ledger still keeps every locked prediction.</p>
+        <h3>${tr("noMatchingProofs")}</h3>
+        <p>${tr("noProofsMatchCopy")}</p>
       </article>
     `;
     return;
@@ -2030,7 +2084,7 @@ async function loadAuditProofs() {
     if (grid) {
       grid.innerHTML = `
         <article class="proof-card">
-          <h3>Proof service unavailable</h3>
+          <h3>${tr("proofServiceUnavailable")}</h3>
           <p>${error.message}</p>
         </article>
       `;
@@ -2145,7 +2199,7 @@ async function verifyProofInput() {
         </article>
       </div>
     `;
-    if (status) status.textContent = "Proof verification completed locally in this browser.";
+    if (status) status.textContent = tr("proofVerificationComplete");
   } catch (error) {
     result.innerHTML = `<div class="proof-result-card is-fail"><strong>Verification failed</strong><span>${error.message}</span></div>`;
   }
@@ -2157,7 +2211,7 @@ function clearProofVerifier() {
   const status = document.getElementById("copyProofStatus");
   if (input) input.value = "";
   if (result) result.innerHTML = "";
-  if (status) status.textContent = "No proof loaded.";
+  if (status) status.textContent = tr("noProofLoaded");
 }
 
 function renderVerifyReport(data) {
@@ -2625,7 +2679,7 @@ function renderGroups() {
         .sort((a, b) => a[1].pos - b[1].pos);
       return `
         <article class="group-card">
-          <h3>Group ${group}</h3>
+          <h3>${tr("groupLabel")} ${group}</h3>
           ${groupTeams
             .map(([code, team]) => `
               <div class="team-row">
@@ -2644,11 +2698,25 @@ function renderGroups() {
 function populateFilters() {
   const roundFilter = document.getElementById("roundFilter");
   const groupFilter = document.getElementById("groupFilter");
-  roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabels[round] || round}</option>`).join("");
-  groupFilter.innerHTML = ["All", ...groupOrder].map((group) => `<option value="${group}">${groupLabels[group] || `Group ${group}`}</option>`).join("");
+  refreshFilterOptions();
   roundFilter.addEventListener("change", renderMatchList);
   groupFilter.addEventListener("change", renderMatchList);
   document.getElementById("searchBox").addEventListener("input", renderMatchList);
+}
+
+function refreshFilterOptions() {
+  const roundFilter = document.getElementById("roundFilter");
+  const groupFilter = document.getElementById("groupFilter");
+  if (roundFilter) {
+    const current = roundFilter.value || "All";
+    roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${round === "All" ? tr("all") : roundLabels[round] || round}</option>`).join("");
+    roundFilter.value = current;
+  }
+  if (groupFilter) {
+    const current = groupFilter.value || "All";
+    groupFilter.innerHTML = ["All", ...groupOrder].map((group) => `<option value="${group}">${group === "All" ? tr("all") : `${tr("groupLabel")} ${group}`}</option>`).join("");
+    groupFilter.value = current;
+  }
 }
 
 function init() {

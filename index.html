@@ -63,41 +63,41 @@
 
       <section class="accuracy-lab band" aria-label="PAUL edge metrics">
         <div class="section-head">
-          <p class="eyebrow">PAUL Record</p>
-          <h2>Public accuracy, tracked match by match.</h2>
-          <p>
+          <p class="eyebrow" data-i18n="recordEyebrow">PAUL Record</p>
+          <h2 data-i18n="recordTitle">Public accuracy, tracked match by match.</h2>
+          <p data-i18n="recordCopy">
             Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.
           </p>
         </div>
         <div class="accuracy-lab-grid">
           <article>
-            <span>Public favorite</span>
+            <span data-i18n="publicFavorite">Public favorite</span>
             <strong id="marketBaselineStat">Pending</strong>
-            <p>Reference record.</p>
+            <p data-i18n="referenceRecord">Reference record.</p>
           </article>
           <article>
-            <span>Team read</span>
+            <span data-i18n="teamRead">Team read</span>
             <strong id="ratingBaselineStat">Pending</strong>
-            <p>Reference record.</p>
+            <p data-i18n="referenceRecord">Reference record.</p>
           </article>
           <article>
-            <span>PAUL gain</span>
+            <span data-i18n="paulGain">PAUL gain</span>
             <strong id="paulEdgeStat">Pending</strong>
-            <p>Extra correct picks.</p>
+            <p data-i18n="extraCorrectPicks">Extra correct picks.</p>
           </article>
           <article>
-            <span>Calibration</span>
+            <span data-i18n="calibration">Calibration</span>
             <strong id="calibrationStat">Pending</strong>
-            <p>Actual accuracy vs confidence.</p>
+            <p data-i18n="actualVsConfidence">Actual accuracy vs confidence.</p>
           </article>
         </div>
       </section>
 
       <section class="console" id="matches">
         <div class="section-head">
-          <p class="eyebrow">PK Predictor</p>
-          <h2>Group-stage record first, knockout oracle after qualification.</h2>
-          <p>
+          <p class="eyebrow" data-i18n="predictorEyebrow">PK Predictor</p>
+          <h2 data-i18n="predictorTitle">Group-stage record first, knockout oracle after qualification.</h2>
+          <p data-i18n="predictorCopy">
             PAUL still predicts every playable match before kickoff, including the group stage.
             The public showpiece begins when the Round of 32 bracket is resolved and every pick becomes a win-or-go-home call.
           </p>
@@ -105,16 +105,16 @@
 
         <div class="toolbar" role="search">
           <label>
-            Round
+            <span data-i18n="round">Round</span>
             <select id="roundFilter"></select>
           </label>
           <label>
-            Group
+            <span data-i18n="group">Group</span>
             <select id="groupFilter"></select>
           </label>
           <label class="search">
-            Search
-            <input id="searchBox" type="search" placeholder="Team, country, match number..." />
+            <span data-i18n="search">Search</span>
+            <input id="searchBox" type="search" placeholder="Team, country, match number..." data-i18n-placeholder="searchPlaceholder" />
           </label>
         </div>
 
@@ -159,9 +159,9 @@
 
       <section class="automation band" id="automation">
         <div class="section-head">
-          <p class="eyebrow">Automation Engine</p>
-          <h2>Daily odds refresh, result sync, bracket advancement, and pre-match predictions.</h2>
-          <p>
+          <p class="eyebrow" data-i18n="automationEyebrow">Automation Engine</p>
+          <h2 data-i18n="automationTitle">Daily odds refresh, result sync, bracket advancement, and pre-match predictions.</h2>
+          <p data-i18n="automationCopy">
             Vercel Cron refreshes market odds snapshots, checks for final scores, records winners, fills the next knockout round,
             locks PAUL predictions before each playable match, and keeps the public accuracy record consistent for every visitor.
           </p>
@@ -169,32 +169,32 @@
         <div class="automation-grid">
           <div>
             <strong id="autoPredicted">0</strong>
-            <span>Locked predictions</span>
+            <span data-i18n="lockedPredictions">Locked predictions</span>
           </div>
           <div>
             <strong id="autoResults">0</strong>
-            <span>Synced results</span>
+            <span data-i18n="syncedResults">Synced results</span>
           </div>
           <div>
             <strong id="autoAccuracy">0%</strong>
-            <span>Prediction accuracy</span>
+            <span data-i18n="predictionAccuracy">Prediction accuracy</span>
           </div>
           <div>
             <strong id="autoNext">Pending</strong>
-            <span>Next scheduled pick</span>
+            <span data-i18n="nextScheduledPick">Next scheduled pick</span>
           </div>
         </div>
         <div class="automation-actions">
-          <button class="button button--primary owner-only" id="runAutomationButton" type="button" hidden>Run Due Tasks</button>
-          <span id="automationStatus">Loading automation status...</span>
+          <button class="button button--primary owner-only" id="runAutomationButton" type="button" hidden data-i18n="runDueTasks">Run Due Tasks</button>
+          <span id="automationStatus" data-i18n="loadingAutomation">Loading automation status...</span>
         </div>
       </section>
 
       <section class="proof band" id="proof">
         <div class="section-head">
-          <p class="eyebrow">Proof of Prediction</p>
-          <h2>Every PAUL pick gets a public hash and timestamp proof.</h2>
-          <p>
+          <p class="eyebrow" data-i18n="proofEyebrow">Proof of Prediction</p>
+          <h2 data-i18n="proofTitle">Every PAUL pick gets a public hash and timestamp proof.</h2>
+          <p data-i18n="proofCopy">
             When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256.
             Official proofs also try to create an OpenTimestamps .ots receipt, so anyone can verify the same hash outside this site.
           </p>
@@ -202,24 +202,24 @@
         <div class="proof-ledger-stats" aria-label="Proof ledger statistics">
           <div>
             <strong id="proofTotalStat">0</strong>
-            <span>Total proofs</span>
+            <span data-i18n="totalProofs">Total proofs</span>
           </div>
           <div>
             <strong id="proofGroupStat">0</strong>
-            <span>Group stage</span>
+            <span data-i18n="groupStage">Group stage</span>
           </div>
           <div>
             <strong id="proofKnockoutStat">0</strong>
-            <span>Knockout</span>
+            <span data-i18n="knockout">Knockout</span>
           </div>
           <div>
             <strong id="proofOtsStat">0</strong>
-            <span>OTS receipts</span>
+            <span data-i18n="otsReceipts">OTS receipts</span>
           </div>
         </div>
         <div class="proof-ledger-controls">
           <label>
-            Round
+            <span data-i18n="round">Round</span>
             <select id="proofRoundFilter">
               <option value="All">All rounds</option>
               <option value="Group Stage">Group stage</option>
@@ -227,30 +227,30 @@
             </select>
           </label>
           <label>
-            Search
-            <input id="proofSearchBox" type="search" placeholder="Match, team, hash, round..." />
+            <span data-i18n="search">Search</span>
+            <input id="proofSearchBox" type="search" placeholder="Match, team, hash, round..." data-i18n-placeholder="proofSearchPlaceholder" />
           </label>
-          <button class="button button--ghost" id="proofToggleButton" type="button" hidden>Show all proofs</button>
-          <span id="proofLedgerStatus">No locked proofs yet.</span>
+          <button class="button button--ghost" id="proofToggleButton" type="button" hidden data-i18n="showAllProofs">Show all proofs</button>
+          <span id="proofLedgerStatus" data-i18n="noLockedProofs">No locked proofs yet.</span>
         </div>
         <div class="proof-grid" id="proofGrid">
           <article class="proof-card">
-            <h3>No locked proofs yet</h3>
-            <p>Proof records will appear here as soon as PAUL locks an official prediction.</p>
+            <h3 data-i18n="noLockedProofs">No locked proofs yet</h3>
+            <p data-i18n="proofsAppear">Proof records will appear here as soon as PAUL locks an official prediction.</p>
           </article>
         </div>
         <div class="proof-verifier" id="proofVerifier">
           <div class="section-head">
-            <p class="eyebrow">Public Proof Verifier</p>
-            <h2>Verify a PAUL proof yourself.</h2>
-            <p>Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.</p>
+            <p class="eyebrow" data-i18n="proofVerifierEyebrow">Public Proof Verifier</p>
+            <h2 data-i18n="proofVerifierTitle">Verify a PAUL proof yourself.</h2>
+            <p data-i18n="proofVerifierCopy">Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.</p>
           </div>
-          <textarea id="proofInput" spellcheck="false" placeholder="Paste proof JSON here..."></textarea>
+          <textarea id="proofInput" spellcheck="false" placeholder="Paste proof JSON here..." data-i18n-placeholder="proofInputPlaceholder"></textarea>
           <div class="proof-actions">
-            <button class="button button--ghost" id="loadDemoProofButton" type="button">Load Demo Proof</button>
-            <button class="button button--primary" id="verifyProofButton" type="button">Verify Proof</button>
-            <button class="button button--ghost" id="clearProofButton" type="button">Clear</button>
-            <span id="copyProofStatus">No proof loaded.</span>
+            <button class="button button--ghost" id="loadDemoProofButton" type="button" data-i18n="loadDemoProof">Load Demo Proof</button>
+            <button class="button button--primary" id="verifyProofButton" type="button" data-i18n="verifyProof">Verify Proof</button>
+            <button class="button button--ghost" id="clearProofButton" type="button" data-i18n="clear">Clear</button>
+            <span id="copyProofStatus" data-i18n="noProofLoaded">No proof loaded.</span>
           </div>
           <div class="proof-result" id="proofVerifyResult"></div>
         </div>
@@ -279,14 +279,14 @@
 
       <section class="groups band" id="groups">
         <div class="section-head">
-          <p class="eyebrow">48-Team Field</p>
-          <h2>Groups A-L</h2>
-          <p>Each team card includes its flag, group, and local-language line for the PK page.</p>
+          <p class="eyebrow" data-i18n="groupsEyebrow">48-Team Field</p>
+          <h2 data-i18n="groupsTitle">Groups A-L</h2>
+          <p data-i18n="groupsCopy">Each team card includes its flag, group, and local-language line for the PK page.</p>
         </div>
         <div class="group-grid" id="groupGrid"></div>
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-42"></script>
+    <script src="app.js?v=paul-ai-43"></script>
   </body>
 </html>
