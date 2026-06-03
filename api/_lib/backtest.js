@@ -141,6 +141,41 @@ const ranks2010 = {
   "North Korea": 105
 };
 
+const ranks2006 = {
+  Brazil: 1,
+  "Czech Republic": 2,
+  Netherlands: 3,
+  Mexico: 4,
+  Spain: 5,
+  USA: 5,
+  Portugal: 7,
+  France: 8,
+  Argentina: 9,
+  England: 10,
+  Italy: 13,
+  Sweden: 16,
+  Japan: 18,
+  Germany: 19,
+  Tunisia: 21,
+  Croatia: 23,
+  Iran: 23,
+  "Costa Rica": 26,
+  Poland: 29,
+  "South Korea": 29,
+  "Ivory Coast": 32,
+  Paraguay: 33,
+  "Saudi Arabia": 34,
+  Switzerland: 35,
+  Ecuador: 39,
+  Australia: 42,
+  Ukraine: 45,
+  "Serbia & Montenegro": 47,
+  "Trinidad & Tobago": 47,
+  Ghana: 48,
+  Angola: 57,
+  Togo: 61
+};
+
 const rows2022 = [
   "Group A|Qatar|Ecuador|100|13.5|2.41|0|2",
   "Group A|Senegal|Netherlands|6.28|3.75|2.09|0|2",
@@ -341,7 +376,94 @@ const rows2010 = [
   "Final|Netherlands|Spain|4.10|3.50|2.11|0|1"
 ];
 
+const rows2006 = [
+  "Group A|Germany|Costa Rica|1.20|4.00|9.00|4|2",
+  "Group A|Poland|Ecuador|1.75|2.85|3.40|0|2",
+  "Group B|England|Paraguay|1.45|2.90|5.45|1|0",
+  "Group B|Trinidad & Tobago|Sweden|9.00|4.00|1.20|0|0",
+  "Group C|Argentina|Ivory Coast|1.50|2.85|5.00|2|1",
+  "Group C|Serbia & Montenegro|Netherlands|3.60|2.85|1.70|0|1",
+  "Group D|Mexico|Iran|1.40|3.20|5.20|3|1",
+  "Group D|Angola|Portugal|7.50|3.50|1.25|0|1",
+  "Group F|Australia|Japan|1.80|2.90|3.15|3|1",
+  "Group E|USA|Czech Republic|3.45|2.80|1.75|0|3",
+  "Group E|Italy|Ghana|2.25|2.75|2.45|2|0",
+  "Group G|South Korea|Togo|1.30|3.40|6.50|2|1",
+  "Group G|France|Switzerland|1.55|2.85|4.50|0|0",
+  "Group F|Brazil|Croatia|1.40|3.10|5.50|1|0",
+  "Group H|Spain|Ukraine|1.75|2.80|3.50|4|0",
+  "Group H|Tunisia|Saudi Arabia|1.75|2.80|3.50|2|2",
+  "Group A|Germany|Poland|1.40|3.10|5.50|1|0",
+  "Group A|Ecuador|Costa Rica|1.80|2.80|3.30|3|0",
+  "Group B|England|Trinidad & Tobago|1.15|5.00|10.00|2|0",
+  "Group B|Sweden|Paraguay|1.75|2.85|3.40|1|0",
+  "Group C|Argentina|Serbia & Montenegro|1.50|3.00|4.60|6|0",
+  "Group C|Netherlands|Ivory Coast|1.65|2.80|4.00|2|1",
+  "Group D|Mexico|Angola|1.30|3.55|6.00|0|0",
+  "Group D|Portugal|Iran|1.30|3.55|6.00|2|0",
+  "Group E|Czech Republic|Ghana|1.35|3.25|6.00|0|2",
+  "Group E|Italy|USA|1.50|3.00|4.60|1|1",
+  "Group F|Japan|Croatia|1.20|4.00|8.25|0|0",
+  "Group F|Brazil|Australia|3.60|2.85|1.70|2|0",
+  "Group G|France|South Korea|1.35|3.25|6.00|1|1",
+  "Group G|Togo|Switzerland|5.00|3.30|1.40|0|2",
+  "Group H|Saudi Arabia|Ukraine|1.25|3.50|7.50|0|4",
+  "Group H|Spain|Tunisia|6.00|3.55|1.30|3|1",
+  "Group A|Ecuador|Germany|6.00|3.55|1.30|0|3",
+  "Group A|Costa Rica|Poland|4.00|3.10|1.55|1|2",
+  "Group B|Sweden|England|3.00|2.35|2.20|2|2",
+  "Group B|Paraguay|Trinidad & Tobago|1.70|3.25|3.10|2|0",
+  "Group D|Portugal|Mexico|3.00|2.85|1.90|2|1",
+  "Group D|Iran|Angola|1.85|2.90|3.00|1|1",
+  "Group C|Netherlands|Argentina|2.10|2.40|3.10|0|0",
+  "Group C|Ivory Coast|Serbia & Montenegro|2.40|2.90|2.20|3|2",
+  "Group E|Czech Republic|Italy|3.25|2.60|1.90|0|2",
+  "Group E|Ghana|USA|2.00|2.80|2.80|2|1",
+  "Group F|Japan|Brazil|7.50|4.20|1.20|1|4",
+  "Group F|Croatia|Australia|2.00|2.75|2.85|2|2",
+  "Group H|Saudi Arabia|Spain|10.00|4.25|1.15|0|1",
+  "Group H|Ukraine|Tunisia|1.90|2.60|3.25|1|0",
+  "Group G|Togo|France|10.00|4.25|1.15|0|2",
+  "Group G|Switzerland|South Korea|1.50|3.00|4.60|2|0",
+  "Round of 16|Germany|Sweden|1.60|3.00|4.00|2|0",
+  "Round of 16|Argentina|Mexico|1.35|3.25|6.00|1|1",
+  "Round of 16|England|Ecuador|1.35|3.25|6.00|1|0",
+  "Round of 16|Portugal|Netherlands|2.70|2.80|2.05|1|0",
+  "Round of 16|Italy|Australia|1.40|3.00|6.00|1|0",
+  "Round of 16|Switzerland|Ukraine|2.20|2.80|2.50|0|0",
+  "Round of 16|Brazil|Ghana|1.20|4.00|8.25|3|0",
+  "Round of 16|Spain|France|2.15|2.75|2.60|1|3",
+  "Quarterfinal|Germany|Argentina|2.35|2.75|2.35|1|1",
+  "Quarterfinal|England|Portugal|1.95|2.75|3.00|0|0",
+  "Quarterfinal|Italy|Ukraine|1.45|3.00|5.10|3|0",
+  "Quarterfinal|Brazil|France|1.60|2.85|4.15|0|1",
+  "Semifinal|Germany|Italy|1.95|2.75|3.00|0|0",
+  "Semifinal|Portugal|France|3.15|2.70|1.90|0|1",
+  "Third Place|Germany|Portugal|1.65|2.90|3.75|3|1",
+  "Final|Italy|France|2.30|2.60|2.60|1|1"
+];
+
 const datasets = [
+  {
+    year: 2006,
+    role: "holdout",
+    name: "World Cup 2006 full-odds holdout",
+    odds: "TIB/Leibniz PDF appendix tables with 1X2 odds for all 64 matches",
+    results: "TIB/Leibniz PDF appendix result table, cross-checked against BetExplorer/FCTables result pages",
+    rankings: "FIFA ranking May 2006 from the same PDF appendix",
+    coverage: "64/64 matches",
+    note: DATASET_NOTE,
+    ranks: ranks2006,
+    rows: rows2006,
+    shootoutWinners: {
+      "Argentina|Mexico": "home",
+      "Switzerland|Ukraine": "away",
+      "Germany|Argentina": "home",
+      "England|Portugal": "away",
+      "Germany|Italy": "away",
+      "Italy|France": "home"
+    }
+  },
   {
     year: 2022,
     role: "tuning sample",
@@ -1056,9 +1178,9 @@ async function fetchLeagueRuns() {
 async function runBacktest() {
   const runs = datasets.map(runDataset);
   const league = await fetchLeagueRuns();
-  const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014/2010 holdout", "aggregate");
+  const aggregate = combineRuns(runs, "World Cup 2022 + 2018/2014/2010/2006 holdout", "aggregate");
   const holdoutRuns = runs.filter((run) => run.role === "holdout");
-  const holdout = combineRuns(holdoutRuns, "2018/2014/2010 holdout only", "holdout");
+  const holdout = combineRuns(holdoutRuns, "2018/2014/2010/2006 holdout only", "holdout");
   const stability = stabilityAudit(runs, holdout);
   const leagueHoldout = league.runs.length ? combineRuns(league.runs, "Premier League 2021-22 through 2024-25 holdout", "league-holdout") : null;
   const crossCompetition = leagueHoldout
@@ -1070,7 +1192,7 @@ async function runBacktest() {
     generatedAt: new Date().toISOString(),
     algorithm: {
       name: "PAUL Edge Engine v4",
-      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "underdog price gate", "holdout-tested against 2018, 2014, and 2010 available-odds sets", "cross-checked against public Premier League Football-Data odds when network access is available"]
+      changes: ["strict draw-squeeze gate", "conservative multi-model upset override", "underdog price gate", "holdout-tested against 2018, 2014, 2010, and 2006 available-odds sets", "cross-checked against public Premier League Football-Data odds when network access is available"]
     },
     dataset: aggregate.dataset,
     metrics: aggregate.metrics,

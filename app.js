@@ -108,6 +108,7 @@ Object.assign(languageCopy.it, { navPredictions: "Pronostici", navTrace: "Tracci
 Object.assign(languageCopy.nl, { navPredictions: "Voorspellingen", navTrace: "Trace", navAutomation: "Automatisering", navProof: "Bewijs", navGroups: "Groepen", heroEyebrow: "WK 2026 AI-voorspellab", heroTitle: "PAUL voorspelt elke wedstrijd en gaat daarna in knock-outmodus.", openPredictor: "Open predictor", viewTeams: "Bekijk 48 teams", groupAccuracy: "Groepsnauwkeurigheid", knockoutAccuracy: "Knock-outnauwkeurigheid", upsetCallsHit: "Verrassingen raak", proofVerifiedPicks: "Geverifieerde picks", traceEyebrow: "Wedstrijdtrace 2026", traceTitle: "Volg PAUL tegen de markt, wedstrijd voor wedstrijd.", playableFixtures: "Tracebare wedstrijden", officialLocks: "Officiële locks", dailyReads: "Dagelijkse reads", marketReferences: "Marktreferenties", finalResults: "Einduitslagen", match: "Wedstrijd", market: "Markt", result: "Uitslag", impact: "Impact", pending: "In afwachting", timePending: "Tijd onbekend", none: "Geen", winner: "Winnaar", startsIn: "Start over", liveNow: "Live", fullTimeWindowPassed: "Wedstrijdvenster voorbij", kickoffTba: "Aftrap onbekend", paulVsMarket: "PAUL vs markt", noMarket: "Nog geen marktreferentie" });
 Object.assign(languageCopy.tr, { navPredictions: "Tahminler", navTrace: "İz", navAutomation: "Otomasyon", navProof: "Kanıt", navGroups: "Gruplar", heroEyebrow: "2026 Dünya Kupası AI Tahmin Laboratuvarı", heroTitle: "PAUL her maçı tahmin eder, sonra eleme moduna geçer.", openPredictor: "Tahmini aç", viewTeams: "48 takımı gör", groupAccuracy: "Grup doğruluğu", knockoutAccuracy: "Eleme doğruluğu", upsetCallsHit: "Sürpriz isabetleri", proofVerifiedPicks: "Kanıtlı tahminler", traceEyebrow: "2026 Maç İzi", traceTitle: "PAUL'u piyasaya karşı maç maç izle.", playableFixtures: "İzlenen maçlar", officialLocks: "Resmi kilitler", dailyReads: "Günlük okumalar", marketReferences: "Piyasa referansları", finalResults: "Final sonuçları", match: "Maç", market: "Piyasa", result: "Sonuç", impact: "Etki", pending: "Bekliyor", timePending: "Saat bekliyor", none: "Yok", winner: "Kazanan", startsIn: "Başlamasına", liveNow: "Canlı", fullTimeWindowPassed: "Maç penceresi geçti", kickoffTba: "Başlama saati belirsiz", paulVsMarket: "PAUL vs piyasa", noMarket: "Piyasa referansı yok" });
 Object.assign(languageCopy.en, {
+  entertainmentNoticeTitle: "Entertainment only", entertainmentNoticeCopy: "This site is for entertainment and reference only. PAUL predictions are not betting or financial advice.",
   recordEyebrow: "PAUL Record", recordTitle: "Public accuracy, tracked match by match.", recordCopy: "Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.",
   publicFavorite: "Public favorite", teamRead: "Team read", paulGain: "PAUL gain", calibration: "Calibration", referenceRecord: "Reference record.", extraCorrectPicks: "Extra correct picks.", actualVsConfidence: "Actual accuracy vs confidence.",
   predictorEyebrow: "PK Predictor", predictorTitle: "Group-stage record first, knockout oracle after qualification.", predictorCopy: "PAUL still predicts every playable match before kickoff, including the group stage. The public showpiece begins when the Round of 32 bracket is resolved and every pick becomes a win-or-go-home call.",
@@ -123,6 +124,7 @@ Object.assign(languageCopy.en, {
   , all: "All"
 });
 Object.assign(languageCopy.zh, {
+  entertainmentNoticeTitle: "仅供娱乐参考", entertainmentNoticeCopy: "本网站仅供娱乐和参考，不构成投注、投资或财务建议。",
   recordEyebrow: "PAUL 战绩", recordTitle: "逐场公开统计命中率。", recordCopy: "每个赛前锁定预测都会在赛后计入战绩。所有访客看到同一份公开、带证明、可追踪的记录。",
   publicFavorite: "市场热门", teamRead: "球队判断", paulGain: "PAUL 增益", calibration: "校准", referenceRecord: "参考战绩。", extraCorrectPicks: "比参考多命中的场次。", actualVsConfidence: "实际命中率对比信心值。",
   predictorEyebrow: "PK 预测器", predictorTitle: "先积累小组赛战绩，再进入淘汰赛神谕模式。", predictorCopy: "PAUL 会在开赛前预测每一场可预测比赛，包括小组赛。32 强签表确定后，每个预测都会变成一场定生死的淘汰赛判断。",
@@ -2381,7 +2383,7 @@ function renderBacktestReport(data) {
       <span>${data.algorithm?.name || "PAUL Edge"} · ${data.dataset?.name || "Historical dataset"} · ${data.dataset?.matches || 0} matches</span>
     </div>
     <p class="verify-note">
-      Source: CheckBestOdds archived 1X2 odds plus stored final scores. 2022 is the tuning sample; 2018, 2014, and 2010 are holdout checks with only the public archived odds coverage shown below.
+      Source: CheckBestOdds archived 1X2 odds, the 2006 TIB/Leibniz ODDSET appendix, and stored final scores. 2022 is the tuning sample; 2018, 2014, 2010, and 2006 are holdout checks with the public archived odds coverage shown below.
       ${data.algorithm?.changes?.length ? `Changes: ${data.algorithm.changes.join("; ")}.` : ""}
     </p>
     <h3 class="verify-title">Holdout Summary</h3>
@@ -2644,7 +2646,7 @@ async function runHistoricalBacktest() {
     return;
   }
   button.disabled = true;
-  status.textContent = "Running historical 2022 sample plus 2018/2014 holdout backtest...";
+  status.textContent = "Running historical 2022 sample plus 2018/2014/2010/2006 holdout backtest...";
   try {
     try {
       sessionStorage.setItem("paul.verifyToken", token);

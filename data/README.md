@@ -65,7 +65,7 @@ The public proof payload stores `evidence.baselines` and `evidence.paulEdge`, so
 
 The private Verify page includes a historical backtest powered by `api/_lib/backtest.js`.
 
-The runner processes matches in listed order, so PAUL Edge can use only prior tournament form, never future results. 2022 is treated as the tuning sample. 2018, 2014, and 2010 are displayed as World Cup holdout checks, using only the archived matches where public CheckBestOdds 1X2 odds were found. When network access is available, the same private backtest also fetches Premier League CSV files from Football-Data for a cross-competition holdout.
+The runner processes matches in listed order, so PAUL Edge can use only prior tournament form, never future results. 2022 is treated as the tuning sample. 2018, 2014, 2010, and 2006 are displayed as World Cup holdout checks, using public archived 1X2 odds where available. The 2006 set uses the TIB/Leibniz ODDSET appendix tables, which expose all 64 matches. When network access is available, the same private backtest also fetches Premier League CSV files from Football-Data for a cross-competition holdout.
 
 Current PAUL Edge Engine v4 result:
 
@@ -73,17 +73,18 @@ Current PAUL Edge Engine v4 result:
 - 2018 holdout: PAUL Edge 28/43, 65% accuracy; market favorite 26/43, 60%.
 - 2014 holdout: PAUL Edge 15/25, 60% accuracy; market favorite 14/25, 56%.
 - 2010 holdout: PAUL Edge 30/56, 54% accuracy; market favorite 29/56, 52%.
-- 2018+2014+2010 holdout total: PAUL Edge 73/124, 59%; market favorite 69/124, 56%.
+- 2006 holdout: PAUL Edge 36/64, 56% accuracy; market favorite 40/64, 63%.
+- 2018+2014+2010+2006 holdout total: PAUL Edge 109/188, 58%; market favorite 109/188, 58%.
 - Premier League 2021-22 through 2024-25 cross-check: PAUL Edge 863/1520, 57%; market favorite 863/1520, 57%; edge 0 in conservative league mode.
-- World Cup holdout + Premier League cross-check: PAUL Edge 936/1644, 57%; market favorite 932/1644, 57%; edge +4.
+- World Cup holdout + Premier League cross-check: PAUL Edge 972/1708, 57%; market favorite 972/1708, 57%; edge 0.
 
 The private backtest page also runs a stability audit:
 
-- Year-by-year holdout edge: 2018 +2, 2014 +1, 2010 +1.
-- Leave-one-year-out sensitivity: removing any one holdout year still leaves PAUL ahead of the market by +2 to +3 picks.
-- Deterministic bootstrap over the 124 holdout matches: median edge +4, p05/p50/p95 edge +1/+4/+7, with 100% non-negative resamples in the current built-in dataset.
+- Year-by-year holdout edge: 2018 +2, 2014 +1, 2010 +1, 2006 -4.
+- Leave-one-year-out sensitivity is no longer uniformly positive after adding 2006; this is a watch signal for algorithm work, not a result to hide.
+- Deterministic bootstrap now runs over 188 holdout matches and should be read with the per-year breakdown, because the 2006 full-odds set changes the stability picture.
 
-The v4 change keeps PAUL conservative on shallow underdogs: non-draw upset targets must clear a 3.10+ market-price gate. For high-liquidity league matches, PAUL uses conservative market-anchor mode rather than forcing the World Cup upset layer into a different competition format. It gives up 2022 tuning-sample edge, but every listed World Cup holdout year now beats the market favorite baseline, and the Premier League cross-check ties the market instead of overfitting against it. Treat this as an audit harness, not a guarantee or promotional claim. Future algorithm changes should be judged by whether they improve holdout performance without hiding the per-year breakdown.
+The v4 change keeps PAUL conservative on shallow underdogs: non-draw upset targets must clear a 3.10+ market-price gate. For high-liquidity league matches, PAUL uses conservative market-anchor mode rather than forcing the World Cup upset layer into a different competition format. Adding the 2006 full-odds set weakens the earlier World Cup holdout advantage from +4 to 0, so future algorithm changes should be judged by whether they improve 2006 without damaging 2018/2014/2010 or the Premier League cross-check. Treat this as an audit harness, not a guarantee or promotional claim.
 
 ## OpenTimestamps proof
 

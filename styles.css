@@ -210,6 +210,32 @@ h1 {
   font-size: 13px;
 }
 
+.disclaimer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  background: #0b171f;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.disclaimer strong {
+  flex: 0 0 auto;
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.disclaimer p {
+  margin: 0;
+  color: #c4d4df;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .accuracy-lab {
   background: #081219;
   border-top: 1px solid var(--line);
@@ -1752,6 +1778,12 @@ input {
 
   .hero {
     min-height: 88vh;
+  }
+
+  .disclaimer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .hero__content {
