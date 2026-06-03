@@ -49,7 +49,16 @@ DAILY_ANALYSIS_DISABLED=1
 
 `BSD_API_KEY` is tried first because it can provide both odds and daily intelligence. `ODDS_API_IO_KEY` and `THE_ODDS_API_KEY` are tried next as specialist odds feeds. `BALLDONTLIE_API_KEY` is tried as a World Cup-specific fallback. If no live provider returns a matching event, PAUL falls back to `market-odds.json`.
 
-Vercel Cron refreshes market evidence once per day through `/api/automation/run-due`. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. The default cache freshness window is 26 hours. By default the cron refreshes the next 12 scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
+Vercel Cron wakes `/api/automation/run-due` every 15 minutes, but the odds fetcher only calls providers when a match reaches its refresh window. It stores future-match odds snapshots in Vercel KV under `paul:evidence:v1`. Formal predictions use a fresh cached snapshot when available and fetch live odds only when the cache is stale or missing. By default the cron checks the next 12 due scheduled playable matches to avoid serverless timeouts and API overuse; increase `ODDS_REFRESH_MAX_MATCHES` only if the odds provider and Vercel plan can handle it.
+
+Dynamic odds refresh cadence:
+
+- More than 30 days before kickoff: every 48 hours.
+- 30 days to 7 days before kickoff: every 24 hours.
+- 7 days to 48 hours before kickoff: every 12 hours.
+- 48 hours to 6 hours before kickoff: every 6 hours.
+- 6 hours to 60 minutes before kickoff: every 1 hour.
+- Final 60 minutes before kickoff: every 15 minutes.
 
 Daily odds refresh does not call PAUL/Qwen. The separate Daily PAUL Read can call PAUL/Qwen once per selected upcoming match, storing public win/draw/loss probabilities in Vercel KV under `paul:daily-analysis:v1`. Defaults are conservative: the next 4 resolved fixtures inside a 45-day horizon. Increase `DAILY_ANALYSIS_MAX_MATCHES` only when the model/search budget can handle it. Set `DAILY_ANALYSIS_DISABLED=1` to disable the daily read while keeping odds refresh, result sync, and formal proof-locked predictions active.
 

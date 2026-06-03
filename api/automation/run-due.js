@@ -72,12 +72,14 @@ module.exports = async function handler(req, res) {
     const events = [];
     const resolvedMatches = resolveMatches(snapshot.matches, results);
     const evidenceRefresh = process.env.ODDS_REFRESH_DISABLED === "1"
-      ? { checked: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
-      : await refreshMarketEvidence(resolvedMatches, { now });
+      ? { checked: 0, eligible: 0, skipped: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
+      : await refreshMarketEvidence(resolvedMatches, { now, force });
     events.push({
       type: "evidence-refresh",
       status: evidenceRefresh.errors ? "partial" : "ok",
       checked: evidenceRefresh.checked,
+      eligible: evidenceRefresh.eligible,
+      skipped: evidenceRefresh.skipped,
       ok: evidenceRefresh.ok,
       missing: evidenceRefresh.missing,
       errors: evidenceRefresh.errors
