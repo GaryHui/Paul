@@ -16,23 +16,27 @@
       <nav class="nav" aria-label="Primary navigation">
         <a class="brand" href="#top">PAUL 2026</a>
         <div class="nav__links">
-          <a href="#matches">Predictions</a>
-          <a href="#trace">Trace</a>
-          <a href="#automation">Automation</a>
-          <a href="#proof">Proof</a>
-          <a href="#groups">Groups</a>
+          <a href="#matches" data-i18n="navPredictions">Predictions</a>
+          <a href="#trace" data-i18n="navTrace">Trace</a>
+          <a href="#automation" data-i18n="navAutomation">Automation</a>
+          <a href="#proof" data-i18n="navProof">Proof</a>
+          <a href="#groups" data-i18n="navGroups">Groups</a>
+          <label class="nav__language">
+            <span data-i18n="languageLabel">Language</span>
+            <select id="languageSelect" aria-label="Language"></select>
+          </label>
         </div>
       </nav>
       <section class="hero__content">
-        <p class="eyebrow">2026 FIFA World Cup AI Prediction Lab</p>
-        <h1>PAUL predicts every match, then enters Knockout Oracle Mode.</h1>
-        <p class="lede">
+        <p class="eyebrow" data-i18n="heroEyebrow">2026 FIFA World Cup AI Prediction Lab</p>
+        <h1 data-i18n="heroTitle">PAUL predicts every match, then enters Knockout Oracle Mode.</h1>
+        <p class="lede" data-i18n="heroLede">
           Group-stage picks build the public record from day one. Once the Round of 32 begins,
           PAUL shifts into knockout focus with upset signals, proof-locked picks, and bracket paths.
         </p>
         <div class="hero__actions">
-          <a class="button button--primary" href="#matches">Open Predictor</a>
-          <a class="button button--ghost" href="#groups">View 48 Teams</a>
+          <a class="button button--primary" href="#matches" data-i18n="openPredictor">Open Predictor</a>
+          <a class="button button--ghost" href="#groups" data-i18n="viewTeams">View 48 Teams</a>
         </div>
       </section>
     </header>
@@ -41,19 +45,19 @@
       <section class="stats band" aria-label="Tournament stats">
         <div>
           <strong id="groupAccuracyStat">0%</strong>
-          <span>Group-stage accuracy</span>
+          <span data-i18n="groupAccuracy">Group-stage accuracy</span>
         </div>
         <div>
           <strong id="knockoutAccuracyStat">0%</strong>
-          <span>Knockout accuracy</span>
+          <span data-i18n="knockoutAccuracy">Knockout accuracy</span>
         </div>
         <div>
           <strong id="upsetHitsStat">0/0</strong>
-          <span>Upset calls hit</span>
+          <span data-i18n="upsetCallsHit">Upset calls hit</span>
         </div>
         <div>
           <strong id="proofVerifiedStat">0</strong>
-          <span>Proof-verified picks</span>
+          <span data-i18n="proofVerifiedPicks">Proof-verified picks</span>
         </div>
       </section>
 
@@ -140,9 +144,9 @@
 
       <section class="public-trace band" id="trace">
         <div class="section-head">
-          <p class="eyebrow">2026 Match Trace</p>
-          <h2>Follow PAUL against the market, match by match.</h2>
-          <p>
+          <p class="eyebrow" data-i18n="traceEyebrow">2026 Match Trace</p>
+          <h2 data-i18n="traceTitle">Follow PAUL against the market, match by match.</h2>
+          <p data-i18n="traceCopy">
             This public trace shows the current PAUL read, market reference when available, final result after sync,
             and the match-by-match impact versus the market favorite.
           </p>

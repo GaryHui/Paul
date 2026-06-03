@@ -67,6 +67,62 @@ const roundLabels = {
   "Group Stage": "Group Stage"
 };
 const groupLabels = { All: "All" };
+const languageKey = "paul.language.v1";
+const languageOptions = [
+  ["en", "English", "en-US"],
+  ["es", "Español", "es-ES"],
+  ["fr", "Français", "fr-FR"],
+  ["de", "Deutsch", "de-DE"],
+  ["pt", "Português", "pt-BR"],
+  ["ar", "العربية", "ar"],
+  ["zh", "中文", "zh-CN"],
+  ["ja", "日本語", "ja-JP"],
+  ["ko", "한국어", "ko-KR"],
+  ["it", "Italiano", "it-IT"],
+  ["nl", "Nederlands", "nl-NL"],
+  ["tr", "Türkçe", "tr-TR"]
+];
+const languageCopy = {
+  en: {
+    languageLabel: "Language", navPredictions: "Predictions", navTrace: "Trace", navAutomation: "Automation", navProof: "Proof", navGroups: "Groups",
+    heroEyebrow: "2026 FIFA World Cup AI Prediction Lab", heroTitle: "PAUL predicts every match, then enters Knockout Oracle Mode.",
+    heroLede: "Group-stage picks build the public record from day one. Once the Round of 32 begins, PAUL shifts into knockout focus with upset signals, proof-locked picks, and bracket paths.",
+    openPredictor: "Open Predictor", viewTeams: "View 48 Teams", groupAccuracy: "Group-stage accuracy", knockoutAccuracy: "Knockout accuracy", upsetCallsHit: "Upset calls hit", proofVerifiedPicks: "Proof-verified picks",
+    traceEyebrow: "2026 Match Trace", traceTitle: "Follow PAUL against the market, match by match.", traceCopy: "This public trace shows the current PAUL read, market reference when available, final result after sync, and the match-by-match impact versus the market favorite.",
+    playableFixtures: "Playable fixtures", officialLocks: "Official PAUL locks", dailyReads: "Daily PAUL reads", marketReferences: "Market references", finalResults: "Final results",
+    match: "Match", paul: "PAUL", market: "Market", result: "Result", impact: "Impact", pending: "Pending", timePending: "Time pending", none: "None", winner: "Winner", startsIn: "Starts in", liveNow: "Live now", fullTimeWindowPassed: "Full time window passed", kickoffTba: "Kickoff time TBA", paulVsMarket: "PAUL vs market", noMarket: "No market reference yet"
+  },
+  es: { languageLabel: "Idioma", navPredictions: "Predicciones", navTrace: "Seguimiento", navAutomation: "Automatización", navProof: "Prueba", navGroups: "Grupos", heroEyebrow: "Laboratorio IA del Mundial 2026", heroTitle: "PAUL predice cada partido y luego entra en modo eliminatorio.", heroLede: "La fase de grupos crea el historial público desde el primer día. En dieciseisavos, PAUL se enfoca en señales de sorpresa, pruebas selladas y rutas de cuadro.", openPredictor: "Abrir predictor", viewTeams: "Ver 48 equipos", groupAccuracy: "Precisión en grupos", knockoutAccuracy: "Precisión eliminatoria", upsetCallsHit: "Sorpresas acertadas", proofVerifiedPicks: "Predicciones verificadas", traceEyebrow: "Seguimiento 2026", traceTitle: "Sigue a PAUL contra el mercado, partido a partido.", traceCopy: "Este seguimiento muestra la lectura actual de PAUL, referencia del mercado, resultado final e impacto contra el favorito del mercado.", playableFixtures: "Partidos jugables", officialLocks: "Bloqueos oficiales", dailyReads: "Lecturas diarias", marketReferences: "Referencias mercado", finalResults: "Resultados finales", match: "Partido", paul: "PAUL", market: "Mercado", result: "Resultado", impact: "Impacto", pending: "Pendiente", timePending: "Hora pendiente", none: "Ninguno", winner: "Ganador", startsIn: "Empieza en", liveNow: "En vivo", fullTimeWindowPassed: "Ventana final pasada", kickoffTba: "Hora por confirmar", paulVsMarket: "PAUL vs mercado", noMarket: "Sin referencia de mercado" },
+  fr: { languageLabel: "Langue", navPredictions: "Prédictions", navTrace: "Suivi", navAutomation: "Automatisation", navProof: "Preuve", navGroups: "Groupes", heroEyebrow: "Laboratoire IA Coupe du Monde 2026", heroTitle: "PAUL prédit chaque match, puis passe en mode élimination.", heroLede: "La phase de groupes construit le bilan public dès le premier jour. Dès les seizièmes, PAUL se concentre sur les surprises, les preuves verrouillées et le tableau.", openPredictor: "Ouvrir le prédicteur", viewTeams: "Voir les 48 équipes", groupAccuracy: "Précision groupes", knockoutAccuracy: "Précision élimination", upsetCallsHit: "Surprises réussies", proofVerifiedPicks: "Choix vérifiés", traceEyebrow: "Suivi 2026", traceTitle: "Suivez PAUL face au marché, match par match.", traceCopy: "Ce suivi montre la lecture actuelle de PAUL, la référence du marché, le résultat final et l’impact contre le favori du marché.", playableFixtures: "Matchs jouables", officialLocks: "Choix officiels", dailyReads: "Lectures quotidiennes", marketReferences: "Références marché", finalResults: "Résultats finaux", match: "Match", paul: "PAUL", market: "Marché", result: "Résultat", impact: "Impact", pending: "En attente", timePending: "Heure en attente", none: "Aucun", winner: "Vainqueur", startsIn: "Débute dans", liveNow: "En direct", fullTimeWindowPassed: "Fenêtre terminée", kickoffTba: "Horaire à confirmer", paulVsMarket: "PAUL vs marché", noMarket: "Pas de référence marché" },
+  de: { languageLabel: "Sprache", navPredictions: "Prognosen", navTrace: "Trace", navAutomation: "Automatisierung", navProof: "Nachweis", navGroups: "Gruppen", heroEyebrow: "KI-Labor WM 2026", heroTitle: "PAUL prognostiziert jedes Spiel und wechselt dann in den K.o.-Modus.", heroLede: "Die Gruppenphase baut die öffentliche Bilanz auf. Ab der Runde der 32 fokussiert PAUL Überraschungssignale, gesperrte Nachweise und Turnierpfade.", openPredictor: "Predictor öffnen", viewTeams: "48 Teams ansehen", groupAccuracy: "Gruppen-Genauigkeit", knockoutAccuracy: "K.o.-Genauigkeit", upsetCallsHit: "Upsets getroffen", proofVerifiedPicks: "Verifizierte Tipps", traceEyebrow: "Match Trace 2026", traceTitle: "PAUL gegen den Markt, Spiel für Spiel.", traceCopy: "Diese öffentliche Spur zeigt PAULs aktuelle Einschätzung, Marktbezug, Endergebnis und Auswirkung gegenüber dem Marktfavoriten.", playableFixtures: "Spielbare Partien", officialLocks: "Offizielle PAUL-Locks", dailyReads: "Tägliche Reads", marketReferences: "Marktreferenzen", finalResults: "Endergebnisse", match: "Spiel", paul: "PAUL", market: "Markt", result: "Ergebnis", impact: "Auswirkung", pending: "Ausstehend", timePending: "Zeit offen", none: "Keine", winner: "Sieger", startsIn: "Startet in", liveNow: "Live", fullTimeWindowPassed: "Zeitfenster vorbei", kickoffTba: "Anstoß offen", paulVsMarket: "PAUL vs Markt", noMarket: "Noch kein Marktbezug" },
+  pt: { languageLabel: "Idioma", navPredictions: "Previsões", navTrace: "Rastro", navAutomation: "Automação", navProof: "Prova", navGroups: "Grupos", heroEyebrow: "Laboratório IA Copa 2026", heroTitle: "PAUL prevê cada jogo e depois entra no modo mata-mata.", heroLede: "A fase de grupos cria o histórico público desde o primeiro dia. No mata-mata, PAUL foca sinais de zebra, provas travadas e caminho da chave.", openPredictor: "Abrir previsor", viewTeams: "Ver 48 seleções", groupAccuracy: "Acerto nos grupos", knockoutAccuracy: "Acerto no mata-mata", upsetCallsHit: "Zebras acertadas", proofVerifiedPicks: "Palpites verificados", traceEyebrow: "Rastro 2026", traceTitle: "Acompanhe PAUL contra o mercado, jogo a jogo.", traceCopy: "Este rastro mostra a leitura atual de PAUL, referência de mercado, resultado final e impacto contra o favorito do mercado.", playableFixtures: "Jogos disponíveis", officialLocks: "Travas oficiais", dailyReads: "Leituras diárias", marketReferences: "Referências mercado", finalResults: "Resultados finais", match: "Jogo", paul: "PAUL", market: "Mercado", result: "Resultado", impact: "Impacto", pending: "Pendente", timePending: "Horário pendente", none: "Nenhum", winner: "Vencedor", startsIn: "Começa em", liveNow: "Ao vivo", fullTimeWindowPassed: "Janela encerrada", kickoffTba: "Horário a confirmar", paulVsMarket: "PAUL vs mercado", noMarket: "Sem referência de mercado" },
+  zh: { languageLabel: "语言", navPredictions: "预测", navTrace: "追踪", navAutomation: "自动化", navProof: "证明", navGroups: "小组", heroEyebrow: "2026 世界杯 AI 预测实验室", heroTitle: "PAUL 预测每一场比赛，并在淘汰赛进入神谕模式。", heroLede: "小组赛从第一天开始积累公开战绩。32 强开始后，PAUL 会聚焦冷门信号、赛前锁定证明和晋级路径。", openPredictor: "打开预测器", viewTeams: "查看 48 队", groupAccuracy: "小组赛命中率", knockoutAccuracy: "淘汰赛命中率", upsetCallsHit: "冷门命中", proofVerifiedPicks: "已验证预测", traceEyebrow: "2026 比赛追踪", traceTitle: "逐场对比 PAUL 与市场。", traceCopy: "这里公开显示 PAUL 当前判断、市场参考、赛果同步后的最终结果，以及 PAUL 相对市场热门的逐场影响。", playableFixtures: "可追踪比赛", officialLocks: "正式锁定", dailyReads: "每日判断", marketReferences: "市场参考", finalResults: "最终赛果", match: "比赛", paul: "PAUL", market: "市场", result: "赛果", impact: "影响", pending: "待定", timePending: "时间待定", none: "无", winner: "胜者", startsIn: "距离开赛", liveNow: "比赛进行中", fullTimeWindowPassed: "完赛窗口已过", kickoffTba: "开赛时间待定", paulVsMarket: "PAUL 对比市场", noMarket: "暂无市场参考" }
+};
+["ar", "ja", "ko", "it", "nl", "tr"].forEach((key) => {
+  languageCopy[key] = { ...languageCopy.en, languageLabel: languageOptions.find((item) => item[0] === key)?.[1] || "Language" };
+});
+Object.assign(languageCopy.ar, { navPredictions: "التوقعات", navTrace: "التتبع", navAutomation: "الأتمتة", navProof: "الدليل", navGroups: "المجموعات", heroEyebrow: "مختبر توقعات كأس العالم 2026 بالذكاء الاصطناعي", heroTitle: "PAUL يتوقع كل مباراة ثم يدخل وضع الإقصائيات.", openPredictor: "افتح التوقعات", viewTeams: "عرض 48 فريقا", groupAccuracy: "دقة المجموعات", knockoutAccuracy: "دقة الإقصائيات", upsetCallsHit: "المفاجآت الصحيحة", proofVerifiedPicks: "توقعات موثقة", traceEyebrow: "تتبع مباريات 2026", traceTitle: "تابع PAUL مقابل السوق، مباراة بمباراة.", playableFixtures: "مباريات قابلة للتتبع", officialLocks: "توقعات رسمية", dailyReads: "قراءات يومية", marketReferences: "مراجع السوق", finalResults: "نتائج نهائية", match: "المباراة", market: "السوق", result: "النتيجة", impact: "الأثر", pending: "قيد الانتظار", timePending: "الوقت قيد الانتظار", none: "لا يوجد", winner: "الفائز", startsIn: "تبدأ خلال", liveNow: "مباشر الآن", fullTimeWindowPassed: "انتهت نافذة المباراة", kickoffTba: "وقت البداية غير محدد", paulVsMarket: "PAUL ضد السوق", noMarket: "لا يوجد مرجع سوقي بعد" });
+Object.assign(languageCopy.ja, { navPredictions: "予測", navTrace: "トレース", navAutomation: "自動化", navProof: "証明", navGroups: "グループ", heroEyebrow: "2026 ワールドカップ AI 予測ラボ", heroTitle: "PAUL は全試合を予測し、決勝トーナメントで神託モードへ。", openPredictor: "予測を見る", viewTeams: "48チームを見る", groupAccuracy: "グループ的中率", knockoutAccuracy: "決勝T的中率", upsetCallsHit: "番狂わせ的中", proofVerifiedPicks: "証明済み予測", traceEyebrow: "2026 試合トレース", traceTitle: "PAUL と市場を試合ごとに比較。", playableFixtures: "対象試合", officialLocks: "公式ロック", dailyReads: "日次読み", marketReferences: "市場参照", finalResults: "最終結果", match: "試合", market: "市場", result: "結果", impact: "影響", pending: "未定", timePending: "時刻未定", none: "なし", winner: "勝者", startsIn: "開始まで", liveNow: "ライブ中", fullTimeWindowPassed: "試合時間終了", kickoffTba: "開始時刻未定", paulVsMarket: "PAUL 対 市場", noMarket: "市場参照なし" });
+Object.assign(languageCopy.ko, { navPredictions: "예측", navTrace: "추적", navAutomation: "자동화", navProof: "증명", navGroups: "조", heroEyebrow: "2026 월드컵 AI 예측 랩", heroTitle: "PAUL은 모든 경기를 예측하고 토너먼트에서 오라클 모드로 전환합니다.", openPredictor: "예측 열기", viewTeams: "48개 팀 보기", groupAccuracy: "조별 정확도", knockoutAccuracy: "토너먼트 정확도", upsetCallsHit: "이변 적중", proofVerifiedPicks: "검증된 예측", traceEyebrow: "2026 경기 추적", traceTitle: "경기별로 PAUL과 시장을 비교하세요.", playableFixtures: "추적 경기", officialLocks: "공식 고정", dailyReads: "일일 분석", marketReferences: "시장 참고", finalResults: "최종 결과", match: "경기", market: "시장", result: "결과", impact: "영향", pending: "대기", timePending: "시간 대기", none: "없음", winner: "승자", startsIn: "시작까지", liveNow: "진행 중", fullTimeWindowPassed: "경기 창 종료", kickoffTba: "킥오프 미정", paulVsMarket: "PAUL vs 시장", noMarket: "시장 참고 없음" });
+Object.assign(languageCopy.it, { navPredictions: "Pronostici", navTrace: "Traccia", navAutomation: "Automazione", navProof: "Prova", navGroups: "Gruppi", heroEyebrow: "Laboratorio IA Mondiale 2026", heroTitle: "PAUL prevede ogni partita e poi entra in modalità eliminazione.", openPredictor: "Apri pronostici", viewTeams: "Vedi 48 squadre", groupAccuracy: "Precisione gironi", knockoutAccuracy: "Precisione eliminazione", upsetCallsHit: "Sorpese centrate", proofVerifiedPicks: "Pronostici verificati", traceEyebrow: "Traccia 2026", traceTitle: "Segui PAUL contro il mercato, partita per partita.", playableFixtures: "Partite tracciate", officialLocks: "Blocchi ufficiali", dailyReads: "Letture giornaliere", marketReferences: "Riferimenti mercato", finalResults: "Risultati finali", match: "Partita", market: "Mercato", result: "Risultato", impact: "Impatto", pending: "In attesa", timePending: "Ora in attesa", none: "Nessuno", winner: "Vincitore", startsIn: "Inizia tra", liveNow: "In diretta", fullTimeWindowPassed: "Finestra conclusa", kickoffTba: "Orario da confermare", paulVsMarket: "PAUL vs mercato", noMarket: "Nessun riferimento mercato" });
+Object.assign(languageCopy.nl, { navPredictions: "Voorspellingen", navTrace: "Trace", navAutomation: "Automatisering", navProof: "Bewijs", navGroups: "Groepen", heroEyebrow: "WK 2026 AI-voorspellab", heroTitle: "PAUL voorspelt elke wedstrijd en gaat daarna in knock-outmodus.", openPredictor: "Open predictor", viewTeams: "Bekijk 48 teams", groupAccuracy: "Groepsnauwkeurigheid", knockoutAccuracy: "Knock-outnauwkeurigheid", upsetCallsHit: "Verrassingen raak", proofVerifiedPicks: "Geverifieerde picks", traceEyebrow: "Wedstrijdtrace 2026", traceTitle: "Volg PAUL tegen de markt, wedstrijd voor wedstrijd.", playableFixtures: "Tracebare wedstrijden", officialLocks: "Officiële locks", dailyReads: "Dagelijkse reads", marketReferences: "Marktreferenties", finalResults: "Einduitslagen", match: "Wedstrijd", market: "Markt", result: "Uitslag", impact: "Impact", pending: "In afwachting", timePending: "Tijd onbekend", none: "Geen", winner: "Winnaar", startsIn: "Start over", liveNow: "Live", fullTimeWindowPassed: "Wedstrijdvenster voorbij", kickoffTba: "Aftrap onbekend", paulVsMarket: "PAUL vs markt", noMarket: "Nog geen marktreferentie" });
+Object.assign(languageCopy.tr, { navPredictions: "Tahminler", navTrace: "İz", navAutomation: "Otomasyon", navProof: "Kanıt", navGroups: "Gruplar", heroEyebrow: "2026 Dünya Kupası AI Tahmin Laboratuvarı", heroTitle: "PAUL her maçı tahmin eder, sonra eleme moduna geçer.", openPredictor: "Tahmini aç", viewTeams: "48 takımı gör", groupAccuracy: "Grup doğruluğu", knockoutAccuracy: "Eleme doğruluğu", upsetCallsHit: "Sürpriz isabetleri", proofVerifiedPicks: "Kanıtlı tahminler", traceEyebrow: "2026 Maç İzi", traceTitle: "PAUL'u piyasaya karşı maç maç izle.", playableFixtures: "İzlenen maçlar", officialLocks: "Resmi kilitler", dailyReads: "Günlük okumalar", marketReferences: "Piyasa referansları", finalResults: "Final sonuçları", match: "Maç", market: "Piyasa", result: "Sonuç", impact: "Etki", pending: "Bekliyor", timePending: "Saat bekliyor", none: "Yok", winner: "Kazanan", startsIn: "Başlamasına", liveNow: "Canlı", fullTimeWindowPassed: "Maç penceresi geçti", kickoffTba: "Başlama saati belirsiz", paulVsMarket: "PAUL vs piyasa", noMarket: "Piyasa referansı yok" });
+let currentLanguage = (() => {
+  try {
+    return localStorage.getItem(languageKey) || "en";
+  } catch {
+    return "en";
+  }
+})();
+
+function tr(key) {
+  return languageCopy[currentLanguage]?.[key] || languageCopy.en[key] || key;
+}
+
+function currentLocale() {
+  return languageOptions.find((item) => item[0] === currentLanguage)?.[2] || "en-US";
+}
+
 const groupDates = {
   A: ["Jun 11", "Jun 11", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
   B: ["Jun 12", "Jun 13", "Jun 18", "Jun 18", "Jun 24", "Jun 24"],
@@ -519,6 +575,48 @@ function setText(id, value) {
   if (element) element.textContent = value;
 }
 
+function formatDisplayDateTime(value, options = {}) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value || "");
+  return new Intl.DateTimeFormat(currentLocale(), {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    ...options
+  }).format(date);
+}
+
+function setupLanguageSelect() {
+  const select = document.getElementById("languageSelect");
+  if (!select) return;
+  select.innerHTML = languageOptions
+    .map(([code, label]) => `<option value="${code}">${label}</option>`)
+    .join("");
+  select.value = languageCopy[currentLanguage] ? currentLanguage : "en";
+  currentLanguage = select.value;
+  select.addEventListener("change", () => {
+    currentLanguage = select.value;
+    try {
+      localStorage.setItem(languageKey, currentLanguage);
+    } catch {
+      // Language persistence is optional.
+    }
+    applyLanguage();
+    renderPublicTrace();
+    renderPK();
+    loadAutomationStatus();
+  });
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLocale().split("-")[0];
+  document.documentElement.dir = currentLanguage === "ar" ? "rtl" : "ltr";
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    element.textContent = tr(element.dataset.i18n);
+  });
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -549,11 +647,11 @@ function compactDuration(ms) {
 
 function matchCountdown(match, now = new Date()) {
   const kickoff = matchKickoffTime(match);
-  if (Number.isNaN(kickoff.getTime())) return "Kickoff time TBA";
+  if (Number.isNaN(kickoff.getTime())) return tr("kickoffTba");
   const diff = kickoff.getTime() - now.getTime();
-  if (diff > 0) return `Starts in ${compactDuration(diff)}`;
-  if (diff > -130 * 60000) return "Live now";
-  return "Full time window passed";
+  if (diff > 0) return `${tr("startsIn")} ${compactDuration(diff)}`;
+  if (diff > -130 * 60000) return tr("liveNow");
+  return tr("fullTimeWindowPassed");
 }
 
 function countdownMarkup(match) {
@@ -916,6 +1014,15 @@ function traceProbability(value) {
   return `${Math.round(percent)}%`;
 }
 
+function probabilityTriple(match, probabilities = {}) {
+  const resolved = resolvedTeams(match);
+  const home = traceProbability(probabilities.home);
+  const draw = traceProbability(probabilities.draw);
+  const away = traceProbability(probabilities.away);
+  if (!home && !draw && !away) return "";
+  return `${resolved.aCode || "H"} ${home || "-"} · D ${draw || "-"} · ${resolved.bCode || "A"} ${away || "-"}`;
+}
+
 function sideToCode(match, side) {
   const resolved = resolvedTeams(match);
   if (side === "draw") return "DRAW";
@@ -961,6 +1068,7 @@ function tracePaulPick(match, official, daily) {
       code,
       name: official.analysis?.winnerName || teamNameForCode(code, match),
       confidence: official.analysis?.confidence || null,
+      probabilities: official.analysis?.probabilities || null,
       status: "Official locked"
     };
   }
@@ -969,14 +1077,15 @@ function tracePaulPick(match, official, daily) {
       code: daily.pick.winnerCode,
       name: daily.pick.winnerName || teamNameForCode(daily.pick.winnerCode, match),
       confidence: daily.pick.confidence || null,
+      probabilities: daily.probabilities || null,
       status: "Daily read"
     };
   }
-  return { code: null, name: "Pending", confidence: null, status: "Pending" };
+  return { code: null, name: tr("pending"), confidence: null, probabilities: null, status: tr("pending") };
 }
 
 function traceResult(match, result) {
-  if (!result?.status || result.status !== "final") return { label: "Pending", winnerCode: null };
+  if (!result?.status || result.status !== "final") return { label: tr("pending"), winnerCode: null };
   const resolved = resolvedTeams(match);
   const winnerCode = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore)
     ? "DRAW"
@@ -1021,22 +1130,22 @@ function renderPublicTrace() {
   const resultCount = rows.filter((row) => row.result.winnerCode).length;
   if (summary) {
     summary.innerHTML = `
-      <article><strong>${rows.length}</strong><span>Playable fixtures</span></article>
-      <article><strong>${officialCount}</strong><span>Official PAUL locks</span></article>
-      <article><strong>${dailyCount}</strong><span>Daily PAUL reads</span></article>
-      <article><strong>${marketCount}</strong><span>Market references</span></article>
-      <article><strong>${resultCount}</strong><span>Final results</span></article>
+      <article><strong>${rows.length}</strong><span>${tr("playableFixtures")}</span></article>
+      <article><strong>${officialCount}</strong><span>${tr("officialLocks")}</span></article>
+      <article><strong>${dailyCount}</strong><span>${tr("dailyReads")}</span></article>
+      <article><strong>${marketCount}</strong><span>${tr("marketReferences")}</span></article>
+      <article><strong>${resultCount}</strong><span>${tr("finalResults")}</span></article>
     `;
   }
 
   container.innerHTML = `
     <div class="trace-table" role="table" aria-label="2026 PAUL public match trace">
       <div class="trace-row trace-row--head" role="row">
-        <span>Match</span>
-        <span>PAUL</span>
-        <span>Market</span>
-        <span>Result</span>
-        <span>Impact</span>
+        <span>${tr("match")}</span>
+        <span>${tr("paul")}</span>
+        <span>${tr("market")}</span>
+        <span>${tr("result")}</span>
+        <span>${tr("impact")}</span>
       </div>
       ${rows.map(({ match, market, paul, result }) => {
         const resolved = resolvedTeams(match);
@@ -1044,6 +1153,8 @@ function renderPublicTrace() {
         const marketName = market?.favoriteName || teamNameForCode(market?.favoriteCode, match);
         const marketProb = market?.favoriteSide ? traceProbability(market.probabilities?.[market.favoriteSide]) : "";
         const paulConfidence = paul.confidence ? ` · ${traceProbability(paul.confidence)}` : "";
+        const paulProbabilities = probabilityTriple(match, paul.probabilities);
+        const marketProbabilities = probabilityTriple(match, market?.probabilities);
         const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
         return `
           <div class="trace-row" role="row">
@@ -1053,19 +1164,19 @@ function renderPublicTrace() {
             </span>
             <span>
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
-              <em>${paul.status}</em>
+              <em>${escapeHtml(paul.status)}${paulProbabilities ? ` · ${paulProbabilities}` : ""}</em>
             </span>
             <span>
-              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : "Pending"}</strong>
-              <em>${market?.provider ? `${escapeHtml(market.provider)}${market.bookmakerCount ? ` · ${market.bookmakerCount} books` : ""}` : "No market reference yet"}</em>
+              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("pending")}</strong>
+              <em>${market?.provider ? `${escapeHtml(market.provider)}${market.bookmakerCount ? ` · ${market.bookmakerCount} books` : ""}${marketProbabilities ? ` · ${marketProbabilities}` : ""}` : tr("noMarket")}</em>
             </span>
             <span>
               <strong>${escapeHtml(result.label)}</strong>
-              <em>${result.winnerCode ? `Winner: ${escapeHtml(teamNameForCode(result.winnerCode, match))}` : countdownMarkup(match)}</em>
+              <em>${result.winnerCode ? `${tr("winner")}: ${escapeHtml(teamNameForCode(result.winnerCode, match))}` : countdownMarkup(match)}</em>
             </span>
             <span class="${impact.startsWith("+1") ? "trace-impact--win" : impact.startsWith("-") ? "trace-impact--loss" : ""}">
               <strong>${impact}</strong>
-              <em>PAUL vs market</em>
+              <em>${tr("paulVsMarket")}</em>
             </span>
           </div>
         `;
@@ -1143,7 +1254,7 @@ function officialModelCards(official, match) {
     <article class="model-card">
       <h3>Predicted Score</h3>
       <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-      <p>Locked at ${new Date(official.generatedAt).toLocaleString()}.</p>
+      <p>Locked at ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}.</p>
     </article>
     <article class="model-card">
       <h3>Upset Watch</h3>
@@ -1284,7 +1395,7 @@ function renderPK() {
       <article class="model-card">
         <h3>Predicted Score</h3>
         <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-        <p>Generated at ${new Date(official.generatedAt).toLocaleString()}</p>
+        <p>Generated at ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}</p>
       </article>
       <article class="model-card">
         <h3>Upset Risk</h3>
@@ -1446,6 +1557,14 @@ function formatNextPrediction(nextPrediction) {
   return `${nextPrediction.label} · ${dueAt.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`;
 }
 
+function formatLocalizedNextPrediction(nextPrediction) {
+  if (!nextPrediction) return tr("none");
+  if (!nextPrediction.dueAt) return `${nextPrediction.label} · ${tr("timePending")}`;
+  const dueAt = new Date(nextPrediction.dueAt);
+  if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · ${tr("timePending")}`;
+  return `${nextPrediction.label} · ${formatDisplayDateTime(dueAt)}`;
+}
+
 async function loadAutomationStatus() {
   const statusText = document.getElementById("automationStatus");
   try {
@@ -1460,7 +1579,7 @@ async function loadAutomationStatus() {
     setText("autoPredicted", Object.keys(mergedPredictions).length);
     setText("autoResults", status.resultCount || 0);
     setText("autoAccuracy", `${status.accuracy?.accuracy || 0}%`);
-    setText("autoNext", formatNextPrediction(nextPrediction));
+    setText("autoNext", formatLocalizedNextPrediction(nextPrediction));
     setText("groupAccuracyStat", `${stageAccuracy.group?.accuracy || 0}%`);
     setText("knockoutAccuracyStat", `${stageAccuracy.knockout?.accuracy || 0}%`);
     setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
@@ -1517,7 +1636,7 @@ function formatProofTime(value) {
   if (!value) return "N/A";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString([], { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  return formatDisplayDateTime(date, { year: "numeric" });
 }
 
 function stableStringify(value) {
@@ -2533,6 +2652,8 @@ function populateFilters() {
 }
 
 function init() {
+  setupLanguageSelect();
+  applyLanguage();
   populateFilters();
   setupVerifyAccess();
   renderGroups();
