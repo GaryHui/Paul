@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-51" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-52" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -44,16 +44,16 @@
     <main>
       <section class="stats band" aria-label="Tournament stats">
         <div>
+          <strong id="overallAccuracyStat">0%</strong>
+          <span data-i18n="overallAccuracy">PAUL accuracy</span>
+        </div>
+        <div>
+          <strong id="correctPicksStat">0</strong>
+          <span data-i18n="correctPicks">Correct picks</span>
+        </div>
+        <div>
           <strong id="groupAccuracyStat">0%</strong>
           <span data-i18n="groupAccuracy">Group-stage accuracy</span>
-        </div>
-        <div>
-          <strong id="knockoutAccuracyStat">0%</strong>
-          <span data-i18n="knockoutAccuracy">Knockout accuracy</span>
-        </div>
-        <div>
-          <strong id="upsetHitsStat">0/0</strong>
-          <span data-i18n="upsetCallsHit">Upset calls hit</span>
         </div>
         <div>
           <strong id="proofVerifiedStat">0</strong>
@@ -96,6 +96,7 @@
             <p data-i18n="actualVsConfidence">Actual accuracy vs confidence.</p>
           </article>
         </div>
+        <div class="hit-list" id="hitList"></div>
       </section>
 
       <section class="console" id="matches">
@@ -199,10 +200,12 @@
         <div class="section-head">
           <p class="eyebrow" data-i18n="proofEyebrow">Proof of Prediction</p>
           <h2 data-i18n="proofTitle">Every PAUL pick gets a public hash and timestamp proof.</h2>
-          <p data-i18n="proofCopy">
-            When PAUL locks a prediction, the full prediction payload is converted into canonical JSON and hashed with SHA-256.
-            Official proofs also try to create an OpenTimestamps .ots receipt, so anyone can verify the same hash outside this site.
-          </p>
+          <p data-i18n="proofCopy">Copy any Proof JSON, paste it into the verifier, and check the hash and timestamp yourself.</p>
+        </div>
+        <div class="proof-guide" aria-label="Proof verification steps">
+          <span data-i18n="proofStepCopy">1. Copy Proof JSON</span>
+          <span data-i18n="proofStepPaste">2. Paste below</span>
+          <span data-i18n="proofStepVerify">3. Verify hash and time</span>
         </div>
         <div class="proof-ledger-stats" aria-label="Proof ledger statistics">
           <div>
@@ -292,6 +295,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=paul-ai-48"></script>
+    <script src="app.js?v=paul-ai-49"></script>
   </body>
 </html>

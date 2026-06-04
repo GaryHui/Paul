@@ -108,6 +108,7 @@ Object.assign(languageCopy.it, { navPredictions: "Pronostici", navTrace: "Tracci
 Object.assign(languageCopy.nl, { navPredictions: "Voorspellingen", navTrace: "Trace", navAutomation: "Automatisering", navProof: "Bewijs", navGroups: "Groepen", heroEyebrow: "WK 2026 AI-voorspellab", heroTitle: "PAUL voorspelt elke wedstrijd en gaat daarna in knock-outmodus.", openPredictor: "Open predictor", viewTeams: "Bekijk 48 teams", groupAccuracy: "Groepsnauwkeurigheid", knockoutAccuracy: "Knock-outnauwkeurigheid", upsetCallsHit: "Verrassingen raak", proofVerifiedPicks: "Geverifieerde picks", traceEyebrow: "Wedstrijdtrace 2026", traceTitle: "Volg PAUL tegen de markt, wedstrijd voor wedstrijd.", playableFixtures: "Tracebare wedstrijden", officialLocks: "Officiële locks", dailyReads: "Dagelijkse reads", marketReferences: "Marktreferenties", finalResults: "Einduitslagen", match: "Wedstrijd", market: "Markt", result: "Uitslag", impact: "Impact", pending: "In afwachting", timePending: "Tijd onbekend", none: "Geen", winner: "Winnaar", startsIn: "Start over", liveNow: "Live", fullTimeWindowPassed: "Wedstrijdvenster voorbij", kickoffTba: "Aftrap onbekend", paulVsMarket: "PAUL vs markt", noMarket: "Nog geen marktreferentie" });
 Object.assign(languageCopy.tr, { navPredictions: "Tahminler", navTrace: "İz", navAutomation: "Otomasyon", navProof: "Kanıt", navGroups: "Gruplar", heroEyebrow: "2026 Dünya Kupası AI Tahmin Laboratuvarı", heroTitle: "PAUL her maçı tahmin eder, sonra eleme moduna geçer.", openPredictor: "Tahmini aç", viewTeams: "48 takımı gör", groupAccuracy: "Grup doğruluğu", knockoutAccuracy: "Eleme doğruluğu", upsetCallsHit: "Sürpriz isabetleri", proofVerifiedPicks: "Kanıtlı tahminler", traceEyebrow: "2026 Maç İzi", traceTitle: "PAUL'u piyasaya karşı maç maç izle.", playableFixtures: "İzlenen maçlar", officialLocks: "Resmi kilitler", dailyReads: "Günlük okumalar", marketReferences: "Piyasa referansları", finalResults: "Final sonuçları", match: "Maç", market: "Piyasa", result: "Sonuç", impact: "Etki", pending: "Bekliyor", timePending: "Saat bekliyor", none: "Yok", winner: "Kazanan", startsIn: "Başlamasına", liveNow: "Canlı", fullTimeWindowPassed: "Maç penceresi geçti", kickoffTba: "Başlama saati belirsiz", paulVsMarket: "PAUL vs piyasa", noMarket: "Piyasa referansı yok" });
 Object.assign(languageCopy.en, {
+  overallAccuracy: "PAUL accuracy", correctPicks: "Correct picks", correctMatches: "Correct calls", noCorrectPicksYet: "Correct calls will appear here in green after final scores are synced.", verifyJson: "JSON", copyJson: "Copy JSON", proofCopy: "Copy any Proof JSON, paste it into the verifier, and check the hash and timestamp yourself.", proofStepCopy: "1. Copy Proof JSON", proofStepPaste: "2. Paste below", proofStepVerify: "3. Verify hash and time",
   entertainmentNoticeTitle: "Entertainment only", entertainmentNoticeCopy: "This site is for entertainment and reference only. PAUL predictions are not betting or financial advice.",
   recordEyebrow: "PAUL Record", recordTitle: "Public accuracy, tracked match by match.", recordCopy: "Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.",
   publicFavorite: "Public favorite", teamRead: "Team read", paulGain: "PAUL gain", calibration: "Calibration", referenceRecord: "Reference record.", extraCorrectPicks: "Extra correct picks.", actualVsConfidence: "Actual accuracy vs confidence.",
@@ -124,6 +125,7 @@ Object.assign(languageCopy.en, {
   , all: "All"
 });
 Object.assign(languageCopy.zh, {
+  overallAccuracy: "PAUL 命中率", correctPicks: "命中场数", correctMatches: "已命中场次", noCorrectPicksYet: "赛果同步并确认 PAUL 命中后，会在这里用绿色显示。", verifyJson: "JSON", copyJson: "复制 JSON", proofCopy: "复制任意 Proof JSON，粘贴到验证器，即可自己检查哈希和时间戳。", proofStepCopy: "1. 复制 Proof JSON", proofStepPaste: "2. 粘贴到下方", proofStepVerify: "3. 验证哈希和时间",
   entertainmentNoticeTitle: "仅供娱乐参考", entertainmentNoticeCopy: "本网站仅供娱乐和参考，不构成投注、投资或财务建议。",
   recordEyebrow: "PAUL 战绩", recordTitle: "逐场公开统计命中率。", recordCopy: "每个赛前锁定预测都会在赛后计入战绩。所有访客看到同一份公开、带证明、可追踪的记录。",
   publicFavorite: "市场热门", teamRead: "球队判断", paulGain: "PAUL 增益", calibration: "校准", referenceRecord: "参考战绩。", extraCorrectPicks: "比参考多命中的场次。", actualVsConfidence: "实际命中率对比信心值。",
@@ -293,6 +295,16 @@ Object.entries(recordSectionCopy).forEach(([key, copy]) => {
 });
 
 Object.assign(languageCopy.es, {
+  overallAccuracy: "Precisión de PAUL",
+  correctPicks: "Aciertos",
+  correctMatches: "Aciertos confirmados",
+  noCorrectPicksYet: "Los aciertos aparecerán aquí en verde cuando se sincronicen los resultados finales.",
+  verifyJson: "JSON",
+  copyJson: "Copiar JSON",
+  proofCopy: "Copia cualquier Proof JSON, pégalo en el verificador y comprueba el hash y la marca de tiempo.",
+  proofStepCopy: "1. Copiar Proof JSON",
+  proofStepPaste: "2. Pegar abajo",
+  proofStepVerify: "3. Verificar hash y hora",
   fanVote: "Voto de aficionados",
   bracketSlotPending: "Casilla del cuadro pendiente",
   votes: "votos",
@@ -893,6 +905,7 @@ function setupLanguageSelect() {
     renderGroups();
     renderMatchList();
     renderPublicTrace();
+    renderHitList();
     renderPK();
     loadAutomationStatus();
   });
@@ -1465,8 +1478,9 @@ function renderPublicTrace() {
         const paulProbabilities = probabilityTriple(match, paul.probabilities);
         const marketProbabilities = probabilityTriple(match, market?.probabilities);
         const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
+        const paulCorrect = result.winnerCode && String(paul.code || "").toUpperCase() === String(result.winnerCode).toUpperCase();
         return `
-          <div class="trace-row" role="row">
+          <div class="trace-row ${paulCorrect ? "trace-row--correct" : ""}" role="row">
             <span>
               <strong>#${match.id} ${escapeHtml(matchName)}</strong>
               <em>${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</em>
@@ -1492,6 +1506,68 @@ function renderPublicTrace() {
       }).join("")}
     </div>
   `;
+}
+
+function proofEntryForMatch(matchId) {
+  return publicProofEntries.find((entry) => String(entry.matchId) === String(matchId));
+}
+
+function correctMatchRows() {
+  return tournament.matches
+    .map((match) => {
+      const official = officialPrediction(match);
+      const result = officialResult(match);
+      if (result?.status !== "final" || !official) return null;
+      const pick = String(officialPickCode(official) || "").toUpperCase();
+      const winner = String(resultWinner(result) || "").toUpperCase();
+      if (!pick || pick !== winner) return null;
+      const resolved = resolvedTeams(match);
+      const home = teams[resolved.aCode]?.name || slotLabel(match, "a");
+      const away = teams[resolved.bCode]?.name || slotLabel(match, "b");
+      return {
+        match,
+        official,
+        result,
+        proof: proofEntryForMatch(match.id),
+        label: `${home} ${result.homeScore}-${result.awayScore} ${away}`,
+        pickName: teamNameForCode(pick, match)
+      };
+    })
+    .filter(Boolean);
+}
+
+function bindHitListActions(container) {
+  container.querySelectorAll(".hit-json-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const entry = proofEntryForMatch(button.dataset.matchId);
+      if (!entry) return;
+      setProofVerifierInput(publicProofJson(entry));
+      document.getElementById("proofVerifier")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
+function renderHitList() {
+  const container = document.getElementById("hitList");
+  if (!container) return;
+  const hits = correctMatchRows();
+  container.innerHTML = `
+    <div class="hit-list__head">
+      <strong>${tr("correctMatches")}</strong>
+      <span>${hits.length}</span>
+    </div>
+    <div class="hit-list__items">
+      ${hits.length ? hits.map(({ match, label, pickName, proof }) => `
+        <article class="hit-card">
+          <span>#${match.id}</span>
+          <strong>${escapeHtml(label)}</strong>
+          <em>${tr("pick")}: ${escapeHtml(pickName)}</em>
+          ${proof ? `<button class="button button--ghost hit-json-button" type="button" data-match-id="${match.id}">${tr("verifyJson")}</button>` : ""}
+        </article>
+      `).join("") : `<p>${tr("noCorrectPicksYet")}</p>`}
+    </div>
+  `;
+  bindHitListActions(container);
 }
 
 async function loadPoll(matchId) {
@@ -1877,6 +1953,8 @@ async function loadAutomationStatus() {
     setText("autoPredicted", Object.keys(mergedPredictions).length);
     setText("autoResults", status.resultCount || 0);
     setText("autoAccuracy", `${status.accuracy?.accuracy || 0}%`);
+    setText("overallAccuracyStat", `${status.accuracy?.accuracy || 0}%`);
+    setText("correctPicksStat", status.accuracy?.correct || 0);
     setText("autoNext", formatLocalizedNextPrediction(nextPrediction));
     setText("groupAccuracyStat", `${stageAccuracy.group?.accuracy || 0}%`);
     setText("knockoutAccuracyStat", `${stageAccuracy.knockout?.accuracy || 0}%`);
@@ -1904,6 +1982,7 @@ async function loadAutomationStatus() {
     renderMatchList();
     renderPK();
     renderPublicTrace();
+    renderHitList();
 
     const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
     const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
@@ -2229,7 +2308,7 @@ function proofCardMarkup(entry) {
       </div>
       <div class="proof-card__heading">
         <h3>#${entry.matchId} ${entry.match}</h3>
-        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">${tr("copy")}</button>
+        <button class="button button--ghost proof-copy-button" type="button" data-proof-id="${entry.id}">${tr("copyJson")}</button>
       </div>
       <dl>
         <div><dt>${tr("round")}</dt><dd>${entry.round || tr("unknown")}</dd></div>
@@ -2289,6 +2368,7 @@ function renderProofs(entries) {
   const grid = document.getElementById("proofGrid");
   if (!grid) return;
   publicProofEntries = entries;
+  renderHitList();
   const filteredEntries = entries.filter(proofMatchesLedgerFilters);
   const visibleEntries = proofLedgerExpanded ? filteredEntries : filteredEntries.slice(0, proofLedgerLimit);
   updateProofLedger(entries, filteredEntries, visibleEntries);
