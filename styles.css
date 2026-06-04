@@ -1819,12 +1819,22 @@ input {
     text-align: left;
   }
 
+  .nav__language span {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
   .nav__language select {
-    width: min(58vw, 240px);
-    min-height: 28px;
-    border: 0;
-    background: transparent;
-    padding: 0;
+    flex: 1 1 180px;
+    width: auto;
+    min-width: 150px;
+    min-height: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    background: rgba(5, 18, 26, 0.84);
+    color: #f4fbff;
+    padding: 0 12px;
+    text-overflow: ellipsis;
   }
 
   .hero {
@@ -2178,8 +2188,9 @@ input {
   }
 
   .nav__language select {
-    width: min(54vw, 190px);
-    font-size: 11px;
+    flex-basis: 150px;
+    min-width: 132px;
+    font-size: 12px;
   }
 
   .hero {
