@@ -2033,12 +2033,14 @@ async function sha256Hex(text) {
 }
 
 function publicProofJson(entry) {
+  const predictionSummary = proofPredictionSummary(entry.payload);
   return JSON.stringify({
     id: entry.id,
     version: entry.version,
     matchId: entry.matchId,
     match: entry.match,
     round: entry.round,
+    prediction: predictionSummary,
     lockedAt: entry.lockedAt,
     kickoffAt: entry.kickoffAt,
     algorithm: entry.algorithm,
@@ -2047,6 +2049,18 @@ function publicProofJson(entry) {
     payload: entry.payload,
     externalProof: entry.externalProof || null
   }, null, 2);
+}
+
+function proofPredictionSummary(payload) {
+  const prediction = payload?.prediction || {};
+  if (!prediction.winnerName && !prediction.winnerCode) return null;
+  return {
+    winnerName: prediction.winnerName || null,
+    winnerCode: prediction.winnerCode || null,
+    predictedScore: prediction.predictedScore || prediction.score || null,
+    confidence: prediction.confidence ?? null,
+    probabilities: prediction.probabilities || null
+  };
 }
 
 function githubProof(externalProof) {
@@ -2441,10 +2455,15 @@ async function verifyProofInput() {
     const canonicalPayload = parsed?.canonical ? JSON.parse(parsed.canonical) : parsed?.payload || parsed;
     const submittedPayload = parsed?.payload || canonicalPayload;
     const payloadMatchesCanonical = parsed?.payload ? stableStringify(parsed.payload) === canonical : true;
+    const hasPredictionSummary = parsed ? Object.prototype.hasOwnProperty.call(parsed, "prediction") : false;
+    const canonicalPredictionSummary = proofPredictionSummary(canonicalPayload);
+    const predictionSummaryMatchesCanonical = hasPredictionSummary
+      ? stableStringify(parsed.prediction) === stableStringify(canonicalPredictionSummary)
+      : true;
     const envelopeMatchesCanonical = parsed
       ? ["matchId", "round", "match", "lockedAt", "kickoffAt"].every((key) => parsed[key] === undefined || parsed[key] === canonicalPayload?.[key])
       : true;
-    const proofStructureOk = payloadMatchesCanonical && envelopeMatchesCanonical;
+    const proofStructureOk = payloadMatchesCanonical && envelopeMatchesCanonical && predictionSummaryMatchesCanonical;
     const payload = canonicalPayload;
     const lockedAt = payload?.lockedAt;
     const kickoffAt = payload?.kickoffAt;
@@ -2487,6 +2506,7 @@ async function verifyProofInput() {
           <strong>${proofStructureOk ? "PROOF STRUCTURE MATCH" : "PROOF STRUCTURE TAMPERED"}</strong>
           <span>Payload vs canonical: ${payloadMatchesCanonical ? "match" : "mismatch"}</span>
           <span>Outer fields vs canonical: ${envelopeMatchesCanonical ? "match" : "mismatch"}</span>
+          <span>Prediction summary vs canonical: ${predictionSummaryMatchesCanonical ? "match" : "mismatch"}</span>
           <span>The hash is valid only for the canonical JSON. Edited outer fields do not count.</span>
         </article>
         <article class="proof-result-card ${timeOk === false ? "is-fail" : "is-warn"}">
