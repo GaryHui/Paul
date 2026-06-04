@@ -217,8 +217,8 @@ h1 {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding-top: 18px;
-  padding-bottom: 18px;
+  padding-top: 12px;
+  padding-bottom: 12px;
   background: #0b171f;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -243,6 +243,12 @@ h1 {
   background: #081219;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
+  padding-top: 26px;
+  padding-bottom: 26px;
+}
+
+.accuracy-lab .section-head {
+  display: none;
 }
 
 .accuracy-lab-grid {
@@ -255,8 +261,8 @@ h1 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #10202a;
-  padding: 18px;
-  min-height: 146px;
+  padding: 16px;
+  min-height: 104px;
 }
 
 .accuracy-lab-grid span {
@@ -276,6 +282,7 @@ h1 {
 }
 
 .accuracy-lab-grid p {
+  display: none;
   margin-top: 10px;
   color: var(--muted);
   font-weight: 700;
@@ -1861,6 +1868,13 @@ input {
     line-height: 1.04;
   }
 
+  .public-trace .section-head p:not(.eyebrow),
+  .automation .section-head p:not(.eyebrow),
+  .proof .section-head p:not(.eyebrow),
+  .groups .section-head p:not(.eyebrow) {
+    display: none;
+  }
+
   .lede {
     font-size: 16px;
   }
@@ -2047,6 +2061,10 @@ input {
     padding-right: 14px;
   }
 
+  .model-grid[hidden] {
+    display: none;
+  }
+
   .prediction-copy {
     padding-top: 0;
     font-size: 14px;
@@ -2208,6 +2226,10 @@ input {
     width: calc(100% - 24px);
     margin-left: 12px;
     margin-right: 12px;
+  }
+
+  .hero__content .lede {
+    display: none;
   }
 
   .hero__actions {

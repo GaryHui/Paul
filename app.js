@@ -1689,46 +1689,17 @@ function renderPK() {
       <p>${resultCopy}</p>
     `;
   } else {
-    const pendingCopy = resolved.aCode && resolved.bCode
-      ? match.round === "Group Stage"
-        ? tr("pendingGroupPickCopy")
-        : tr("pendingKnockoutPickCopy")
-      : tr("unresolvedSlotCopy");
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${resolved.aCode && resolved.bCode ? tr("officialPredictionNotLocked") : tr("bracketNotResolved")}</strong></p>
-      <p>${pendingCopy}</p>
       <p class="countdown-detail">${tr("kickoffCountdown")}: <strong>${countdownMarkup(match)}</strong></p>
     `;
   }
 
-  document.getElementById("modelGrid").innerHTML = official
-    ? `
-      <article class="model-card">
-        <h3>${tr("officialPaulPick")}</h3>
-        <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
-        <p>${official.analysis?.reasoning || tr("officialPredictionFallback")}</p>
-      </article>
-      <article class="model-card">
-        <h3>${tr("predictedScore")}</h3>
-        <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
-        <p>${tr("generatedAt")}: ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}</p>
-      </article>
-      <article class="model-card">
-        <h3>${tr("upsetRisk")}</h3>
-        <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
-        <p>${tr("finalScoresVerify")}</p>
-      </article>
-    `
-    : `
-      <article class="model-card model-card--wide">
-        <h3>${match.round === "Group Stage" ? tr("awaitingGroupPick") : tr("awaitingKnockoutPick")}</h3>
-        <div class="vote">${resolved.aCode && resolved.bCode ? tr("notLocked") : tr("waitingBracketResults")}</div>
-        <p>${resolved.aCode && resolved.bCode ? tr("pendingModelCopy") : tr("unresolvedModelCopy")}</p>
-      </article>
-    `;
-
+  const modelGrid = document.getElementById("modelGrid");
+  modelGrid.hidden = !official;
+  modelGrid.innerHTML = "";
   if (official) {
-    document.getElementById("modelGrid").innerHTML = officialModelCards(official, match);
+    modelGrid.innerHTML = officialModelCards(official, match);
   }
 
   renderDailyRead(match);
