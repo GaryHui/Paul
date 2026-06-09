@@ -785,6 +785,29 @@ input {
   color: var(--gold);
 }
 
+.locked-analysis {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.locked-analysis__block {
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.locked-analysis__block p {
+  margin: 6px 0 0;
+}
+
+.locked-analysis__block ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+}
+
 .daily-read {
   padding: 0 24px 22px;
   border-top: 1px solid var(--line);

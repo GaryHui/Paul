@@ -121,7 +121,7 @@ Object.assign(languageCopy.en, {
   groupsEyebrow: "48-Team Field", groupsTitle: "Groups A-L", groupsCopy: "Each team card includes its flag, group, and local-language line for the PK page.",
   primaryLanguages: "Primary languages", localLanguage: "Local language", bracketStatus: "Bracket status", slotFilled: "This slot will be filled automatically after earlier results are synced.",
   fanVote: "Fan Vote", bracketSlotPending: "Bracket slot pending", votes: "votes", dailyRead: "Daily PAUL Read", waitingTeams: "Waiting for teams", nextRefreshPending: "Next refresh pending", dailyRefreshCopy: "PAUL will refresh this matchup automatically when it enters the daily analysis window.", currentLean: "Current lean", confidence: "confidence", draw: "Draw",
-  correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
+  correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", whyLocked: "Why PAUL locked this pick", evidenceUsed: "Evidence used", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
   , all: "All"
 });
 Object.assign(languageCopy.zh, {
@@ -1629,22 +1629,58 @@ function resultLabel(match) {
   return teams[pick]?.name || record.analysis.winnerName || tr("locked");
 }
 
+function officialEvidenceMarkup(analysis) {
+  const evidence = Array.isArray(analysis?.evidenceUsed)
+    ? analysis.evidenceUsed.filter(Boolean).slice(0, 5)
+    : [];
+  if (!evidence.length) return "";
+  return `
+    <div class="locked-analysis__block">
+      <strong>${tr("evidenceUsed")}</strong>
+      <ul>
+        ${evidence.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </div>
+  `;
+}
+
+function officialAnalysisMarkup(official) {
+  const analysis = official?.analysis || {};
+  const reasoning = analysis.reasoning || analysis.calibrationNote || tr("lockedWithoutDetails");
+  return `
+    <div class="locked-analysis">
+      <div class="locked-analysis__block">
+        <strong>${tr("whyLocked")}</strong>
+        <p>${escapeHtml(reasoning)}</p>
+      </div>
+      ${analysis.upsetRisk ? `
+        <div class="locked-analysis__block">
+          <strong>${tr("upsetRisk")}</strong>
+          <p>${escapeHtml(analysis.upsetRisk)}</p>
+        </div>
+      ` : ""}
+      ${officialEvidenceMarkup(analysis)}
+    </div>
+  `;
+}
+
 function officialModelCards(official, match) {
+  const analysis = official.analysis || {};
   return `
     <article class="model-card">
       <h3>${tr("officialPaulPick")}</h3>
-      <div class="vote">${official.analysis?.winnerName || resultLabel(match)} · ${official.analysis?.confidence || "N/A"}%</div>
-      <p>${official.analysis?.reasoning || tr("officialPredictionFallback")}</p>
+      <div class="vote">${escapeHtml(analysis.winnerName || resultLabel(match))} · ${analysis.confidence || "N/A"}%</div>
+      <p>${escapeHtml(analysis.reasoning || tr("officialPredictionFallback"))}</p>
     </article>
     <article class="model-card">
       <h3>${tr("predictedScore")}</h3>
-      <div class="vote">${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</div>
+      <div class="vote">${escapeHtml(analysis.predictedScore || analysis.score || "N/A")}</div>
       <p>${tr("lockedAt")}: ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}.</p>
     </article>
     <article class="model-card">
       <h3>${tr("upsetWatch")}</h3>
-      <div class="vote">${official.analysis?.upsetRisk || "N/A"}</div>
-      <p>${official.analysis?.upsetCase || tr("finalScoresVerify")}</p>
+      <div class="vote">${escapeHtml(analysis.upsetRisk || "N/A")}</div>
+      <p>${escapeHtml(analysis.upsetCase || tr("finalScoresVerify"))}</p>
     </article>
     <article class="model-card">
       <h3>${tr("proofStatus")}</h3>
@@ -1761,7 +1797,7 @@ function renderPK() {
       : tr("finalScorePending");
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${verdict}</strong> · ${tr("predictedScore")}: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
-      <p>${official.analysis?.reasoning || tr("lockedWithoutDetails")}</p>
+      ${officialAnalysisMarkup(official)}
       <p>${resultCopy}</p>
     `;
   } else {
@@ -1947,7 +1983,7 @@ async function loadAutomationStatus() {
     if (!response.ok) throw new Error(status.error || "Failed to load automation status.");
 
     const mergedPredictions = status.predictions || {};
-    const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 24) || status.nextPrediction;
+    const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 72) || status.nextPrediction;
 
     const stageAccuracy = status.stageAccuracy || automationState.stageAccuracy;
     setText("autoPredicted", Object.keys(mergedPredictions).length);

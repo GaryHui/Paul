@@ -29,7 +29,7 @@ loadEnvFile();
 const port = Number(process.env.PORT || 4173);
 const qwenEndpoint = process.env.QWEN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
 const qwenModel = process.env.QWEN_MODEL || "qwen-plus";
-const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
+const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 72);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
 const automationIntervalMinutes = Number(process.env.AUTOMATION_INTERVAL_MINUTES || 60);
 

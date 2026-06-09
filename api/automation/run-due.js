@@ -6,7 +6,7 @@ const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
 const { fetchMatchResult } = require("../_lib/results");
 const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
-const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 24);
+const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 72);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
 const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 0);
 const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 0);
