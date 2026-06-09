@@ -121,7 +121,7 @@ Object.assign(languageCopy.en, {
   groupsEyebrow: "48-Team Field", groupsTitle: "Groups A-L", groupsCopy: "Each team card includes its flag, group, and local-language line for the PK page.",
   primaryLanguages: "Primary languages", localLanguage: "Local language", bracketStatus: "Bracket status", slotFilled: "This slot will be filled automatically after earlier results are synced.",
   fanVote: "Fan Vote", bracketSlotPending: "Bracket slot pending", votes: "votes", dailyRead: "Daily PAUL Read", waitingTeams: "Waiting for teams", nextRefreshPending: "Next refresh pending", dailyRefreshCopy: "PAUL will refresh this matchup automatically when it enters the daily analysis window.", currentLean: "Current lean", confidence: "confidence", draw: "Draw",
-  correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", whyLocked: "Why PAUL locked this pick", evidenceUsed: "Evidence used", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
+  correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", whyLocked: "Why PAUL locked this pick", evidenceUsed: "Evidence used", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", copied: "Copied", copyBlockedLoaded: "Copy was blocked. JSON was loaded below for manual copy.", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
   , all: "All"
 });
 Object.assign(languageCopy.zh, {
@@ -2247,18 +2247,29 @@ function demoProofJson() {
 
 async function copyText(value) {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(value);
-    return;
+    try {
+      await navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      // Some embedded browsers expose Clipboard API but block it by permission.
+    }
   }
   const textarea = document.createElement("textarea");
   textarea.value = value;
   textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.width = "1px";
+  textarea.style.height = "1px";
   textarea.style.opacity = "0";
   document.body.appendChild(textarea);
+  textarea.focus();
   textarea.select();
-  document.execCommand("copy");
+  textarea.setSelectionRange(0, textarea.value.length);
+  const copied = document.execCommand("copy");
   textarea.remove();
+  return copied;
 }
 
 async function loadDemoProof() {
@@ -2384,9 +2395,25 @@ function bindProofCardActions(grid) {
     button.addEventListener("click", async () => {
       const entry = publicProofEntries.find((item) => item.id === button.dataset.proofId);
       if (!entry) return;
-      await copyText(publicProofJson(entry));
+      const originalText = button.textContent;
+      button.disabled = true;
+      const proofJson = publicProofJson(entry);
       const status = document.getElementById("copyProofStatus");
-      if (status) status.textContent = `${tr("copiedProofForMatch")} #${entry.matchId}.`;
+      try {
+        const copied = await copyText(proofJson);
+        if (!copied) throw new Error("Copy blocked");
+        button.textContent = tr("copied");
+        if (status) status.textContent = `${tr("copiedProofForMatch")} #${entry.matchId}.`;
+      } catch {
+        setProofVerifierInput(proofJson);
+        if (status) status.textContent = tr("copyBlockedLoaded");
+        document.getElementById("proofVerifier")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } finally {
+        window.setTimeout(() => {
+          button.disabled = false;
+          button.textContent = originalText;
+        }, 1400);
+      }
     });
   });
 
