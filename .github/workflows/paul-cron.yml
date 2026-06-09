@@ -1,6 +1,8 @@
 name: PAUL automation cron
 
 on:
+  schedule:
+    - cron: "*/30 * * * *"
   workflow_dispatch:
 
 concurrency:
@@ -15,7 +17,7 @@ jobs:
       - name: Run protected automation task
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          PAUL_AUTOMATION_URL: https://paul-prophecy.vercel.app/api/automation/run-due
+          PAUL_AUTOMATION_URL: https://www.aibrick.online/api/automation/run-due
         run: |
           if [ -z "$CRON_SECRET" ]; then
             echo "CRON_SECRET GitHub secret is not configured."
