@@ -5,7 +5,7 @@ const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
 const { getResults } = require("../_lib/store");
 
 const deepOddsRefreshMaxMatches = Number(process.env.DEEP_ODDS_REFRESH_MAX_MATCHES || 8);
-const deepDailyAnalysisMaxMatches = Number(process.env.DEEP_DAILY_ANALYSIS_MAX_MATCHES || 2);
+const deepDailyAnalysisMaxMatches = Number(process.env.DEEP_DAILY_ANALYSIS_MAX_MATCHES || 4);
 
 function requestToken(req) {
   const auth = req.headers?.authorization || "";

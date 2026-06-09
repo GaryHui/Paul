@@ -4,6 +4,7 @@ const { getEvidenceCache } = require("./store");
 
 const defaultHorizonDays = Number(process.env.ODDS_REFRESH_HORIZON_DAYS || 60);
 const defaultLimit = Number(process.env.ODDS_REFRESH_MAX_MATCHES || 12);
+const defaultDueGraceMinutes = Number(process.env.ODDS_REFRESH_DUE_GRACE_MINUTES || 30);
 
 function eligibleForEvidenceRefresh(match, now = new Date(), horizonDays = defaultHorizonDays) {
   if (!match?.teamA?.code || !match?.teamB?.code) return false;
@@ -39,10 +40,14 @@ function dueForEvidenceRefresh(match, entry, now = new Date(), options = {}) {
   const updatedAt = evidenceUpdatedAt(entry);
   if (!updatedAt) return { due: true, cadenceHours: cadence.hours, cadence: cadence.label };
   const ageHours = (now.getTime() - updatedAt.getTime()) / (60 * 60 * 1000);
+  const configuredGraceHours = Math.max(0, Number(options.dueGraceMinutes ?? defaultDueGraceMinutes)) / 60;
+  const cadenceGraceHours = Math.min(configuredGraceHours, cadence.hours * 0.1);
+  const dueThresholdHours = Math.max(0, cadence.hours - cadenceGraceHours);
   return {
-    due: ageHours >= cadence.hours,
+    due: ageHours >= dueThresholdHours,
     cadenceHours: cadence.hours,
     cadence: cadence.label,
+    dueThresholdHours: Number(dueThresholdHours.toFixed(2)),
     ageHours: Math.max(0, Number(ageHours.toFixed(2))),
     updatedAt: updatedAt.toISOString()
   };
