@@ -1393,6 +1393,7 @@ function tracePaulPick(match, official, daily) {
       name: official.analysis?.winnerName || teamNameForCode(code, match),
       confidence: official.analysis?.confidence || null,
       probabilities: official.analysis?.probabilities || null,
+      predictedScore: official.analysis?.predictedScore || official.analysis?.score || null,
       status: "Official locked"
     };
   }
@@ -1402,10 +1403,11 @@ function tracePaulPick(match, official, daily) {
       name: daily.pick.winnerName || teamNameForCode(daily.pick.winnerCode, match),
       confidence: daily.pick.confidence || null,
       probabilities: daily.probabilities || null,
+      predictedScore: daily.pick.predictedScore || daily.pick.score || null,
       status: "Daily read"
     };
   }
-  return { code: null, name: tr("pending"), confidence: null, probabilities: null, status: tr("pending") };
+  return { code: null, name: tr("pending"), confidence: null, probabilities: null, predictedScore: null, status: tr("pending") };
 }
 
 function traceResult(match, result) {
@@ -1477,6 +1479,7 @@ function renderPublicTraceUnsafe() {
         const marketName = market?.favoriteName || teamNameForCode(market?.favoriteCode, match);
         const marketProb = market?.favoriteSide ? traceProbability(market.probabilities?.[market.favoriteSide]) : "";
         const paulConfidence = paul.confidence ? ` · ${traceProbability(paul.confidence)}` : "";
+        const paulScore = paul.predictedScore ? ` · ${tr("predictedScore")} ${escapeHtml(paul.predictedScore)}` : "";
         const paulProbabilities = probabilityTriple(match, paul.probabilities);
         const marketProbabilities = probabilityTriple(match, market?.probabilities);
         const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
@@ -1490,7 +1493,7 @@ function renderPublicTraceUnsafe() {
             </span>
             <span>
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
-              <em>${escapeHtml(paul.status)}${paulProbabilities ? ` · ${paulProbabilities}` : ""}</em>
+              <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}</em>
             </span>
             <span>
               <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("pending")}</strong>
