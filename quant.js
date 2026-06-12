@@ -39,6 +39,13 @@ const outcomeLabels = {
   pending: "等待赛果"
 };
 
+const decisionLabels = {
+  BET: "可下注",
+  WATCH: "观察",
+  NO_BET: "不下注",
+  SETTLED: "已完赛"
+};
+
 const roundLabels = {
   "Group Stage": "小组赛",
   "Round of 32": "32 强",
@@ -125,10 +132,10 @@ function renderSummary(data) {
   const reliability = data.reliability || {};
   summary.hidden = false;
   summary.innerHTML = [
-    metric("可执行优势", data.summary.bettable),
+    metric("可下注", data.summary.bettable),
+    metric("观察名单", data.summary.watch || 0),
     metric("建议总仓位", money(data.summary.totalRecommendedStake)),
-    metric("组合风险上限", money(data.summary.portfolioCap)),
-    metric("最大单场仓位", money(data.summary.maxSingleStake)),
+    metric("CLV 正/负", `${data.summary.positiveClv || 0}/${data.summary.negativeClv || 0}`),
     metric("校准信任系数", `${reliability.edgeTrust ?? "N/A"}%`)
   ].join("");
 }
@@ -149,6 +156,12 @@ function oddsMarkup(row) {
 function edgeMarkup(row) {
   const edge = Number(row.edgePct || 0);
   const cls = edge >= 0 ? "edge-positive" : "edge-negative";
+  const clv = row.clv || {};
+  const clvText = clv.status === "positive"
+    ? `CLV：+${pct(clv.clvPct)}，优于收盘`
+    : clv.status === "negative"
+      ? `CLV：${pct(clv.clvPct)}，差于收盘`
+      : "CLV：等待收盘赔率";
   const comment = row.selectedProbability !== null && row.impliedProbability !== null
     ? edge >= 0
       ? "PAUL 概率高于赔率隐含概率"
@@ -163,6 +176,7 @@ function edgeMarkup(row) {
     <span class="sub">原始优势：${pct(row.rawEdgePct)}</span>
     <span class="sub">每日调整优势：${pct(row.dailyAdjustedEdgePct)}</span>
     <span class="sub">本场信任系数：${pct(row.rowEdgeTrust)}</span>
+    <span class="sub">${text(clvText)}</span>
     <span class="sub">${text(comment)}</span>
   `;
 }
@@ -173,6 +187,13 @@ function riskClass(risk) {
   return "pill";
 }
 
+function decisionClass(decision) {
+  if (decision?.action === "BET") return "pill";
+  if (decision?.action === "WATCH") return "pill warn";
+  if (decision?.action === "SETTLED") return "pill";
+  return "pill bad";
+}
+
 function reasonMarkup(row) {
   const pick = row.pick || {};
   const evidence = Array.isArray(pick.evidenceUsed) && pick.evidenceUsed.length ? `<span class="sub">证据：${text(pick.evidenceUsed.join(", "))}</span>` : "";
@@ -180,11 +201,15 @@ function reasonMarkup(row) {
   const daily = row.dailyCalibration?.count
     ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
     : `<span class="sub">每日 PAUL：暂无足够历史样本。</span>`;
+  const decisionReasons = row.decision?.reasons?.length
+    ? `<span class="sub">过滤器：${text(row.decision.reasons.join(" "))}</span>`
+    : "";
   return `
     <div class="analysis">
       <strong>${text(labelSource(pick.source))}</strong>
       <p>${text(pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
       ${daily}
+      ${decisionReasons}
       ${risk}
       ${evidence}
     </div>
@@ -215,7 +240,7 @@ function rowMarkup(row) {
         <strong>${text(pick.name || "暂无选择")}</strong>
         <span class="sub">${text(pick.code || "-")} · ${text(labelSource(pick.source))}</span>
         ${pick.predictedScore ? `<span class="sub">预测比分：${text(pick.predictedScore)}</span>` : ""}
-        <span class="${riskClass(row.risk)}">${text(labelRisk(row.risk))}</span>
+        <span class="${decisionClass(row.decision)}">${text(decisionLabels[row.decision?.action] || row.decision?.label || labelRisk(row.risk))}</span>
       </td>
       <td>${oddsMarkup(row)}</td>
       <td>${edgeMarkup(row)}</td>
@@ -227,7 +252,7 @@ function rowMarkup(row) {
       </td>
       <td>
         <strong class="stake">${stake > 0 ? money(stake) : "不下注"}</strong>
-        <span class="sub">${stake > 0 ? `执行赔率 ${odds(row.selectedOdds)}` : text(labelRisk(row.skipReason) || "没有正优势")}</span>
+        <span class="sub">${stake > 0 ? `执行赔率 ${odds(row.selectedOdds)}` : text(row.decision?.label || labelRisk(row.skipReason) || "没有正优势")}</span>
       </td>
       <td>${reasonMarkup(row)}</td>
     </tr>
@@ -246,9 +271,12 @@ function controlsQuery() {
     kelly: String(Number(kellyInput.value || 0.25)),
     maxStakePct: String(Number(maxStakeInput.value || 3) / 100),
     portfolioCapPct: String(Number(portfolioCapInput.value || 12) / 100),
-    minEdgePct: String(Number(minEdgeInput.value || 2)),
+    minEdgePct: String(Number(minEdgeInput.value || 4)),
     modelAccuracy: "0.55",
-    priorWeight: "40"
+    priorWeight: "40",
+    strictEdgePct: "4",
+    minTrustPct: "60",
+    drawDangerPct: "28"
   });
   return params.toString();
 }
@@ -271,7 +299,7 @@ async function loadQuantBoard() {
     renderSummary(data);
     renderRows(data);
     const reliability = data.reliability || {};
-    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。PAUL 长期先验 55%，真实赛果校准 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0} 场；每场再结合每日 PAUL 趋势与同向率调仓，不改 PAUL 预测模型。`;
+    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。PAUL 长期先验 55%，真实赛果校准 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0} 场；实验室会过滤低优势、低信任和平局风险，并等待 CLV 复盘，不改 PAUL 预测模型。`;
   } catch (error) {
     statusBox.textContent = error.message;
     table.hidden = true;

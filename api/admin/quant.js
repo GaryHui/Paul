@@ -348,6 +348,96 @@ function scoreString(result) {
   return `${result.homeScore}-${result.awayScore}`;
 }
 
+function topProbabilityMargin(probabilities) {
+  if (!probabilities) return null;
+  const values = ["home", "draw", "away"]
+    .map((side) => Number(probabilities[side] || 0))
+    .filter((value) => Number.isFinite(value));
+  if (values.length < 2) return null;
+  values.sort((a, b) => b - a);
+  return values[0] - values[1];
+}
+
+function clvSnapshot(market, side, selectedOdds) {
+  const closingOdds = oddsForSide(market?.closingOdds || market?.closing?.odds || market?.close?.odds, side);
+  if (!selectedOdds || !closingOdds) {
+    return {
+      status: "pending",
+      selectedOdds: selectedOdds || null,
+      closingOdds: closingOdds || null,
+      clvPct: null,
+      beatClosing: null,
+      note: "等待收盘赔率。CLV 要在临近开赛或赛后才能判断。"
+    };
+  }
+  const clvPct = (selectedOdds / closingOdds - 1) * 100;
+  return {
+    status: clvPct >= 0 ? "positive" : "negative",
+    selectedOdds,
+    closingOdds,
+    clvPct,
+    beatClosing: clvPct >= 0,
+    note: clvPct >= 0 ? "拿到的赔率优于或等于收盘价。" : "收盘价比拿到的赔率更好，说明入场价格不理想。"
+  };
+}
+
+function qualityDecision({
+  isFinal,
+  isPast,
+  pick,
+  market,
+  probabilities,
+  stake,
+  strictEdgePct,
+  minTrustPct,
+  drawDangerPct,
+  rowEdgeTrust
+}) {
+  const trustPct = rowEdgeTrust * 100;
+  const edgePct = Number(stake.edgePct);
+  const drawPct = Number(probabilities?.draw || 0) * 100;
+  const marginPct = Number(topProbabilityMargin(probabilities) || 0) * 100;
+  const reasons = [];
+
+  if (isFinal) return { action: "SETTLED", label: "已完赛", level: "settled", reasons: ["比赛已完赛，只保留复盘数据。"] };
+  if (isPast) return { action: "NO_BET", label: "已开赛", level: "blocked", reasons: ["比赛已经开始，不能再入场。"] };
+  if (!pick) return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["没有 PAUL 判断。"] };
+  if (pick.source === "Market fallback") return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["只有市场参考，没有 PAUL 优势。"] };
+  if (!market?.odds) return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["缺少可执行赔率。"] };
+  if (!Number.isFinite(edgePct)) return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["缺少概率优势。"] };
+
+  if (edgePct < strictEdgePct) reasons.push(`优势 ${edgePct.toFixed(2)}% 低于严格门槛 ${strictEdgePct}%。`);
+  if (trustPct < minTrustPct) reasons.push(`信任系数 ${trustPct.toFixed(2)}% 低于门槛 ${minTrustPct}%。`);
+
+  const drawDanger = pick.side !== "draw" && drawPct >= drawDangerPct && marginPct <= 8;
+  if (drawDanger) reasons.push(`小组赛平局风险偏高：平局 ${drawPct.toFixed(2)}%，胜平负差距 ${marginPct.toFixed(2)}%。`);
+
+  if (reasons.length) {
+    return {
+      action: drawDanger ? "WATCH" : "NO_BET",
+      label: drawDanger ? "观察" : "不下注",
+      level: drawDanger ? "watch" : "blocked",
+      reasons
+    };
+  }
+
+  if (edgePct < strictEdgePct + 2 || trustPct < minTrustPct + 6) {
+    return {
+      action: "WATCH",
+      label: "观察",
+      level: "watch",
+      reasons: ["优势刚过门槛，等待更好的赔率或更稳定的每日 PAUL 数据。"]
+    };
+  }
+
+  return {
+    action: "BET",
+    label: "可下注",
+    level: edgePct >= 10 ? "strong" : "qualified",
+    reasons: ["通过严格优势、信任系数和平局风险过滤。"]
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -364,6 +454,9 @@ module.exports = async function handler(req, res) {
     const minEdgePct = numberParam(url, "minEdgePct", 2, 0, 50);
     const modelAccuracy = numberParam(url, "modelAccuracy", 0.55, 0.5, 0.75);
     const priorWeight = numberParam(url, "priorWeight", 40, 1, 1000);
+    const strictEdgePct = numberParam(url, "strictEdgePct", 4, 0, 50);
+    const minTrustPct = numberParam(url, "minTrustPct", 60, 0, 100);
+    const drawDangerPct = numberParam(url, "drawDangerPct", 28, 0, 60);
     const includeMarketFallback = url.searchParams.get("fallback") !== "0";
 
     const snapshot = loadSnapshot();
@@ -421,7 +514,7 @@ module.exports = async function handler(req, res) {
           : (isFinal ? "ungraded" : "pending");
         const exactScoreHit = Boolean(isFinal && resultScore && pick?.predictedScore && String(pick.predictedScore).replace(/\s/g, "") === resultScore);
 
-        const stake = kellyStake({
+        const preliminaryStake = kellyStake({
           odds,
           probability: kellyProbability,
           bankroll,
@@ -430,7 +523,28 @@ module.exports = async function handler(req, res) {
           minEdgePct,
           isBettable
         });
-        if (isBettable && stake.edgePct !== null && stake.edgePct < minEdgePct) skipReason = "Edge below threshold";
+        const decision = qualityDecision({
+          isFinal,
+          isPast,
+          pick,
+          market,
+          probabilities: dailyAdjustedProbability ? { ...(probabilities || {}), [pick?.side]: dailyAdjustedProbability } : probabilities,
+          stake: preliminaryStake,
+          strictEdgePct: Math.max(strictEdgePct, minEdgePct),
+          minTrustPct,
+          drawDangerPct,
+          rowEdgeTrust
+        });
+        if (isBettable && preliminaryStake.edgePct !== null && preliminaryStake.edgePct < Math.max(strictEdgePct, minEdgePct)) skipReason = "Edge below threshold";
+        const stake = decision.action === "BET"
+          ? preliminaryStake
+          : {
+              ...preliminaryStake,
+              fractionalKelly: 0,
+              cappedFraction: 0,
+              rawStake: 0
+            };
+        const clv = clvSnapshot(market, pick?.side, odds);
 
         return {
           id: match.id,
@@ -474,6 +588,8 @@ module.exports = async function handler(req, res) {
           rawStake: stake.rawStake,
           finalFraction: stake.cappedFraction,
           recommendedStake: stake.rawStake,
+          decision,
+          clv,
           skipReason,
           risk: ""
         };
@@ -508,6 +624,12 @@ module.exports = async function handler(req, res) {
           trustAdjustment: Number((row.dailyCalibration.trustAdjustment * 100).toFixed(2))
         };
       }
+      if (row.clv) {
+        row.clv = {
+          ...row.clv,
+          clvPct: row.clv.clvPct === null ? null : Number(row.clv.clvPct.toFixed(2))
+        };
+      }
       row.impliedProbability = row.impliedProbability === null ? null : Number((row.impliedProbability * 100).toFixed(2));
     });
 
@@ -528,7 +650,10 @@ module.exports = async function handler(req, res) {
         minEdgePct,
         modelAccuracy,
         priorWeight,
-        formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, and daily trend stability. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
+        strictEdgePct,
+        minTrustPct,
+        drawDangerPct,
+        formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, and daily trend stability. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; only rows that pass strict edge, trust, draw-risk, and market-data gates can receive a stake. fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
       },
       reliability: {
         ...reliability,
@@ -540,6 +665,11 @@ module.exports = async function handler(req, res) {
       summary: {
         matches: rows.length,
         bettable: finalBetRows.length,
+        watch: rows.filter((row) => row.decision?.action === "WATCH").length,
+        noBet: rows.filter((row) => row.decision?.action === "NO_BET").length,
+        settled: rows.filter((row) => row.decision?.action === "SETTLED").length,
+        positiveClv: rows.filter((row) => row.clv?.status === "positive").length,
+        negativeClv: rows.filter((row) => row.clv?.status === "negative").length,
         totalRecommendedStake: Number(finalBetRows.reduce((sum, row) => sum + row.recommendedStake, 0).toFixed(2)),
         portfolioCap: Number(portfolioCap.toFixed(2)),
         portfolioScale: Number(scale.toFixed(3)),

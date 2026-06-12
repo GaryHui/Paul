@@ -373,7 +373,7 @@
           <p class="eyebrow">私有管理员工具</p>
           <h1>PAUL 凯利仓位实验室</h1>
           <p class="lede">
-            联动 PAUL 的锁定预测、每日倾向、真实赛果、市场赔率和模型概率，不改变 PAUL 模型，只把长期约 55% 命中率、当前实战成绩和每日走势纳入凯利仓位计算。
+            联动 PAUL 的锁定预测、每日倾向、真实赛果、市场赔率和模型概率，不改变 PAUL 模型；实验室只负责判断是否值得入场，并用凯利公式控制仓位。
           </p>
         </div>
         <span class="private-badge">需要管理员 Token</span>
@@ -407,7 +407,7 @@
         </label>
         <label>
           最小优势 %
-          <input id="minEdgeInput" type="number" min="0" max="50" step="0.5" value="2" />
+          <input id="minEdgeInput" type="number" min="0" max="50" step="0.5" value="4" />
         </label>
         <button id="loadButton" type="button">载入量化面板</button>
       </section>
@@ -417,7 +417,7 @@
       <section class="formula">
         <strong>凯利公式：</strong>
         <code>f* = (decimalOdds * modelProbability - 1) / (decimalOdds - 1)</code>.
-        PAUL 先给出预测概率，工具再按 55% 长期先验、真实赛果命中率、比分全中、每日 PAUL 概率趋势和赔率隐含概率做仓位校准；没有正优势的比赛会显示“不下注”。
+        PAUL 先给出预测概率，工具再按 55% 长期先验、真实赛果命中率、比分全中、每日 PAUL 概率趋势和赔率隐含概率做仓位校准；再经过严格优势、信任系数、平局风险和 CLV 复盘过滤，没有通过的比赛显示“观察”或“不下注”。
       </section>
 
       <section class="notice">
