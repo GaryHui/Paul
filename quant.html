@@ -298,6 +298,26 @@
         color: var(--bad);
       }
 
+      .quant-row--correct td {
+        background: rgba(53, 240, 174, 0.045);
+      }
+
+      .quant-row--missed td {
+        background: rgba(255, 107, 138, 0.045);
+      }
+
+      .result-correct {
+        color: var(--accent);
+      }
+
+      .result-missed {
+        color: var(--bad);
+      }
+
+      .result-pending {
+        color: var(--warn);
+      }
+
       .analysis {
         min-width: 260px;
         max-width: 420px;
@@ -353,7 +373,7 @@
           <p class="eyebrow">私有管理员工具</p>
           <h1>PAUL 凯利仓位实验室</h1>
           <p class="lede">
-            联动 PAUL 的锁定预测、每日倾向、市场赔率和模型概率，自动计算分数凯利仓位，并用单场上限和组合上限控制风险。
+            联动 PAUL 的锁定预测、每日倾向、真实赛果、市场赔率和模型概率，不改变 PAUL 模型，只把长期约 55% 命中率、当前实战成绩和每日走势纳入凯利仓位计算。
           </p>
         </div>
         <span class="private-badge">需要管理员 Token</span>
@@ -397,7 +417,7 @@
       <section class="formula">
         <strong>凯利公式：</strong>
         <code>f* = (decimalOdds * modelProbability - 1) / (decimalOdds - 1)</code>.
-        推荐仓位会经过分数凯利、单场上限和总风险上限三层控制；没有正优势的比赛会显示“不下注”。
+        PAUL 先给出预测概率，工具再按 55% 长期先验、真实赛果命中率、比分全中、每日 PAUL 概率趋势和赔率隐含概率做仓位校准；没有正优势的比赛会显示“不下注”。
       </section>
 
       <section class="notice">
@@ -424,6 +444,6 @@
         <div id="emptyState" class="empty">输入管理员 Token 后载入面板。</div>
       </section>
     </main>
-    <script src="quant.js?v=2"></script>
+    <script src="quant.js?v=3"></script>
   </body>
 </html>

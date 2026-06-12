@@ -37,6 +37,10 @@ function numberParam(url, key, fallback, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function json(res, status, payload) {
   res.statusCode = status;
   res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -214,6 +218,107 @@ function kellyStake({ odds, probability, bankroll, kellyFraction, maxStakePct, m
   };
 }
 
+function predictionPickCode(prediction) {
+  const analysis = prediction?.analysis || prediction?.proof?.payload?.prediction || null;
+  return analysis?.winnerCode || analysis?.winner || null;
+}
+
+function predictionScore(prediction) {
+  const analysis = prediction?.analysis || prediction?.proof?.payload?.prediction || null;
+  return String(analysis?.predictedScore || "").trim();
+}
+
+function resultWinner(result) {
+  if (!result?.status || result.status !== "final") return null;
+  if (result.winnerCode) return result.winnerCode;
+  if (Number(result.homeScore) === Number(result.awayScore)) return "DRAW";
+  return Number(result.homeScore) > Number(result.awayScore) ? result.aCode : result.bCode;
+}
+
+function liveModelStats(predictions, results) {
+  return Object.entries(results || {}).reduce((stats, [matchId, result]) => {
+    if (result?.status !== "final") return stats;
+    const prediction = predictions?.[result.matchId || matchId] || predictions?.[String(result.matchId || matchId)];
+    if (!prediction) return stats;
+    const pick = String(predictionPickCode(prediction) || "").toUpperCase();
+    const winner = String(resultWinner(result) || "").toUpperCase();
+    if (!pick || !winner) return stats;
+    stats.graded += 1;
+    if (pick === winner) stats.correct += 1;
+    const score = predictionScore(prediction).replace(/\s/g, "");
+    if (score && score === `${result.homeScore}-${result.awayScore}`) stats.exactScore += 1;
+    return stats;
+  }, { graded: 0, correct: 0, exactScore: 0 });
+}
+
+function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }) {
+  const live = liveModelStats(predictions, results);
+  const posteriorHitRate = (modelAccuracy * priorWeight + live.correct) / (priorWeight + live.graded || 1);
+  const exactScoreBonus = Math.min(0.04, live.exactScore * 0.015);
+  const edgeTrust = clamp(0.45 + (posteriorHitRate - 0.5) * 4 + exactScoreBonus, 0.35, 0.92);
+  return {
+    modelAccuracy,
+    priorWeight,
+    live,
+    posteriorHitRate,
+    exactScoreBonus,
+    edgeTrust,
+    method: "Kelly uses PAUL's pick, then shrinks PAUL's edge versus market implied probability by a reliability factor based on the 55% prior, verified live results, exact-score hits, and each match's daily PAUL trend."
+  };
+}
+
+function calibratedKellyProbability(paulProbability, impliedProbability, edgeTrust) {
+  if (paulProbability === null || paulProbability === undefined || impliedProbability === null || impliedProbability === undefined) return null;
+  if (!Number.isFinite(Number(paulProbability)) || !Number.isFinite(Number(impliedProbability))) return null;
+  return clamp(impliedProbability + (paulProbability - impliedProbability) * edgeTrust, 0.01, 0.99);
+}
+
+function dailyProbabilityForSide(record, side) {
+  const probabilities = normalizeProbabilities(record?.probabilities || record?.pick?.probabilities);
+  const value = Number(probabilities?.[side]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function dailyCalibrationForSide(match, dailyRead, side) {
+  if (!dailyRead || !side) {
+    return { count: 0, samePickRate: null, latestProbability: null, firstProbability: null, trendPct: null, trustAdjustment: 0 };
+  }
+  const history = Array.isArray(dailyRead.history) ? dailyRead.history.slice() : [];
+  const current = {
+    generatedAt: dailyRead.generatedAt,
+    pick: dailyRead.pick || null,
+    probabilities: dailyRead.probabilities || dailyRead.pick?.probabilities || null
+  };
+  if (current.generatedAt && !history.some((item) => item.generatedAt === current.generatedAt)) history.push(current);
+  const samples = history
+    .map((item) => ({
+      generatedAt: item.generatedAt || null,
+      side: sideForCode(match, item.pick?.winnerCode || item.pick?.winner || item.pick?.winnerName),
+      probability: dailyProbabilityForSide(item, side)
+    }))
+    .filter((item) => item.probability !== null)
+    .sort((a, b) => new Date(a.generatedAt || 0) - new Date(b.generatedAt || 0));
+  if (!samples.length) {
+    return { count: 0, samePickRate: null, latestProbability: null, firstProbability: null, trendPct: null, trustAdjustment: 0 };
+  }
+  const latest = samples.at(-1);
+  const first = samples[0];
+  const sameSideSamples = samples.filter((item) => item.side === side).length;
+  const samePickRate = sameSideSamples / samples.length;
+  const trend = latest.probability - first.probability;
+  const stabilityAdjustment = (samePickRate - 0.5) * 0.12;
+  const trendAdjustment = clamp(trend * 0.5, -0.06, 0.06);
+  const trustAdjustment = clamp(stabilityAdjustment + trendAdjustment, -0.08, 0.08);
+  return {
+    count: samples.length,
+    samePickRate,
+    latestProbability: latest.probability,
+    firstProbability: first.probability,
+    trendPct: trend * 100,
+    trustAdjustment
+  };
+}
+
 function riskLabel(row, maxStakePct) {
   if (!row.recommendedStake) return row.skipReason || "No bet";
   if (row.finalFraction >= maxStakePct * 0.98) return "Capped";
@@ -226,6 +331,11 @@ function sortMatches(a, b) {
   const aTime = parseMatchTime(a)?.getTime() || 0;
   const bTime = parseMatchTime(b)?.getTime() || 0;
   return aTime - bTime || Number(a.id) - Number(b.id);
+}
+
+function scoreString(result) {
+  if (!result || result.homeScore === undefined || result.awayScore === undefined) return null;
+  return `${result.homeScore}-${result.awayScore}`;
 }
 
 module.exports = async function handler(req, res) {
@@ -242,6 +352,8 @@ module.exports = async function handler(req, res) {
     const maxStakePct = numberParam(url, "maxStakePct", 0.03, 0.001, 0.25);
     const portfolioCapPct = numberParam(url, "portfolioCapPct", 0.12, 0.001, 0.75);
     const minEdgePct = numberParam(url, "minEdgePct", 2, 0, 50);
+    const modelAccuracy = numberParam(url, "modelAccuracy", 0.55, 0.5, 0.75);
+    const priorWeight = numberParam(url, "priorWeight", 40, 1, 1000);
     const includeMarketFallback = url.searchParams.get("fallback") !== "0";
 
     const snapshot = loadSnapshot();
@@ -251,6 +363,7 @@ module.exports = async function handler(req, res) {
       getDailyAnalysis(),
       getEvidenceCache()
     ]);
+    const reliability = reliabilityProfile({ predictions, results, modelAccuracy, priorWeight });
     const resolvedMatches = resolveMatches(snapshot.matches || [], results);
     const now = new Date();
     const rows = resolvedMatches
@@ -268,10 +381,21 @@ module.exports = async function handler(req, res) {
         const matchTime = parseMatchTime(match);
         const winnerCode = resultWinnerCode(match, result);
         const isFinal = result?.status === "final";
+        const resultScore = scoreString(result);
         const isPast = matchTime ? matchTime <= now : false;
         const odds = oddsForSide(market?.odds, pick?.side);
         const probabilities = pick?.probabilities || market?.probabilities || null;
         const probability = probabilities && pick?.side ? Number(probabilities[pick.side] || 0) : null;
+        const impliedProbability = odds ? 1 / odds : null;
+        const dailyCalibration = dailyCalibrationForSide(match, dailyRead, pick?.side);
+        const dailyBlendWeight = dailyCalibration.latestProbability !== null ? (pick?.source === "Official lock" ? 0.25 : 0.4) : 0;
+        const dailyAdjustedProbability = probability && dailyBlendWeight
+          ? clamp(probability * (1 - dailyBlendWeight) + dailyCalibration.latestProbability * dailyBlendWeight, 0.01, 0.99)
+          : probability;
+        const rowEdgeTrust = clamp(reliability.edgeTrust + dailyCalibration.trustAdjustment, 0.25, 0.95);
+        const kellyProbability = calibratedKellyProbability(dailyAdjustedProbability, impliedProbability, rowEdgeTrust);
+        const rawEdgePct = probability && impliedProbability ? (probability - impliedProbability) * 100 : null;
+        const dailyAdjustedEdgePct = dailyAdjustedProbability && impliedProbability ? (dailyAdjustedProbability - impliedProbability) * 100 : null;
         const isBettable = Boolean(!isFinal && !isPast && pick && pick.source !== "Market fallback" && odds && probability);
         let skipReason = "";
         if (!pick) skipReason = "No PAUL read";
@@ -280,10 +404,16 @@ module.exports = async function handler(req, res) {
         else if (pick.source === "Market fallback") skipReason = "Reference only";
         else if (!odds) skipReason = "Missing odds";
         else if (!probability) skipReason = "Missing PAUL probability";
+        const pickCode = String(pick?.code || "").toUpperCase();
+        const finalWinnerCode = String(winnerCode || "").toUpperCase();
+        const pickOutcome = isFinal && pickCode && finalWinnerCode
+          ? (pickCode === finalWinnerCode ? "correct" : "missed")
+          : (isFinal ? "ungraded" : "pending");
+        const exactScoreHit = Boolean(isFinal && resultScore && pick?.predictedScore && String(pick.predictedScore).replace(/\s/g, "") === resultScore);
 
         const stake = kellyStake({
           odds,
-          probability,
+          probability: kellyProbability,
           bankroll,
           kellyFraction,
           maxStakePct,
@@ -310,11 +440,22 @@ module.exports = async function handler(req, res) {
                 status: result.status || null,
                 homeScore: result.homeScore ?? null,
                 awayScore: result.awayScore ?? null,
-                winnerCode
+                score: resultScore,
+                winnerCode,
+                source: result.source || null,
+                updatedAt: result.updatedAt || result.fetchedAt || null
               }
             : null,
+          pickOutcome,
+          exactScoreHit,
           selectedOdds: odds,
           selectedProbability: probability,
+          dailyAdjustedProbability,
+          kellyProbability,
+          rawEdgePct,
+          dailyAdjustedEdgePct,
+          rowEdgeTrust,
+          dailyCalibration,
           impliedProbability: stake.impliedProbability,
           edgePct: stake.edgePct,
           fullKelly: stake.fullKelly,
@@ -342,6 +483,21 @@ module.exports = async function handler(req, res) {
       row.cappedFraction = Number((row.cappedFraction * 100).toFixed(2));
       row.finalFraction = Number((row.finalFraction * 100).toFixed(2));
       row.selectedProbability = row.selectedProbability === null ? null : Number((row.selectedProbability * 100).toFixed(2));
+      row.kellyProbability = row.kellyProbability === null ? null : Number((row.kellyProbability * 100).toFixed(2));
+      row.dailyAdjustedProbability = row.dailyAdjustedProbability === null ? null : Number((row.dailyAdjustedProbability * 100).toFixed(2));
+      row.rawEdgePct = row.rawEdgePct === null ? null : Number(row.rawEdgePct.toFixed(2));
+      row.dailyAdjustedEdgePct = row.dailyAdjustedEdgePct === null ? null : Number(row.dailyAdjustedEdgePct.toFixed(2));
+      row.rowEdgeTrust = row.rowEdgeTrust === null ? null : Number((row.rowEdgeTrust * 100).toFixed(2));
+      if (row.dailyCalibration) {
+        row.dailyCalibration = {
+          ...row.dailyCalibration,
+          samePickRate: row.dailyCalibration.samePickRate === null ? null : Number((row.dailyCalibration.samePickRate * 100).toFixed(2)),
+          latestProbability: row.dailyCalibration.latestProbability === null ? null : Number((row.dailyCalibration.latestProbability * 100).toFixed(2)),
+          firstProbability: row.dailyCalibration.firstProbability === null ? null : Number((row.dailyCalibration.firstProbability * 100).toFixed(2)),
+          trendPct: row.dailyCalibration.trendPct === null ? null : Number(row.dailyCalibration.trendPct.toFixed(2)),
+          trustAdjustment: Number((row.dailyCalibration.trustAdjustment * 100).toFixed(2))
+        };
+      }
       row.impliedProbability = row.impliedProbability === null ? null : Number((row.impliedProbability * 100).toFixed(2));
     });
 
@@ -360,7 +516,16 @@ module.exports = async function handler(req, res) {
         maxStakePct,
         portfolioCapPct,
         minEdgePct,
-        formula: "fullKelly = (decimalOdds * modelProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
+        modelAccuracy,
+        priorWeight,
+        formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, and daily trend stability. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
+      },
+      reliability: {
+        ...reliability,
+        posteriorHitRate: Number((reliability.posteriorHitRate * 100).toFixed(2)),
+        edgeTrust: Number((reliability.edgeTrust * 100).toFixed(2)),
+        exactScoreBonus: Number((reliability.exactScoreBonus * 100).toFixed(2)),
+        modelAccuracy: Number((reliability.modelAccuracy * 100).toFixed(2))
       },
       summary: {
         matches: rows.length,

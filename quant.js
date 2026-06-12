@@ -32,6 +32,13 @@ const riskLabels = {
   "Missing PAUL probability": "缺少 PAUL 概率"
 };
 
+const outcomeLabels = {
+  correct: "PAUL 命中",
+  missed: "PAUL 未中",
+  ungraded: "无法判定",
+  pending: "等待赛果"
+};
+
 const roundLabels = {
   "Group Stage": "小组赛",
   "Round of 32": "32 强",
@@ -115,13 +122,14 @@ function metric(label, value) {
 }
 
 function renderSummary(data) {
+  const reliability = data.reliability || {};
   summary.hidden = false;
   summary.innerHTML = [
     metric("可执行优势", data.summary.bettable),
     metric("建议总仓位", money(data.summary.totalRecommendedStake)),
     metric("组合风险上限", money(data.summary.portfolioCap)),
     metric("最大单场仓位", money(data.summary.maxSingleStake)),
-    metric("平均优势", `${data.summary.averageEdgePct}%`)
+    metric("校准信任系数", `${reliability.edgeTrust ?? "N/A"}%`)
   ].join("");
 }
 
@@ -148,8 +156,13 @@ function edgeMarkup(row) {
     : "缺少概率或赔率";
   return `
     <strong class="${cls}">${pct(row.edgePct)}</strong>
-    <span class="sub">PAUL 概率：${pct(row.selectedProbability)}</span>
+    <span class="sub">PAUL 原始概率：${pct(row.selectedProbability)}</span>
+    <span class="sub">每日调整概率：${pct(row.dailyAdjustedProbability)}</span>
+    <span class="sub">Kelly 校准概率：${pct(row.kellyProbability)}</span>
     <span class="sub">赔率隐含：${pct(row.impliedProbability)}</span>
+    <span class="sub">原始优势：${pct(row.rawEdgePct)}</span>
+    <span class="sub">每日调整优势：${pct(row.dailyAdjustedEdgePct)}</span>
+    <span class="sub">本场信任系数：${pct(row.rowEdgeTrust)}</span>
     <span class="sub">${text(comment)}</span>
   `;
 }
@@ -164,28 +177,44 @@ function reasonMarkup(row) {
   const pick = row.pick || {};
   const evidence = Array.isArray(pick.evidenceUsed) && pick.evidenceUsed.length ? `<span class="sub">证据：${text(pick.evidenceUsed.join(", "))}</span>` : "";
   const risk = pick.upsetRisk ? `<span class="sub">风险：${text(pick.upsetRisk)}</span>` : "";
+  const daily = row.dailyCalibration?.count
+    ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
+    : `<span class="sub">每日 PAUL：暂无足够历史样本。</span>`;
   return `
     <div class="analysis">
       <strong>${text(labelSource(pick.source))}</strong>
       <p>${text(pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
+      ${daily}
       ${risk}
       ${evidence}
     </div>
   `;
 }
 
+function resultMarkup(row) {
+  const result = row.result || null;
+  if (!result || result.status !== "final") {
+    return `<span class="sub result-pending">真实赛果：等待同步</span>`;
+  }
+  const cls = row.pickOutcome === "correct" ? "result-correct" : row.pickOutcome === "missed" ? "result-missed" : "result-pending";
+  const exact = row.exactScoreHit ? " · 比分全中" : "";
+  return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${exact}</span>`;
+}
+
 function rowMarkup(row) {
   const pick = row.pick || {};
   const stake = Number(row.recommendedStake || 0);
   return `
-    <tr>
+    <tr class="quant-row quant-row--${text(row.pickOutcome || "pending")}">
       <td class="match-cell">
         <strong>#${text(row.id)} ${text(row.match)}</strong>
         <span class="sub">${text(labelRound(row.round))}${row.group ? ` · ${text(row.group)} 组` : ""} · ${dateTime(row.kickoffAt)}</span>
+        ${resultMarkup(row)}
       </td>
       <td class="pick">
         <strong>${text(pick.name || "暂无选择")}</strong>
         <span class="sub">${text(pick.code || "-")} · ${text(labelSource(pick.source))}</span>
+        ${pick.predictedScore ? `<span class="sub">预测比分：${text(pick.predictedScore)}</span>` : ""}
         <span class="${riskClass(row.risk)}">${text(labelRisk(row.risk))}</span>
       </td>
       <td>${oddsMarkup(row)}</td>
@@ -217,7 +246,9 @@ function controlsQuery() {
     kelly: String(Number(kellyInput.value || 0.25)),
     maxStakePct: String(Number(maxStakeInput.value || 3) / 100),
     portfolioCapPct: String(Number(portfolioCapInput.value || 12) / 100),
-    minEdgePct: String(Number(minEdgeInput.value || 2))
+    minEdgePct: String(Number(minEdgeInput.value || 2)),
+    modelAccuracy: "0.55",
+    priorWeight: "40"
   });
   return params.toString();
 }
@@ -239,7 +270,8 @@ async function loadQuantBoard() {
     if (!response.ok) throw new Error(data.error || "载入量化面板失败。");
     renderSummary(data);
     renderRows(data);
-    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。本面板以 PAUL 预测概率为核心，赔率只用于计算隐含概率和凯利仓位。`;
+    const reliability = data.reliability || {};
+    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。PAUL 长期先验 55%，真实赛果校准 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0} 场；每场再结合每日 PAUL 趋势与同向率调仓，不改 PAUL 预测模型。`;
   } catch (error) {
     statusBox.textContent = error.message;
     table.hidden = true;
