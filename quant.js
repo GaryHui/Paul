@@ -204,7 +204,8 @@ function edgeMarkup(row) {
   const displayEdge = row.edgePct !== null && row.edgePct !== undefined
     ? Number(row.edgePct)
     : (row.dailyAdjustedEdgePct !== null && row.dailyAdjustedEdgePct !== undefined ? Number(row.dailyAdjustedEdgePct) : null);
-  const cls = displayEdge === null || displayEdge >= 0 ? "edge-positive" : "edge-negative";
+  const cls = displayEdge === null ? "edge-missing" : displayEdge >= 0 ? "edge-positive" : "edge-negative";
+  const edgeLabel = displayEdge === null ? "缺少赔率" : pct(displayEdge);
   const clv = row.clv || {};
   const clvText = clv.status === "positive"
     ? `CLV：+${pct(clv.clvPct)}，优于收盘`
@@ -219,9 +220,11 @@ function edgeMarkup(row) {
   const breakEven = row.selectedOdds ? `保本要求：赔率 ${odds(row.selectedOdds)} 需要 ${pct(row.impliedProbability)} 以上胜率` : "保本要求：缺少赔率";
   const pickSource = labelSource(row.pick?.source);
   return `
-    <strong class="${cls}">${pct(displayEdge)}${infoButton("概率优势来源", [
+    <strong class="${cls}">${edgeLabel}${infoButton("概率优势来源", [
       "计算：Kelly 校准概率 - 赔率隐含概率。",
-      `当前：${pct(row.kellyProbability)} - ${pct(row.impliedProbability)} = ${pct(displayEdge)}。`,
+      displayEdge === null
+        ? "当前缺少选中方向赔率，所以无法计算赔率隐含概率、Kelly 校准概率和概率优势。"
+        : `当前：${pct(row.kellyProbability)} - ${pct(row.impliedProbability)} = ${pct(displayEdge)}。`,
       "正数代表模型概率高于市场保本概率；负数代表方向可能对，但赔率不够划算。",
       `${row.pick?.source === "Market fallback" ? "参考概率" : "PAUL 原始概率"}：${pct(row.selectedProbability)}；来源：${pickSource}。`,
       row.pick?.source === "Market fallback" ? "此场暂无 PAUL 判断，使用市场赔率归一化概率作为占位参考。" : "来自 PAUL 正式锁定或每日判断里的三项概率。",
@@ -255,7 +258,7 @@ function decisionClass(decision) {
 
 function reasonMarkup(row) {
   const pick = row.pick || {};
-  const evidence = Array.isArray(pick.evidenceUsed) && pick.evidenceUsed.length ? `<span class="sub">证据：${text(pick.evidenceUsed.join(", "))}${infoButton("证据来源", pick.evidenceUsed)}</span>` : "";
+  const evidence = Array.isArray(pick.evidenceUsed) && pick.evidenceUsed.length ? `<span class="sub">证据：${text(pick.evidenceUsed.join(", "))}</span>` : "";
   const risk = pick.upsetRisk ? `<span class="sub">风险：${text(pick.upsetRisk)}</span>` : "";
   const daily = row.dailyCalibration?.count
     ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
@@ -285,17 +288,13 @@ function reasonMarkup(row) {
 function resultMarkup(row) {
   const result = row.result || null;
   if (!result || result.status !== "final") {
-    return `<span class="sub result-pending">真实赛果：等待同步${infoButton("赛果来源", ["来源：赛果同步 API / 自动任务。", "比赛未完赛或尚未抓取到结果时显示等待同步。"])}</span>`;
+    return `<span class="sub result-pending">真实赛果：等待同步</span>`;
   }
   const cls = row.pickOutcome === "correct" ? "result-correct" : row.pickOutcome === "missed" ? "result-missed" : "result-pending";
   const scorePart = row.pickOutcome === "correct"
     ? (row.exactScoreHit ? " · 比分全中" : " · 比分未中")
     : "";
-  return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${scorePart}${infoButton("赛果与命中来源", [
-    `赛果来源：${result.source || "未知"}；更新时间：${result.updatedAt ? dateTime(result.updatedAt) : "未知"}。`,
-    `胜负判断：PAUL 选择 ${row.pick?.code || "-"}，真实赢家 ${result.winnerCode || "-"}。`,
-    `比分判断：PAUL 预测 ${row.pick?.predictedScore || "-"}，真实比分 ${result.score || "-"}。`
-  ])}</span>`;
+  return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${scorePart}</span>`;
 }
 
 function rowMarkup(row) {
@@ -308,12 +307,7 @@ function rowMarkup(row) {
   return `
     <tr class="quant-row quant-row--${text(row.pickOutcome || "pending")}">
       <td class="match-cell">
-        <strong>#${text(row.id)} ${text(row.match)}${infoButton("比赛数据来源", [
-          `matchId：${row.id}`,
-          `轮次：${labelRound(row.round)}；小组：${row.group || "无"}`,
-          `开赛时间：${dateTime(row.kickoffAt)}`,
-          `场地：${row.venue || "未记录"}`
-        ])}</strong>
+        <strong>#${text(row.id)} ${text(row.match)}</strong>
         <span class="sub">${text(labelRound(row.round))}${row.group ? ` · ${text(row.group)} 组` : ""} · ${dateTime(row.kickoffAt)}</span>
         ${resultMarkup(row)}
       </td>
@@ -325,11 +319,7 @@ function rowMarkup(row) {
         ])}</strong>
         <span class="sub">${text(pick.code || "-")} · ${text(labelSource(pick.source))}</span>
         ${pick.predictedScore ? `<span class="sub">预测比分：${text(pick.predictedScore)}</span>` : ""}
-        <span class="${decisionClass(row.decision)}">${text(decisionLabels[row.decision?.action] || row.decision?.label || labelRisk(row.risk))}${infoButton("决策来源", [
-          `action：${row.decision?.action || "未知"}。`,
-          `level：${row.decision?.level || "未知"}。`,
-          row.decision?.reasons?.length ? `原因：${row.decision.reasons.join(" ")}` : "已通过主要过滤器。"
-        ])}</span>
+        <span class="${decisionClass(row.decision)}">${text(decisionLabels[row.decision?.action] || row.decision?.label || labelRisk(row.risk))}</span>
       </td>
       <td>${oddsMarkup(row)}</td>
       <td>${edgeMarkup(row)}</td>
