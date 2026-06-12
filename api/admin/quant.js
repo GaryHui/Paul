@@ -2,6 +2,13 @@ const { parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/br
 const { loadSnapshot } = require("../_lib/paul");
 const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults } = require("../_lib/store");
 
+const HISTORICAL_BACKTEST = {
+  correct: 972,
+  graded: 1708,
+  source: "World Cup 2022/2018/2014/2010/2006 + Premier League 2021-22 through 2024-25 holdout",
+  note: "Stored audit baseline from data/README.md. PAUL Edge 972/1708, rounded public accuracy 57%."
+};
+
 function requestToken(req) {
   const url = new URL(req.url || "/", "https://paul.local");
   const auth = req.headers.authorization || "";
@@ -267,17 +274,28 @@ function liveModelStats(predictions, results) {
 
 function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }) {
   const live = liveModelStats(predictions, results);
-  const posteriorHitRate = (modelAccuracy * priorWeight + live.correct) / (priorWeight + live.graded || 1);
+  const historicalCorrect = HISTORICAL_BACKTEST.correct;
+  const historicalGraded = HISTORICAL_BACKTEST.graded;
+  const combinedCorrect = historicalCorrect + live.correct;
+  const combinedGraded = historicalGraded + live.graded;
+  const combinedAccuracy = combinedGraded ? combinedCorrect / combinedGraded : modelAccuracy;
+  const posteriorHitRate = combinedAccuracy;
   const exactScoreBonus = Math.min(0.04, live.exactScore * 0.015);
   const edgeTrust = clamp(0.45 + (posteriorHitRate - 0.5) * 4 + exactScoreBonus, 0.35, 0.92);
   return {
-    modelAccuracy,
-    priorWeight,
+    modelAccuracy: combinedAccuracy,
+    priorWeight: combinedGraded || priorWeight,
+    historical: HISTORICAL_BACKTEST,
+    combined: {
+      correct: combinedCorrect,
+      graded: combinedGraded,
+      accuracy: combinedAccuracy
+    },
     live,
     posteriorHitRate,
     exactScoreBonus,
     edgeTrust,
-    method: "Kelly uses PAUL's pick, then shrinks PAUL's edge versus market implied probability by a reliability factor based on the 55% prior, verified live results, exact-score hits, and each match's daily PAUL trend."
+    method: "Kelly uses PAUL's pick, then shrinks PAUL's edge versus market implied probability by a reliability factor based on the historical backtest plus verified official live results, exact-score hits, and each match's daily PAUL trend."
   };
 }
 
@@ -672,7 +690,11 @@ module.exports = async function handler(req, res) {
         posteriorHitRate: Number((reliability.posteriorHitRate * 100).toFixed(2)),
         edgeTrust: Number((reliability.edgeTrust * 100).toFixed(2)),
         exactScoreBonus: Number((reliability.exactScoreBonus * 100).toFixed(2)),
-        modelAccuracy: Number((reliability.modelAccuracy * 100).toFixed(2))
+        modelAccuracy: Number((reliability.modelAccuracy * 100).toFixed(2)),
+        combined: {
+          ...reliability.combined,
+          accuracy: Number((reliability.combined.accuracy * 100).toFixed(2))
+        }
       },
       summary: {
         matches: rows.length,
