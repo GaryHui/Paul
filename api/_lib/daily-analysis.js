@@ -3,8 +3,13 @@ const { parseMatchTime } = require("./bracket");
 const { getDailyAnalysis, setDailyAnalysisEntry } = require("./store");
 
 const defaultHorizonDays = Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45);
-const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 4);
+const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
 const defaultDueGraceMinutes = Number(process.env.DAILY_ANALYSIS_DUE_GRACE_MINUTES || 90);
+const defaultPriorityWindowHours = Number(
+  process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS ||
+  process.env.PREDICTION_LEAD_HOURS ||
+  72
+);
 
 function eligibleForDailyAnalysis(match, now = new Date(), horizonDays = defaultHorizonDays) {
   if (!match?.teamA?.code || !match?.teamB?.code) return false;
@@ -56,6 +61,30 @@ function dueForDailyAnalysis(match, entry, now = new Date(), options = {}) {
   };
 }
 
+function dailyAnalysisPriority(match, entry, now, state) {
+  const matchTime = parseMatchTime(match);
+  const hoursToKickoff = matchTime
+    ? (matchTime.getTime() - now.getTime()) / (60 * 60 * 1000)
+    : Number.POSITIVE_INFINITY;
+  const updatedAt = dailyReadUpdatedAt(entry);
+  const ageHours = updatedAt
+    ? (now.getTime() - updatedAt.getTime()) / (60 * 60 * 1000)
+    : Number.POSITIVE_INFINITY;
+  let bucket = 5;
+  if (hoursToKickoff <= 6) bucket = 0;
+  else if (hoursToKickoff <= 24) bucket = 1;
+  else if (hoursToKickoff <= 72) bucket = 2;
+  else if (hoursToKickoff <= 168) bucket = 3;
+  else bucket = 4;
+
+  return {
+    bucket,
+    hoursToKickoff,
+    ageHours,
+    cadence: state?.cadence || null
+  };
+}
+
 function compactDailyRead(match, result) {
   const analysis = result.analysis || {};
   const probabilities = analysis.probabilities || {};
@@ -92,17 +121,42 @@ async function refreshDailyAnalysis(matches, options = {}) {
   const now = options.now || new Date();
   const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
   const limit = Number(options.limit ?? defaultLimit);
+  const priorityWindowHours = Number(options.priorityWindowHours ?? defaultPriorityWindowHours);
   const dailyCache = await getDailyAnalysis();
   const eligible = matches
     .filter((match) => eligibleForDailyAnalysis(match, now, horizonDays))
     .sort((a, b) => parseMatchTime(a) - parseMatchTime(b));
-  const candidates = eligible
-    .map((match) => ({
-      match,
-      state: dueForDailyAnalysis(match, dailyCache[match.id] || dailyCache[String(match.id)], now, options)
-    }))
+  const dueCandidates = eligible
+    .map((match) => {
+      const entry = dailyCache[match.id] || dailyCache[String(match.id)];
+      const state = dueForDailyAnalysis(match, entry, now, options);
+      return {
+        match,
+        state,
+        priority: dailyAnalysisPriority(match, entry, now, state)
+      };
+    })
     .filter((item) => item.state.due)
-    .slice(0, limit);
+    .sort((a, b) => {
+      if (a.priority.bucket !== b.priority.bucket) return a.priority.bucket - b.priority.bucket;
+      if (a.priority.hoursToKickoff !== b.priority.hoursToKickoff) {
+        return a.priority.hoursToKickoff - b.priority.hoursToKickoff;
+      }
+      return b.priority.ageHours - a.priority.ageHours;
+    });
+  const protectedCandidates = limit > 0
+    ? dueCandidates.filter((item) => item.priority.hoursToKickoff <= priorityWindowHours)
+    : [];
+  const selectedIds = new Set(protectedCandidates.map((item) => String(item.match.id)));
+  const remainingSlots = Math.max(0, limit - protectedCandidates.length);
+  const candidates = limit > 0
+    ? [
+      ...protectedCandidates,
+      ...dueCandidates
+        .filter((item) => !selectedIds.has(String(item.match.id)))
+        .slice(0, remainingSlots)
+    ]
+    : [];
   const events = [];
 
   for (const { match, state } of candidates) {
@@ -135,11 +189,14 @@ async function refreshDailyAnalysis(matches, options = {}) {
   return {
     checked: candidates.length,
     eligible: eligible.length,
-    skipped: Math.max(0, eligible.length - candidates.length),
+    due: dueCandidates.length,
+    protected: protectedCandidates.length,
+    skipped: Math.max(0, dueCandidates.length - candidates.length),
     ok: events.filter((event) => event.status === "ok").length,
     errors: events.filter((event) => event.status === "error").length,
     horizonDays,
     limit,
+    priorityWindowHours,
     events
   };
 }
@@ -147,6 +204,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
 module.exports = {
   eligibleForDailyAnalysis,
   dailyAnalysisCadence,
+  dailyAnalysisPriority,
   dueForDailyAnalysis,
   refreshDailyAnalysis
 };
