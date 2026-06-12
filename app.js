@@ -1337,6 +1337,7 @@ function traceProbability(value) {
 }
 
 function probabilityTriple(match, probabilities = {}) {
+  probabilities ||= {};
   const resolved = resolvedTeams(match);
   const home = traceProbability(probabilities.home);
   const draw = traceProbability(probabilities.draw);
@@ -1354,6 +1355,7 @@ function sideToCode(match, side) {
 }
 
 function favoriteFromProbabilities(match, probabilities = {}) {
+  probabilities ||= {};
   const sides = ["home", "draw", "away"].filter((side) => Number.isFinite(Number(probabilities[side])));
   if (!sides.length) return null;
   const side = sides.sort((a, b) => Number(probabilities[b]) - Number(probabilities[a]))[0];
