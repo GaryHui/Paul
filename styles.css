@@ -1255,6 +1255,17 @@ input {
   line-height: 1.35;
 }
 
+.trace-paul--locked {
+  padding: 10px 12px;
+  border: 1px solid rgba(87, 199, 255, 0.35);
+  border-radius: 8px;
+  background: rgba(87, 199, 255, 0.1);
+}
+
+.trace-paul--locked em {
+  color: #9edcff;
+}
+
 .trace-impact--win strong {
   color: var(--green);
 }

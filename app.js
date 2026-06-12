@@ -1485,13 +1485,14 @@ function renderPublicTraceUnsafe() {
         const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
         const paulCorrect = result.winnerCode && String(paul.code || "").toUpperCase() === String(result.winnerCode).toUpperCase();
         const settledClass = result.winnerCode ? (paulCorrect ? "trace-row--correct" : "trace-row--missed") : "";
+        const paulClass = paul.status === "Official locked" ? "trace-paul--locked" : "";
         return `
           <div class="trace-row ${settledClass}" role="row">
             <span>
               <strong>#${match.id} ${escapeHtml(matchName)}</strong>
               <em>${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</em>
             </span>
-            <span>
+            <span class="${paulClass}">
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
               <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}</em>
             </span>
