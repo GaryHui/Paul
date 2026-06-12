@@ -17,6 +17,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/admin/*.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/automation/*.js",
       "use": "@vercel/node"
     },
