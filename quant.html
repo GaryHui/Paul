@@ -330,11 +330,13 @@
       }
 
       .calc-info__body {
-        position: absolute;
-        z-index: 20;
-        top: 24px;
-        left: 0;
-        width: min(340px, calc(100vw - 32px));
+        position: fixed;
+        z-index: 100;
+        top: var(--calc-info-top, 80px);
+        left: var(--calc-info-left, 16px);
+        width: min(360px, calc(100vw - 24px));
+        max-height: min(420px, calc(100vh - 24px));
+        overflow: auto;
         padding: 12px;
         border: 1px solid rgba(87, 199, 255, 0.45);
         border-radius: 10px;
@@ -345,12 +347,6 @@
         line-height: 1.45;
         font-weight: 800;
         white-space: normal;
-      }
-
-      td:last-child .calc-info__body,
-      th:last-child .calc-info__body {
-        right: 0;
-        left: auto;
       }
 
       .calc-info__body strong,
@@ -522,6 +518,6 @@
         <div id="emptyState" class="empty">输入管理员 Token 后载入面板。</div>
       </section>
     </main>
-    <script src="quant.js?v=4"></script>
+    <script src="quant.js?v=6"></script>
   </body>
 </html>
