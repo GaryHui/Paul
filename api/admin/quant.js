@@ -199,12 +199,22 @@ function fallbackPickFromMarket(match, market) {
 }
 
 function kellyStake({ odds, probability, bankroll, kellyFraction, maxStakePct, minEdgePct, isBettable }) {
-  if (!isBettable || !odds || !probability) {
+  if (!odds || !probability) {
     return { fullKelly: 0, fractionalKelly: 0, cappedFraction: 0, rawStake: 0, edgePct: null, impliedProbability: odds ? 1 / odds : null };
   }
   const impliedProbability = 1 / odds;
   const edgePct = (probability - impliedProbability) * 100;
   const fullKelly = (odds * probability - 1) / (odds - 1);
+  if (!isBettable) {
+    return {
+      fullKelly: 0,
+      fractionalKelly: 0,
+      cappedFraction: 0,
+      rawStake: 0,
+      edgePct,
+      impliedProbability
+    };
+  }
   const positiveKelly = Math.max(0, fullKelly);
   const fractionalKelly = edgePct >= minEdgePct ? positiveKelly * kellyFraction : 0;
   const cappedFraction = Math.min(fractionalKelly, maxStakePct);
