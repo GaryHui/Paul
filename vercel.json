@@ -9,10 +9,6 @@
     {
       "path": "/api/automation/deep-refresh",
       "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/automation/sync-results",
-      "schedule": "*/30 * * * *"
     }
   ],
   "builds": [
