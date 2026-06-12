@@ -61,8 +61,10 @@ const teams = {
 };
 
 const groupOrder = "ABCDEFGHIJKL".split("");
-const roundOptions = ["All", "Group Stage", "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
+const defaultRoundFilter = "Recent";
+const roundOptions = [defaultRoundFilter, "All", "Group Stage", "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
 const roundLabels = {
+  Recent: "Recent matches",
   All: "All",
   "Group Stage": "Group Stage"
 };
@@ -373,6 +375,20 @@ function currentLocale() {
 
 function roundLabel(round) {
   const labels = {
+    Recent: {
+      en: "Recent matches",
+      es: "Partidos recientes",
+      fr: "Matchs récents",
+      de: "Aktuelle Spiele",
+      pt: "Jogos recentes",
+      ar: "المباريات القريبة",
+      zh: "最近比赛",
+      ja: "直近の試合",
+      ko: "최근 경기",
+      it: "Partite recenti",
+      nl: "Recente wedstrijden",
+      tr: "Yakın maçlar"
+    },
     All: { en: "All", es: "Todo", zh: "全部" },
     "Group Stage": { en: "Group stage", es: "Fase de grupos", zh: "小组赛" },
     "Round of 32": { en: "Round of 32", es: "Dieciseisavos", zh: "32 强" },
@@ -1724,19 +1740,55 @@ function updateChampionLabel() {
   setText("championName", tr("awaitingGroups"));
 }
 
+function recentMatchRank(match, now = new Date()) {
+  const kickoff = matchKickoffTime(match);
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode || Number.isNaN(kickoff.getTime())) {
+    return { bucket: 9, distance: Number.MAX_SAFE_INTEGER };
+  }
+  const result = officialResult(match);
+  const locked = Boolean(officialPrediction(match));
+  const distance = Math.abs(kickoff.getTime() - now.getTime());
+  if (locked && result?.status !== "final") return { bucket: 0, distance };
+  if (result?.status === "final") return { bucket: 1, distance };
+  if (kickoff >= now) return { bucket: 2, distance };
+  return { bucket: 3, distance };
+}
+
+function sortRecentMatches(a, b, now = new Date()) {
+  const aRank = recentMatchRank(a, now);
+  const bRank = recentMatchRank(b, now);
+  return aRank.bucket - bRank.bucket || aRank.distance - bRank.distance || a.id - b.id;
+}
+
 function renderMatchList() {
   const round = document.getElementById("roundFilter").value;
   const group = document.getElementById("groupFilter").value;
   const query = document.getElementById("searchBox").value.trim().toLowerCase();
   const list = document.getElementById("matchList");
+  const now = new Date();
 
-  const filtered = tournament.matches.filter((match) => {
+  let filtered = tournament.matches.filter((match) => {
     const resolved = resolvedTeams(match);
     const aLabel = resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
     const bLabel = resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
     const haystack = `${match.id} ${match.round} ${match.group || ""} ${aLabel} ${bLabel} ${match.venue}`.toLowerCase();
-    return (round === "All" || match.round === round) && (group === "All" || match.group === group) && (!query || haystack.includes(query));
+    const isRecent = round === defaultRoundFilter;
+    const resolvedPlayable = Boolean(resolved.aCode && resolved.bCode && !Number.isNaN(matchKickoffTime(match).getTime()));
+    return (isRecent ? resolvedPlayable : (round === "All" || match.round === round))
+      && (group === "All" || match.group === group)
+      && (!query || haystack.includes(query));
   });
+
+  if (round === defaultRoundFilter) {
+    filtered = filtered
+      .sort((a, b) => sortRecentMatches(a, b, now))
+      .slice(0, query ? filtered.length : 24);
+  }
+
+  if (filtered.length && !filtered.some((match) => match.id === activeMatchId)) {
+    activeMatchId = filtered[0].id;
+  }
 
   list.innerHTML = filtered
     .map((match) => {
@@ -3178,9 +3230,9 @@ function refreshFilterOptions() {
   const roundFilter = document.getElementById("roundFilter");
   const groupFilter = document.getElementById("groupFilter");
   if (roundFilter) {
-    const current = roundFilter.value || "All";
+    const current = roundFilter.value || defaultRoundFilter;
     roundFilter.innerHTML = roundOptions.map((round) => `<option value="${round}">${roundLabel(round)}</option>`).join("");
-    roundFilter.value = current;
+    roundFilter.value = roundOptions.includes(current) ? current : defaultRoundFilter;
   }
   if (groupFilter) {
     const current = groupFilter.value || "All";
