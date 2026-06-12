@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
+const { parseMatchTime } = require("./bracket");
 const { getEvidenceCache, setEvidenceEntry } = require("./store");
 
 const root = path.join(__dirname, "..", "..");
@@ -251,6 +252,25 @@ function cachedEvidenceIsFresh(entry, maxHours = Number(process.env.ODDS_CACHE_M
   return Date.now() - updatedAt.getTime() <= maxHours * 60 * 60 * 1000;
 }
 
+function marketWithSnapshots(match, currentMarket, previousEntry) {
+  const now = new Date();
+  const matchTime = parseMatchTime(match);
+  const hoursToKickoff = matchTime ? (matchTime.getTime() - now.getTime()) / (60 * 60 * 1000) : null;
+  const previousMarket = previousEntry?.market || null;
+  const previousOpeningOdds = previousMarket?.openingOdds || previousMarket?.odds || null;
+  const previousOpeningAt = previousMarket?.openingUpdatedAt || previousMarket?.updatedAt || previousEntry?.generatedAt || null;
+  const closingWindowHours = Number(process.env.CLV_CLOSING_WINDOW_HOURS || 1);
+  const shouldMarkClosing = hoursToKickoff !== null && hoursToKickoff >= 0 && hoursToKickoff <= closingWindowHours;
+
+  return {
+    ...currentMarket,
+    openingOdds: previousOpeningOdds || currentMarket?.odds || null,
+    openingUpdatedAt: previousOpeningOdds ? previousOpeningAt : (currentMarket?.updatedAt || now.toISOString()),
+    closingOdds: shouldMarkClosing ? (currentMarket?.odds || null) : (previousMarket?.closingOdds || null),
+    closingUpdatedAt: shouldMarkClosing ? (currentMarket?.updatedAt || now.toISOString()) : (previousMarket?.closingUpdatedAt || null)
+  };
+}
+
 function findTeamRecord(collection, code) {
   if (!collection) return null;
   if (Array.isArray(collection)) {
@@ -275,7 +295,7 @@ async function collectPredictionEvidence(match, options = {}) {
     await setEvidenceEntry(match.id, {
       matchId: match.id,
       generatedAt: new Date().toISOString(),
-      market: remoteOdds.record,
+      market: marketWithSnapshots(match, remoteOdds.record, cachedEvidence),
       marketFetchErrors: remoteOdds.errors
     });
   }

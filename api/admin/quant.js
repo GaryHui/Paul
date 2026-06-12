@@ -116,6 +116,10 @@ function oddsRecord(evidence) {
     updatedAt: market.updatedAt || evidence.updatedAt || evidence.generatedAt || null,
     bookmakerCount: market.bookmakerCount || null,
     odds: market.odds,
+    openingOdds: market.openingOdds || null,
+    openingUpdatedAt: market.openingUpdatedAt || null,
+    closingOdds: market.closingOdds || null,
+    closingUpdatedAt: market.closingUpdatedAt || null,
     probabilities: normalizeProbabilities(market.probabilities)
   };
 }
