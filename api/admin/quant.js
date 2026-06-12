@@ -410,17 +410,25 @@ function qualityDecision({
   if (!market?.odds) return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["缺少可执行赔率。"] };
   if (!Number.isFinite(edgePct)) return { action: "NO_BET", label: "不下注", level: "blocked", reasons: ["缺少概率优势。"] };
 
-  if (edgePct < strictEdgePct) reasons.push(`优势 ${edgePct.toFixed(2)}% 低于严格门槛 ${strictEdgePct}%。`);
-  if (trustPct < minTrustPct) reasons.push(`信任系数 ${trustPct.toFixed(2)}% 低于门槛 ${minTrustPct}%。`);
+  const nearEdge = edgePct >= strictEdgePct - 2;
+  const nearTrust = trustPct >= minTrustPct - 8;
+  const hasPositiveEdge = edgePct > 0;
+  if (edgePct < 0) {
+    reasons.push(`负优势 ${edgePct.toFixed(2)}%：PAUL 可以看好方向，但赔率隐含胜率更高，赛前下注价值不足。`);
+  } else if (edgePct < strictEdgePct) {
+    reasons.push(`优势 ${edgePct.toFixed(2)}% 低于正式下注门槛 ${strictEdgePct}%${nearEdge ? "，但接近门槛可继续观察" : ""}。`);
+  }
+  if (trustPct < minTrustPct) reasons.push(`信任系数 ${trustPct.toFixed(2)}% 低于正式下注门槛 ${minTrustPct}%。`);
 
   const drawDanger = pick.side !== "draw" && drawPct >= drawDangerPct && marginPct <= 8;
   if (drawDanger) reasons.push(`小组赛平局风险偏高：平局 ${drawPct.toFixed(2)}%，胜平负差距 ${marginPct.toFixed(2)}%。`);
 
   if (reasons.length) {
+    const shouldWatch = drawDanger || (hasPositiveEdge && nearEdge && nearTrust);
     return {
-      action: drawDanger ? "WATCH" : "NO_BET",
-      label: drawDanger ? "观察" : "不下注",
-      level: drawDanger ? "watch" : "blocked",
+      action: shouldWatch ? "WATCH" : "NO_BET",
+      label: shouldWatch ? "观察机会" : "不下注",
+      level: shouldWatch ? "watch" : "blocked",
       reasons
     };
   }

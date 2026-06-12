@@ -1411,7 +1411,7 @@ function tracePaulPick(match, official, daily) {
 }
 
 function traceResult(match, result) {
-  if (!result?.status || result.status !== "final") return { label: tr("pending"), winnerCode: null };
+  if (!result?.status || result.status !== "final") return { label: tr("pending"), winnerCode: null, score: null };
   const resolved = resolvedTeams(match);
   const winnerCode = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore)
     ? "DRAW"
@@ -1420,8 +1420,19 @@ function traceResult(match, result) {
       : resolved.bCode);
   return {
     label: `${teams[resolved.aCode]?.name || "Home"} ${result.homeScore}-${result.awayScore} ${teams[resolved.bCode]?.name || "Away"}`,
+    score: `${result.homeScore}-${result.awayScore}`,
     winnerCode
   };
+}
+
+function tracePaulOutcomeLabel(paul, result) {
+  if (!result.winnerCode || !paul.code) return "";
+  const winnerHit = String(paul.code).toUpperCase() === String(result.winnerCode).toUpperCase();
+  if (!winnerHit) return currentLanguage === "zh" ? "PAUL 胜负未中" : "PAUL win call missed";
+  const scoreHit = paul.predictedScore && result.score && String(paul.predictedScore).replace(/\s/g, "") === String(result.score).replace(/\s/g, "");
+  return currentLanguage === "zh"
+    ? `PAUL 胜负命中 · ${scoreHit ? "比分全中" : "比分未中"}`
+    : `PAUL win call hit · score ${scoreHit ? "exact" : "missed"}`;
 }
 
 function traceMarketImpact(paulCode, marketCode, winnerCode) {
@@ -1486,6 +1497,7 @@ function renderPublicTraceUnsafe() {
         const paulCorrect = result.winnerCode && String(paul.code || "").toUpperCase() === String(result.winnerCode).toUpperCase();
         const settledClass = result.winnerCode ? (paulCorrect ? "trace-row--correct" : "trace-row--missed") : "";
         const paulClass = paul.status === "Official locked" ? "trace-paul--locked" : "";
+        const paulOutcome = tracePaulOutcomeLabel(paul, result);
         return `
           <div class="trace-row ${settledClass}" role="row">
             <span>
@@ -1502,7 +1514,7 @@ function renderPublicTraceUnsafe() {
             </span>
             <span>
               <strong>${escapeHtml(result.label)}</strong>
-              <em>${result.winnerCode ? `${tr("winner")}: ${escapeHtml(teamNameForCode(result.winnerCode, match))}` : countdownMarkup(match)}</em>
+              <em>${result.winnerCode ? `${tr("winner")}: ${escapeHtml(teamNameForCode(result.winnerCode, match))}${paulOutcome ? ` · ${escapeHtml(paulOutcome)}` : ""}` : countdownMarkup(match)}</em>
             </span>
             <span class="${impact.startsWith("+1") ? "trace-impact--win" : impact.startsWith("-") ? "trace-impact--loss" : ""}">
               <strong>${impact}</strong>

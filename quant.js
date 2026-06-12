@@ -33,15 +33,15 @@ const riskLabels = {
 };
 
 const outcomeLabels = {
-  correct: "PAUL 命中",
-  missed: "PAUL 未中",
+  correct: "胜负命中",
+  missed: "胜负未中",
   ungraded: "无法判定",
   pending: "等待赛果"
 };
 
 const decisionLabels = {
   BET: "可下注",
-  WATCH: "观察",
+  WATCH: "观察机会",
   NO_BET: "不下注",
   SETTLED: "已完赛"
 };
@@ -154,8 +154,10 @@ function oddsMarkup(row) {
 }
 
 function edgeMarkup(row) {
-  const edge = Number(row.edgePct || 0);
-  const cls = edge >= 0 ? "edge-positive" : "edge-negative";
+  const displayEdge = row.edgePct !== null && row.edgePct !== undefined
+    ? Number(row.edgePct)
+    : (row.dailyAdjustedEdgePct !== null && row.dailyAdjustedEdgePct !== undefined ? Number(row.dailyAdjustedEdgePct) : null);
+  const cls = displayEdge === null || displayEdge >= 0 ? "edge-positive" : "edge-negative";
   const clv = row.clv || {};
   const clvText = clv.status === "positive"
     ? `CLV：+${pct(clv.clvPct)}，优于收盘`
@@ -163,16 +165,18 @@ function edgeMarkup(row) {
       ? `CLV：${pct(clv.clvPct)}，差于收盘`
       : "CLV：等待收盘赔率";
   const comment = row.selectedProbability !== null && row.impliedProbability !== null
-    ? edge >= 0
+    ? displayEdge >= 0
       ? "PAUL 概率高于赔率隐含概率"
-      : "PAUL 看好，但当前赔率不划算"
+      : "PAUL 看好方向，但当前赔率不划算"
     : "缺少概率或赔率";
+  const breakEven = row.selectedOdds ? `保本要求：赔率 ${odds(row.selectedOdds)} 需要 ${pct(row.impliedProbability)} 以上胜率` : "保本要求：缺少赔率";
   return `
-    <strong class="${cls}">${pct(row.edgePct)}</strong>
+    <strong class="${cls}">${pct(displayEdge)}</strong>
     <span class="sub">PAUL 原始概率：${pct(row.selectedProbability)}</span>
     <span class="sub">每日调整概率：${pct(row.dailyAdjustedProbability)}</span>
     <span class="sub">Kelly 校准概率：${pct(row.kellyProbability)}</span>
     <span class="sub">赔率隐含：${pct(row.impliedProbability)}</span>
+    <span class="sub">${text(breakEven)}</span>
     <span class="sub">原始优势：${pct(row.rawEdgePct)}</span>
     <span class="sub">每日调整优势：${pct(row.dailyAdjustedEdgePct)}</span>
     <span class="sub">本场信任系数：${pct(row.rowEdgeTrust)}</span>
@@ -222,13 +226,19 @@ function resultMarkup(row) {
     return `<span class="sub result-pending">真实赛果：等待同步</span>`;
   }
   const cls = row.pickOutcome === "correct" ? "result-correct" : row.pickOutcome === "missed" ? "result-missed" : "result-pending";
-  const exact = row.exactScoreHit ? " · 比分全中" : "";
-  return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${exact}</span>`;
+  const scorePart = row.pickOutcome === "correct"
+    ? (row.exactScoreHit ? " · 比分全中" : " · 比分未中")
+    : "";
+  return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${scorePart}</span>`;
 }
 
 function rowMarkup(row) {
   const pick = row.pick || {};
   const stake = Number(row.recommendedStake || 0);
+  const stakeLabel = row.decision?.action === "SETTLED" ? "已完赛" : "不下注";
+  const noStakeReason = row.decision?.action === "SETTLED"
+    ? "赛后复盘，不再给入场仓位"
+    : (row.decision?.label || labelRisk(row.skipReason) || "没有正优势");
   return `
     <tr class="quant-row quant-row--${text(row.pickOutcome || "pending")}">
       <td class="match-cell">
@@ -251,8 +261,8 @@ function rowMarkup(row) {
         <span class="sub">最终仓位：${pct(row.finalFraction)}</span>
       </td>
       <td>
-        <strong class="stake">${stake > 0 ? money(stake) : "不下注"}</strong>
-        <span class="sub">${stake > 0 ? `执行赔率 ${odds(row.selectedOdds)}` : text(row.decision?.label || labelRisk(row.skipReason) || "没有正优势")}</span>
+        <strong class="stake">${stake > 0 ? money(stake) : stakeLabel}</strong>
+        <span class="sub">${stake > 0 ? `执行赔率 ${odds(row.selectedOdds)}` : text(noStakeReason)}</span>
       </td>
       <td>${reasonMarkup(row)}</td>
     </tr>
