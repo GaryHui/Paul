@@ -1481,8 +1481,9 @@ function renderPublicTraceUnsafe() {
         const marketProbabilities = probabilityTriple(match, market?.probabilities);
         const impact = traceMarketImpact(paul.code, market?.favoriteCode, result.winnerCode);
         const paulCorrect = result.winnerCode && String(paul.code || "").toUpperCase() === String(result.winnerCode).toUpperCase();
+        const settledClass = result.winnerCode ? (paulCorrect ? "trace-row--correct" : "trace-row--missed") : "";
         return `
-          <div class="trace-row ${paulCorrect ? "trace-row--correct" : ""}" role="row">
+          <div class="trace-row ${settledClass}" role="row">
             <span>
               <strong>#${match.id} ${escapeHtml(matchName)}</strong>
               <em>${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</em>
