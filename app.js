@@ -1428,7 +1428,7 @@ function traceMarketImpact(paulCode, marketCode, winnerCode) {
   return `${impact >= 0 ? "+" : ""}${impact}`;
 }
 
-function renderPublicTrace() {
+function renderPublicTraceUnsafe() {
   const container = document.getElementById("publicTrace");
   const summary = document.getElementById("publicTraceSummary");
   if (!container) return;
@@ -1506,6 +1506,17 @@ function renderPublicTrace() {
       }).join("")}
     </div>
   `;
+}
+
+function renderPublicTrace() {
+  const container = document.getElementById("publicTrace");
+  try {
+    renderPublicTraceUnsafe();
+  } catch (error) {
+    if (container) {
+      container.innerHTML = `<div class="empty-list">Match trace failed to render: ${escapeHtml(error.message || "unknown error")}</div>`;
+    }
+  }
 }
 
 function proofEntryForMatch(matchId) {
@@ -2039,6 +2050,10 @@ async function loadAutomationStatus() {
     statusText.textContent = `${qwenState}; ${cronState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;
+    const trace = document.getElementById("publicTrace");
+    if (trace) {
+      trace.innerHTML = `<div class="empty-list">Match trace is temporarily unavailable: ${escapeHtml(error.message)}</div>`;
+    }
   }
 }
 

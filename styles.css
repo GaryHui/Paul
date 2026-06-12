@@ -1205,6 +1205,11 @@ input {
   box-shadow: inset 4px 0 0 rgba(50, 240, 164, 0.78);
 }
 
+.trace-row--error {
+  background: rgba(255, 92, 122, 0.08);
+  box-shadow: inset 4px 0 0 rgba(255, 92, 122, 0.7);
+}
+
 .trace-row--head {
   position: sticky;
   top: 0;

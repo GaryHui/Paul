@@ -4,10 +4,10 @@ const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, res
 const { refreshDailyAnalysis } = require("../_lib/daily-analysis");
 const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
 const { fetchMatchResult } = require("../_lib/results");
-const { getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
+const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 72);
-const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 3);
+const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2);
 const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 0);
 const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 0);
 const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 8);
@@ -64,6 +64,23 @@ function automationSummary(matches, predictions, results) {
   };
 }
 
+function storedKickoffAt(match, predictions, evidenceCache) {
+  const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
+  const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || null;
+  const candidates = [
+    prediction?.evidence?.market?.intelligence?.kickoffAt,
+    prediction?.proof?.payload?.evidence?.market?.intelligence?.kickoffAt,
+    evidence?.market?.intelligence?.kickoffAt,
+    evidence?.market?.kickoffAt,
+    evidence?.kickoffAt
+  ].filter(Boolean);
+  for (const value of candidates) {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+  return parseMatchTime(match);
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method === "POST") assertOwner(req);
@@ -72,6 +89,7 @@ module.exports = async function handler(req, res) {
     const snapshot = loadSnapshot();
     const predictions = await getPredictions();
     const results = await getResults();
+    const evidenceCache = await getEvidenceCache();
     const now = new Date();
     const events = [];
     const cronRun = req.method === "GET" && !force;
@@ -116,7 +134,7 @@ module.exports = async function handler(req, res) {
     let resultAttempts = 0;
 
     for (const sourceMatch of resolvedMatches) {
-      const matchTime = parseMatchTime(sourceMatch);
+      const matchTime = storedKickoffAt(sourceMatch, predictions, evidenceCache);
       if (!matchTime || !sourceMatch.teamA?.code || !sourceMatch.teamB?.code) {
         if (sourceMatch.round !== "Group Stage") {
           events.push({ type: "bracket", matchId: sourceMatch.id, status: "waiting", reason: "slot not resolved" });
