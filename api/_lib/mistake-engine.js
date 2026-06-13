@@ -230,8 +230,8 @@ function mergeHints(localHints, aiHints = {}) {
   };
 }
 
-function updateAggregate(memory, review, match) {
-  const aggregate = memory.aggregate || {
+function emptyAggregate() {
+  return {
     total: 0,
     directionMisses: 0,
     scoreMisses: 0,
@@ -239,6 +239,10 @@ function updateAggregate(memory, review, match) {
     causeCounts: {},
     teamMemory: {}
   };
+}
+
+function addReviewToAggregate(aggregate, review) {
+  if (!review) return;
   aggregate.total += 1;
   if (!review.directionHit) aggregate.directionMisses += 1;
   if (!review.scoreHit) aggregate.scoreMisses += 1;
@@ -246,7 +250,7 @@ function updateAggregate(memory, review, match) {
   Object.entries(causeCounts(review.causeTags || [])).forEach(([cause, count]) => {
     aggregate.causeCounts[cause] = (aggregate.causeCounts[cause] || 0) + count;
   });
-  teamCodes(match).forEach((code) => {
+  (review.teamCodes || []).forEach((code) => {
     aggregate.teamMemory[code] ||= { matches: 0, directionMisses: 0, scoreMisses: 0, causes: {} };
     const team = aggregate.teamMemory[code];
     team.matches += 1;
@@ -256,6 +260,11 @@ function updateAggregate(memory, review, match) {
       team.causes[cause] = (team.causes[cause] || 0) + count;
     });
   });
+}
+
+function rebuildAggregate(memory) {
+  const aggregate = emptyAggregate();
+  Object.values(memory.matches || {}).forEach((review) => addReviewToAggregate(aggregate, review));
   memory.aggregate = aggregate;
 }
 
@@ -270,6 +279,7 @@ async function recordMistakeReview({ match, result, prediction, evidence, baseRe
     generatedAt: new Date().toISOString(),
     matchId: match.id,
     match: `${match.teamA?.name} vs ${match.teamB?.name}`,
+    teamCodes: teamCodes(match),
     directionHit: classification.directionHit,
     scoreHit: classification.scoreHit,
     goalDiff: classification.goalDiff,
@@ -309,8 +319,13 @@ async function recordMistakeReview({ match, result, prediction, evidence, baseRe
   const memory = await getMistakeMemory();
   memory.version = "paul-mistake-memory-v1";
   memory.matches ||= {};
+  const hadPreviousReview = Boolean(memory.matches[match.id]);
   memory.matches[match.id] = review;
-  updateAggregate(memory, review, match);
+  if (memory.aggregate && !hadPreviousReview) {
+    addReviewToAggregate(memory.aggregate, review);
+  } else {
+    rebuildAggregate(memory);
+  }
   memory.updatedAt = new Date().toISOString();
   await setMistakeMemory(memory);
   return review;
@@ -363,7 +378,36 @@ function mistakeAdjustmentFromMemory(summary = {}) {
   };
 }
 
+function buildMistakeContext(match, memory = {}) {
+  const summary = summarizeRelevantMistakes(match, memory);
+  const calibrationAdjustment = mistakeAdjustmentFromMemory(summary);
+  return {
+    enabled: process.env.MISTAKE_ENGINE_DISABLED !== "1",
+    source: "paul:mistake-memory:v1",
+    updatedAt: summary.updatedAt,
+    usable: Boolean(calibrationAdjustment),
+    summary,
+    calibrationAdjustment
+  };
+}
+
+async function getMistakeContextForMatch(match) {
+  if (process.env.MISTAKE_ENGINE_DISABLED === "1") {
+    return {
+      enabled: false,
+      source: "paul:mistake-memory:v1",
+      updatedAt: null,
+      usable: false,
+      summary: null,
+      calibrationAdjustment: null
+    };
+  }
+  return buildMistakeContext(match, await getMistakeMemory());
+}
+
 module.exports = {
+  buildMistakeContext,
+  getMistakeContextForMatch,
   recordMistakeReview,
   summarizeRelevantMistakes,
   mistakeAdjustmentFromMemory

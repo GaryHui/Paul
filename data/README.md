@@ -90,7 +90,7 @@ The engine records:
 - calibration hints for risk sizing, draw risk, upset sensitivity, score confidence, and market shrinkage
 - optional PAUL/Qwen search-backed post-match findings when `MISTAKE_ENGINE_USE_AI` is not `0`
 
-The memory is stored in Vercel KV under `paul:mistake-memory:v1`. Future evidence collection reads this memory and adds a compact `evidence.mistakeEngine` object to the PAUL evidence package. This gives PAUL calibration context, but does not change PAUL Edge v4 weights or the protected official prediction prompt structure.
+The memory is stored in Vercel KV under `paul:mistake-memory:v1`. KV is the small cloud key-value database behind the app; in this project it is usually Vercel KV / Upstash Redis, used to save predictions, results, evidence snapshots, and mistake memory between serverless runs. Future evidence collection reads this memory and adds a compact `evidence.mistakeEngine` object to the PAUL evidence package. The private quant lab reads the same KV memory as a calibration helper for row-level trust and post-match review display. This gives PAUL and the lab shared calibration context, but does not change PAUL Edge v4 weights or the protected official prediction prompt structure.
 
 Owner inspection endpoint:
 

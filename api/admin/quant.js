@@ -1,6 +1,7 @@
 const { parseMatchTime, resolveMatches } = require("../_lib/bracket");
+const { buildMistakeContext } = require("../_lib/mistake-engine");
 const { loadSnapshot } = require("../_lib/paul");
-const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults } = require("../_lib/store");
+const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults } = require("../_lib/store");
 
 const HISTORICAL_BACKTEST = {
   correct: 972,
@@ -344,18 +345,24 @@ function liveModelStats(predictions, results) {
   }, { graded: 0, correct: 0, exactScore: 0, exactScoreGraded: 0, marketGraded: 0, marketCorrect: 0 });
 }
 
-function postMatchCalibrationDelta(results) {
-  const delta = Object.values(results || {}).reduce((sum, result) => {
-    if (result?.status !== "final") return sum;
-    const value = Number(result.postMatchReview?.calibrationHints?.edgeTrustDelta || 0);
+function postMatchCalibrationDelta(results, mistakeMemory = {}) {
+  const memoryReviews = Object.values(mistakeMemory.matches || {});
+  const reviewSource = memoryReviews.length
+    ? memoryReviews
+    : Object.values(results || {})
+      .filter((result) => result?.status === "final")
+      .map((result) => result.postMatchReview)
+      .filter(Boolean);
+  const delta = reviewSource.reduce((sum, review) => {
+    const value = Number(review?.calibrationHints?.edgeTrustDelta || 0);
     return Number.isFinite(value) ? sum + value : sum;
   }, 0);
   return clamp(delta, -0.06, 0.06);
 }
 
-function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }) {
+function reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy, priorWeight }) {
   const live = liveModelStats(predictions, results);
-  const reviewDelta = postMatchCalibrationDelta(results);
+  const reviewDelta = postMatchCalibrationDelta(results, mistakeMemory);
   const historicalCorrect = HISTORICAL_BACKTEST.correct;
   const historicalGraded = HISTORICAL_BACKTEST.graded;
   const combinedCorrect = historicalCorrect + live.correct;
@@ -673,6 +680,7 @@ function chineseAnalysisReason({
   edgePct,
   rowEdgeTrust,
   dailyCalibration,
+  mistakeContext,
   decision
 }) {
   if (!pick) return "暂无 PAUL 判断，实验室不会给出仓位建议。";
@@ -699,6 +707,14 @@ function chineseAnalysisReason({
     lines.push(`每日 PAUL 已累积 ${dailyCalibration.count} 次样本，同向率 ${fmtPct(dailyCalibration.samePickRate * 100)}，趋势变化 ${fmtPct(dailyCalibration.trendPct)}，对本场信任系数调整 ${fmtPct(dailyCalibration.trustAdjustment * 100)}。`);
   } else {
     lines.push("每日 PAUL 样本还不够多，仓位会更保守。");
+  }
+
+  if (mistakeContext?.usable) {
+    const adjustment = mistakeContext.calibrationAdjustment || {};
+    const teamNotes = (mistakeContext.summary?.teams || [])
+      .map((team) => `${team.code} 方向失误率 ${fmtPct((team.directionMissRate || 0) * 100)}`)
+      .join("；");
+    lines.push(`失误引擎读取 KV 复盘记忆 ${mistakeContext.summary?.totalReviewed || 0} 场，本场只作为校准辅助：Edge ${adjustment.edgeTrustDelta || 0}，平局 ${adjustment.drawRiskDelta || 0}，冷门 ${adjustment.upsetSensitivityDelta || 0}${teamNotes ? `；${teamNotes}` : ""}。`);
   }
 
   if (decision?.reasons?.length) {
@@ -738,13 +754,15 @@ module.exports = async function handler(req, res) {
     const strategy = url.searchParams.get("strategy") === "value" ? "value" : "paul-follow";
 
     const snapshot = loadSnapshot();
-    const [predictions, results, dailyAnalysis, evidenceCache] = await Promise.all([
+    const [predictions, results, dailyAnalysis, evidenceCache, mistakeMemory] = await Promise.all([
       getPredictions(),
       getResults(),
       getDailyAnalysis(),
-      getEvidenceCache()
+      getEvidenceCache(),
+      getMistakeMemory()
     ]);
-    const reliability = reliabilityProfile({ predictions, results, modelAccuracy, priorWeight });
+    const reliability = reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy, priorWeight });
+    const labMistakeContext = buildMistakeContext({ teamA: {}, teamB: {} }, mistakeMemory);
     const resolvedMatches = resolveMatches(snapshot.matches || [], results);
     const now = new Date();
     const rows = resolvedMatches
@@ -754,6 +772,9 @@ module.exports = async function handler(req, res) {
         const prediction = predictions[match.id] || predictions[String(match.id)] || null;
         const dailyRead = dailyAnalysis[match.id] || dailyAnalysis[String(match.id)] || null;
         const evidence = evidenceRecord(match.id, prediction, evidenceCache);
+        const mistakeContext = buildMistakeContext(match, mistakeMemory);
+        const mistakeAdjustment = mistakeContext.calibrationAdjustment || {};
+        const kvPostMatchReview = mistakeMemory.matches?.[match.id] || mistakeMemory.matches?.[String(match.id)] || null;
         const market = oddsRecord(evidence);
         const officialPick = pickFromPrediction(match, prediction);
         const dailyPick = pickFromDaily(match, dailyRead);
@@ -773,7 +794,11 @@ module.exports = async function handler(req, res) {
         const dailyAdjustedProbability = probability && dailyBlendWeight
           ? clamp(probability * (1 - dailyBlendWeight) + dailyCalibration.latestProbability * dailyBlendWeight, 0.01, 0.99)
           : probability;
-        const rowEdgeTrust = clamp(reliability.edgeTrust + dailyCalibration.trustAdjustment, 0.25, 0.95);
+        const rowEdgeTrust = clamp(
+          reliability.edgeTrust + dailyCalibration.trustAdjustment + Number(mistakeAdjustment.edgeTrustDelta || 0),
+          0.25,
+          0.95
+        );
         const kellyProbability = calibratedKellyProbability(dailyAdjustedProbability, impliedProbability, rowEdgeTrust);
         const rawEdgePct = probability && impliedProbability ? (probability - impliedProbability) * 100 : null;
         const dailyAdjustedEdgePct = dailyAdjustedProbability && impliedProbability ? (dailyAdjustedProbability - impliedProbability) * 100 : null;
@@ -872,6 +897,7 @@ module.exports = async function handler(req, res) {
           edgePct: preliminaryStake.edgePct,
           rowEdgeTrust,
           dailyCalibration,
+          mistakeContext,
           decision
         });
         const ledgerEligible = Boolean(pick && pick.source !== "Market fallback" && odds && probability);
@@ -917,7 +943,7 @@ module.exports = async function handler(req, res) {
                 winnerCode,
                 source: result.source || null,
                 updatedAt: result.updatedAt || result.fetchedAt || null,
-                postMatchReview: result.postMatchReview || null
+                postMatchReview: result.postMatchReview || kvPostMatchReview || null
               }
             : null,
           pickOutcome,
@@ -940,7 +966,8 @@ module.exports = async function handler(req, res) {
           recommendedStake: stake.rawStake,
           decision,
           analysisReasonZh,
-          postMatchReview: result?.postMatchReview || buildFallbackPostMatchReview({ pick, result: result ? { ...result, score: resultScore } : null, pickOutcome, exactScoreHit }),
+          postMatchReview: result?.postMatchReview || kvPostMatchReview || buildFallbackPostMatchReview({ pick, result: result ? { ...result, score: resultScore } : null, pickOutcome, exactScoreHit }),
+          mistakeEngine: mistakeContext.usable ? mistakeContext : null,
           simulation: {
             strategy,
             eligible: ledgerEligible,
@@ -1071,10 +1098,20 @@ module.exports = async function handler(req, res) {
         minTrustPct,
         drawDangerPct,
         strategy,
-        formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, and daily trend stability. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; only rows that pass strict edge, trust, draw-risk, and market-data gates can receive a stake. fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
+        formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, daily trend stability, and the KV mistake-memory calibration layer. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; only rows that pass strict edge, trust, draw-risk, and market-data gates can receive a stake. fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
       },
       reliability: {
         ...reliability,
+        mistakeEngine: {
+          source: labMistakeContext.source,
+          updatedAt: labMistakeContext.updatedAt,
+          totalReviewed: labMistakeContext.summary?.totalReviewed || 0,
+          directionMisses: labMistakeContext.summary?.directionMisses || 0,
+          scoreMisses: labMistakeContext.summary?.scoreMisses || 0,
+          exactHits: labMistakeContext.summary?.exactHits || 0,
+          topGlobalCauses: labMistakeContext.summary?.topGlobalCauses || [],
+          calibrationAdjustment: labMistakeContext.calibrationAdjustment
+        },
         posteriorHitRate: Number((reliability.posteriorHitRate * 100).toFixed(2)),
         edgeTrust: Number((reliability.edgeTrust * 100).toFixed(2)),
         exactScoreBonus: Number((reliability.exactScoreBonus * 100).toFixed(2)),

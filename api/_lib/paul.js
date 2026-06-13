@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
 const { parseMatchTime } = require("./bracket");
-const { mistakeAdjustmentFromMemory, summarizeRelevantMistakes } = require("./mistake-engine");
+const { buildMistakeContext } = require("./mistake-engine");
 const { getEvidenceCache, getMistakeMemory, setEvidenceEntry } = require("./store");
 
 const root = path.join(__dirname, "..", "..");
@@ -323,8 +323,7 @@ async function collectPredictionEvidence(match, options = {}) {
     { name: "poisson", probabilities: poisson?.probabilities, weight: 20 }
   ]);
   const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson || providerIntelligence);
-  const mistakeSummary = summarizeRelevantMistakes(match, mistakeMemory);
-  const mistakeAdjustment = mistakeAdjustmentFromMemory(mistakeSummary);
+  const mistakeContext = buildMistakeContext(match, mistakeMemory);
   const missing = [];
   if (!marketProb) missing.push("market odds");
   if (!(ratingA?.elo && ratingB?.elo)) missing.push("real Elo or team ratings");
@@ -361,12 +360,7 @@ async function collectPredictionEvidence(match, options = {}) {
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
     intelligence: providerIntelligence,
-    mistakeEngine: mistakeAdjustment
-      ? {
-          ...mistakeSummary,
-          calibrationAdjustment: mistakeAdjustment
-        }
-      : null,
+    mistakeEngine: mistakeContext.usable ? mistakeContext : null,
     poisson,
     modelBlend,
     baselines: {

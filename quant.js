@@ -325,6 +325,11 @@ function reasonMarkup(row) {
   const daily = row.dailyCalibration?.count
     ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
     : `<span class="sub">每日 PAUL：暂无足够历史样本。</span>`;
+  const memorySummary = row.mistakeEngine?.summary;
+  const memoryAdjustment = row.mistakeEngine?.calibrationAdjustment;
+  const mistakeMemory = row.mistakeEngine?.usable && memorySummary
+    ? `<span class="sub">失误引擎 KV：已复盘 ${text(memorySummary.totalReviewed || 0)} 场 · 方向失误 ${text(memorySummary.directionMisses || 0)} · 比分失误 ${text(memorySummary.scoreMisses || 0)} · Edge ${memoryAdjustment?.edgeTrustDelta ?? 0}</span>`
+    : "";
   const decisionReasons = row.decision?.reasons?.length
     ? `<span class="sub">过滤器：${text(row.decision.reasons.join(" "))}</span>`
     : "";
@@ -343,6 +348,7 @@ function reasonMarkup(row) {
       ])}</strong>
       <p>${text(row.analysisReasonZh || pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
       ${daily}
+      ${mistakeMemory}
       ${decisionReasons}
       ${review}
       ${mistakeTags}
@@ -479,7 +485,11 @@ async function loadQuantBoard() {
     renderSummary(data);
     renderRows(data);
     const reliability = data.reliability || {};
-    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。历史回测 ${reliability.historicalComparison?.paul?.correct || 0}/${reliability.historicalComparison?.paul?.graded || 0} 是胜平负/晋级方向命中，不是比分命中；正式赛果方向 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0}/${reliability.live?.exactScoreGraded || 0}。实验室只调整校准和仓位，不改 PAUL 预测模型。`;
+    const mistakeEngine = reliability.mistakeEngine || {};
+    const mistakeText = mistakeEngine.totalReviewed
+      ? `失误引擎 KV 已复盘 ${mistakeEngine.totalReviewed} 场。`
+      : "失误引擎 KV 暂无复盘样本。";
+    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。历史回测 ${reliability.historicalComparison?.paul?.correct || 0}/${reliability.historicalComparison?.paul?.graded || 0} 是胜平负/晋级方向命中，不是比分命中；正式赛果方向 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0}/${reliability.live?.exactScoreGraded || 0}。${mistakeText}实验室只调整校准和仓位，不改 PAUL 预测模型。`;
   } catch (error) {
     statusBox.textContent = error.message;
     table.hidden = true;
