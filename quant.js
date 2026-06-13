@@ -211,7 +211,9 @@ function edgeMarkup(row) {
     ? `CLV：+${pct(clv.clvPct)}，优于收盘`
     : clv.status === "negative"
       ? `CLV：${pct(clv.clvPct)}，差于收盘`
-      : "CLV：等待收盘赔率";
+      : clv.status === "unavailable"
+        ? "CLV：暂无收盘赔率"
+        : "CLV：等待收盘赔率";
   const comment = row.selectedProbability !== null && row.impliedProbability !== null
     ? displayEdge >= 0
       ? "PAUL 概率高于赔率隐含概率"
@@ -300,7 +302,8 @@ function resultMarkup(row) {
 function rowMarkup(row) {
   const pick = row.pick || {};
   const stake = Number(row.recommendedStake || 0);
-  const stakeLabel = row.decision?.action === "SETTLED" ? "已完赛" : "不下注";
+  const isSettled = row.decision?.action === "SETTLED";
+  const stakeLabel = isSettled ? "复盘" : "不下注";
   const noStakeReason = row.decision?.action === "SETTLED"
     ? "赛后复盘，不再给入场仓位"
     : (row.decision?.label || labelRisk(row.skipReason) || "没有正优势");
@@ -335,7 +338,7 @@ function rowMarkup(row) {
         <span class="sub">最终仓位：${pct(row.finalFraction)}</span>
       </td>
       <td>
-        <strong class="stake">${stake > 0 ? money(stake) : stakeLabel}${infoButton("建议仓位来源", [
+        <strong class="stake">${stake > 0 ? money(stake) : stakeLabel}${infoButton(isSettled ? "复盘仓位来源" : "建议仓位来源", [
           stake > 0 ? "来源：通过过滤器后的分数凯利仓位。" : "来源：过滤器未通过或比赛已完赛，所以不给入场仓位。",
           `总资金：来自页面输入；建议仓位：${money(row.recommendedStake)}。`,
           `当前原因：${noStakeReason}。`

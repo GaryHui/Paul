@@ -380,16 +380,18 @@ function topProbabilityMargin(probabilities) {
   return values[0] - values[1];
 }
 
-function clvSnapshot(market, side, selectedOdds) {
+function clvSnapshot(market, side, selectedOdds, isFinal = false) {
   const closingOdds = oddsForSide(market?.closingOdds || market?.closing?.odds || market?.close?.odds, side);
   if (!selectedOdds || !closingOdds) {
     return {
-      status: "pending",
+      status: isFinal ? "unavailable" : "pending",
       selectedOdds: selectedOdds || null,
       closingOdds: closingOdds || null,
       clvPct: null,
       beatClosing: null,
-      note: "等待收盘赔率。CLV 要在临近开赛或赛后才能判断。"
+      note: isFinal
+        ? "赛后没有同步到收盘赔率，CLV 暂时无法复盘。"
+        : "等待收盘赔率。CLV 要在临近开赛或赛后才能判断。"
     };
   }
   const clvPct = (selectedOdds / closingOdds - 1) * 100;
@@ -574,7 +576,7 @@ module.exports = async function handler(req, res) {
               cappedFraction: 0,
               rawStake: 0
             };
-        const clv = clvSnapshot(market, pick?.side, odds);
+        const clv = clvSnapshot(market, pick?.side, odds, isFinal);
 
         return {
           id: match.id,
