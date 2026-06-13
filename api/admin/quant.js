@@ -1,4 +1,4 @@
-const { parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
+const { parseMatchTime, resolveMatches } = require("../_lib/bracket");
 const { loadSnapshot } = require("../_lib/paul");
 const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults } = require("../_lib/store");
 
@@ -512,7 +512,7 @@ module.exports = async function handler(req, res) {
         const pick = officialPick || dailyPick || (includeMarketFallback ? fallbackPickFromMarket(match, market) : null);
         const result = results[match.id] || results[String(match.id)] || null;
         const matchTime = parseMatchTime(match);
-        const winnerCode = resultWinnerCode(match, result);
+        const winnerCode = resultWinner(result);
         const isFinal = result?.status === "final";
         const resultScore = scoreString(result);
         const isPast = matchTime ? matchTime <= now : false;
