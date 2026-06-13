@@ -3,6 +3,7 @@ const { attachAuditProof } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
 const { refreshDailyAnalysis } = require("../_lib/daily-analysis");
 const { refreshMarketEvidence } = require("../_lib/evidence-refresh");
+const { recordMistakeReview } = require("../_lib/mistake-engine");
 const { fetchMatchResult } = require("../_lib/results");
 const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
@@ -82,6 +83,22 @@ function storedKickoffAt(match, predictions, evidenceCache) {
   return parseMatchTime(match);
 }
 
+async function attachPostMatchReview(match, result, prediction, evidence) {
+  if (!result || result.postMatchReview || !prediction) return result;
+  try {
+    const postMatchReview = await recordMistakeReview({ match, result, prediction, evidence });
+    return postMatchReview ? { ...result, postMatchReview } : result;
+  } catch (error) {
+    return {
+      ...result,
+      postMatchReview: {
+        generatedAt: new Date().toISOString(),
+        mistakeEngineError: error.message
+      }
+    };
+  }
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method === "POST") assertOwner(req);
@@ -136,6 +153,9 @@ module.exports = async function handler(req, res) {
 
     for (const sourceMatch of resolvedMatches) {
       const matchTime = storedKickoffAt(sourceMatch, predictions, evidenceCache);
+      const prediction = predictions[sourceMatch.id] || predictions[String(sourceMatch.id)] || null;
+      const evidence = evidenceCache[sourceMatch.id] || evidenceCache[String(sourceMatch.id)] || prediction?.evidence || null;
+      const existingResult = results[sourceMatch.id] || results[String(sourceMatch.id)] || null;
       if (!matchTime || !sourceMatch.teamA?.code || !sourceMatch.teamB?.code) {
         if (sourceMatch.round !== "Group Stage") {
           events.push({ type: "bracket", matchId: sourceMatch.id, status: "waiting", reason: "slot not resolved" });
@@ -162,6 +182,20 @@ module.exports = async function handler(req, res) {
         }
       }
 
+      const canAttemptReview = force || resultAttempts < cronResultSyncMaxMatches;
+      if (existingResult && !existingResult.postMatchReview && prediction && canAttemptReview) {
+        resultAttempts += 1;
+        const reviewedResult = await attachPostMatchReview(sourceMatch, existingResult, prediction, evidence);
+        await setResult(sourceMatch.id, reviewedResult);
+        results[sourceMatch.id] = reviewedResult;
+        events.push({
+          type: "post-match-review",
+          matchId: sourceMatch.id,
+          status: reviewedResult.postMatchReview?.mistakeEngineError ? "partial" : "ok",
+          postMatchReviewed: Boolean(reviewedResult.postMatchReview)
+        });
+      }
+
       const resultAt = new Date(matchTime.getTime() + resultSyncDelayHours * 60 * 60 * 1000);
       const shouldSyncResult = force || now >= resultAt;
       const canAttemptResult = force || resultAttempts < cronResultSyncMaxMatches;
@@ -170,9 +204,16 @@ module.exports = async function handler(req, res) {
         try {
           const result = await fetchMatchResult(sourceMatch);
           if (result) {
-            results[sourceMatch.id] = result;
-            await setResult(sourceMatch.id, result);
-            events.push({ type: "result", matchId: sourceMatch.id, status: "ok", winnerCode: resultWinnerCode(sourceMatch, result) });
+            const reviewedResult = await attachPostMatchReview(sourceMatch, result, prediction, evidence);
+            results[sourceMatch.id] = reviewedResult;
+            await setResult(sourceMatch.id, reviewedResult);
+            events.push({
+              type: "result",
+              matchId: sourceMatch.id,
+              status: "ok",
+              winnerCode: resultWinnerCode(sourceMatch, result),
+              postMatchReviewed: Boolean(reviewedResult.postMatchReview)
+            });
           }
         } catch (error) {
           events.push({ type: "result", matchId: sourceMatch.id, status: "error", error: error.message });
