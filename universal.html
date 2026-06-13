@@ -657,16 +657,31 @@
         const candidates = data.strategyLab?.candidates || [];
         const edgeClass = Number(edge.universalMinusMarket || 0) >= 0 ? "good" : "bad";
         const selectedEdgeClass = Number(selected?.holdout?.edge || 0) > 0 ? "good" : Number(selected?.holdout?.edge || 0) < 0 ? "bad" : "";
+        const isMarketAnchor = selected?.strategy?.id === "market-anchor";
+        const universalCopy = isMarketAnchor
+          ? "当前回退市场锚定：这一列等于市场热门基准，不代表独立优势。"
+          : "候选跨赛事模型，独立于世界杯。";
+        const comparisonCopy = isMarketAnchor
+          ? "没有执行覆盖：Override 0/0 是预期结果。"
+          : `Override ${edge.overrideHits || 0}/${edge.overrides || 0}`;
         report.innerHTML = `
           <div class="report-status">
             ${text(data.pool)} · ${text(data.dataPolicy)} · Generated ${text(new Date(data.generatedAt).toLocaleString())}
           </div>
           <div class="grid grid--four">
             ${metricCard("样本场次", aggregate.matches || 0, `${aggregate.datasets || 0} 个独立数据集`)}
-            ${metricCard("Universal PAUL", metricSummary(metrics.universal), "候选跨赛事模型，独立于世界杯")}
+            ${metricCard("Universal PAUL", metricSummary(metrics.universal), universalCopy)}
             ${metricCard("Market favorite", metricSummary(metrics.market), "市场热门基准")}
-            ${metricCard("相对市场", `${Number(edge.universalMinusMarket || 0) >= 0 ? "+" : ""}${edge.universalMinusMarket || 0}`, `Override ${edge.overrideHits || 0}/${edge.overrides || 0}`)}
+            ${metricCard("相对市场", `${Number(edge.universalMinusMarket || 0) >= 0 ? "+" : ""}${edge.universalMinusMarket || 0}`, comparisonCopy)}
           </div>
+          ${isMarketAnchor ? `
+            <article class="module strategy-note">
+              <span>水份检查</span>
+              <h3>结果与市场完全一致，是因为系统主动回退到 Market anchor。</h3>
+              <p>这不是把 PAUL 做成市场，也不是造数。当前候选策略没有通过部署门槛：训练集必须跑赢市场，并且 Brier 概率校准不能变差。未通过时，系统宁愿展示市场基线，也不硬凑一个看起来更厉害的数字。</p>
+              <p class="small">所以当前 Universal PAUL = Market favorite，Edge +0、Override 0/0 都是预期结果。真正要跑赢市场，需要继续加入更多独立信息源和只在高把握场次出手的选择性策略。</p>
+            </article>
+          ` : ""}
           <article class="module">
             <span>隔离声明</span>
             <h3>这不是世界杯 PAUL 准确率。</h3>
