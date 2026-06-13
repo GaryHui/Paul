@@ -440,7 +440,7 @@
           <h2>先从足球跨赛事回测开始。</h2>
           <p class="lede">
             这里调用独立 Universal API，不读取世界杯锁定预测，不写入世界杯 Proof，不把结果混进世界杯准确率。
-            足球第一版使用欧洲五大联赛公开赔率与赛果；篮球、棒球、事件必须等真实赔率/赛果源接好后再跑。
+            足球第一版已扩展到 18 个欧洲联赛/级别的公开赔率与赛果；篮球、棒球、事件必须等真实赔率/赛果源接好后再跑。
           </p>
         </div>
         <div class="panel">
@@ -461,7 +461,7 @@
             <button class="button-primary" id="runBacktest" type="button">运行独立回测</button>
           </div>
           <div class="report" id="backtestReport">
-            <div class="report-status">等待运行。足球会抓取五大联赛 2021-22 到 2024-25；其它领域不会用假数据。</div>
+            <div class="report-status">等待运行。足球会抓取 18 个欧洲联赛/级别 2019-20 到 2024-25；其它领域不会用假数据。</div>
           </div>
         </div>
       </section>
@@ -529,7 +529,7 @@
             <b>Phase 1</b>
             <div>
               <h3>扩展足球回测</h3>
-              <p class="small">加入五大联赛、欧冠、MLS 等公开赔率与赛果数据，验证 PAUL 是否长期稳定接近或跑赢市场。</p>
+              <p class="small">继续加入可验证的公开赔率与赛果数据，验证 PAUL 是否长期稳定接近或跑赢市场。</p>
             </div>
             <span class="pill">可立即做</span>
           </article>
@@ -565,7 +565,7 @@
       const domains = {
         football: [
           ["市场类型", "1X2、让球、大小球。小组赛有平局，淘汰赛要区分常规时间和晋级。"],
-          ["可先接入", "世界杯现有逻辑之外，独立回测五大联赛、欧冠、MLS。"],
+          ["可先接入", "世界杯现有逻辑之外，独立回测 18 个欧洲联赛/级别，后续再接欧冠、MLS 等来源。"],
           ["校准重点", "平局风险、冷门阈值、赛程密度、主客场优势、临场阵容。"]
         ],
         basketball: [

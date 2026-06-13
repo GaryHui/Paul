@@ -1,4 +1,6 @@
 const seasonLabels = {
+  1920: "2019-20",
+  2021: "2020-21",
   2122: "2021-22",
   2223: "2022-23",
   2324: "2023-24",
@@ -7,13 +9,26 @@ const seasonLabels = {
 
 const footballLeagues = [
   { code: "E0", name: "Premier League", region: "England" },
+  { code: "E1", name: "Championship", region: "England" },
+  { code: "E2", name: "League One", region: "England" },
+  { code: "E3", name: "League Two", region: "England" },
+  { code: "SC0", name: "Scottish Premiership", region: "Scotland" },
   { code: "SP1", name: "La Liga", region: "Spain" },
+  { code: "SP2", name: "Segunda Division", region: "Spain" },
   { code: "D1", name: "Bundesliga", region: "Germany" },
+  { code: "D2", name: "Bundesliga 2", region: "Germany" },
   { code: "I1", name: "Serie A", region: "Italy" },
-  { code: "F1", name: "Ligue 1", region: "France" }
+  { code: "I2", name: "Serie B", region: "Italy" },
+  { code: "F1", name: "Ligue 1", region: "France" },
+  { code: "F2", name: "Ligue 2", region: "France" },
+  { code: "N1", name: "Eredivisie", region: "Netherlands" },
+  { code: "B1", name: "Belgian Pro League", region: "Belgium" },
+  { code: "P1", name: "Primeira Liga", region: "Portugal" },
+  { code: "T1", name: "Super Lig", region: "Turkey" },
+  { code: "G1", name: "Super League Greece", region: "Greece" }
 ];
 
-const footballSeasons = ["2122", "2223", "2324", "2425"];
+const footballSeasons = ["1920", "2021", "2122", "2223", "2324", "2425"];
 const holdoutSeason = "2425";
 const strategyCandidates = [
   { id: "market-anchor", label: "Market anchor", weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
@@ -586,7 +601,7 @@ function combineFootballRuns(runs) {
   edge.overrideAccuracy = edge.overrides ? Math.round((edge.overrideHits / edge.overrides) * 100) : 0;
   return {
     sport: "football",
-    label: "European top-five football leagues",
+    label: "European football leagues and divisions",
     matches: metrics.universal.graded,
     datasets: runs.length,
     strategy: runs[0]?.strategy || null,
@@ -687,7 +702,7 @@ async function runFootballBacktest(options = {}) {
     try {
       const text = await fetchText(source.url);
       const matches = parseFootballDataCsv(text, source);
-      if (matches.length < 200) throw new Error(`only ${matches.length} usable rows`);
+      if (matches.length < 120) throw new Error(`only ${matches.length} usable rows`);
       return { dataset: { source, matches } };
     } catch (error) {
       return { error: { id: source.id, competition: source.name, season: source.seasonLabel, error: error.message } };
@@ -702,7 +717,7 @@ async function runFootballBacktest(options = {}) {
     generatedAt: new Date().toISOString(),
     pool: "universal-football-v1",
     isolation: "Independent from World Cup predictions, proof records, and calibration.",
-    dataPolicy: "Public Football-Data CSV opening/closing odds and results; no Chinese football leagues included.",
+    dataPolicy: "Public Football-Data CSV opening/closing odds and results from 18 European leagues/divisions; no Chinese football leagues included.",
     aggregate: combineFootballRuns(runs),
     split: {
       trainSeasons: footballSeasons.filter((season) => season !== holdoutSeason).map((season) => seasonLabels[season]),
