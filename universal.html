@@ -265,6 +265,95 @@
         line-height: 1.55;
       }
 
+      .lab-controls {
+        display: grid;
+        grid-template-columns: minmax(180px, 1fr) minmax(140px, 0.35fr) auto;
+        gap: 12px;
+        align-items: end;
+        padding: 16px;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      input,
+      select,
+      button {
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #091a22;
+        color: var(--text);
+        padding: 0 12px;
+        font: inherit;
+        font-weight: 850;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .button-primary {
+        border-color: rgba(54, 239, 170, 0.72);
+        background: var(--green);
+        color: #04110c;
+      }
+
+      .report {
+        display: grid;
+        gap: 14px;
+        padding: 16px;
+      }
+
+      .report-status {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+
+      table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      td strong {
+        color: var(--text);
+      }
+
+      .good {
+        color: var(--green);
+      }
+
+      .bad {
+        color: var(--red);
+      }
+
       @media (max-width: 860px) {
         main {
           width: min(100% - 20px, 680px);
@@ -272,7 +361,8 @@
 
         .hero,
         .grid--four,
-        .grid--three {
+        .grid--three,
+        .lab-controls {
           grid-template-columns: 1fr;
         }
 
@@ -328,6 +418,38 @@
             <strong>赛后</strong>
             <p class="small">世界杯结束后再考虑统一品牌、导航和通用预测 API。</p>
           </article>
+        </div>
+      </section>
+
+      <section aria-label="Universal backtest lab">
+        <div class="section-head">
+          <p class="eyebrow">Independent backtest</p>
+          <h2>先从足球跨赛事回测开始。</h2>
+          <p class="lede">
+            这里调用独立 Universal API，不读取世界杯锁定预测，不写入世界杯 Proof，不把结果混进世界杯准确率。
+            足球第一版使用欧洲五大联赛公开赔率与赛果；篮球、棒球、事件必须等真实赔率/赛果源接好后再跑。
+          </p>
+        </div>
+        <div class="panel">
+          <div class="lab-controls">
+            <label>
+              Verify token
+              <input id="verifyToken" type="password" placeholder="输入 VERIFY_TOKEN 或使用 URL ?verify=" autocomplete="off" />
+            </label>
+            <label>
+              领域
+              <select id="sportSelect">
+                <option value="football">足球</option>
+                <option value="basketball">篮球</option>
+                <option value="baseball">棒球</option>
+                <option value="events">事件</option>
+              </select>
+            </label>
+            <button class="button-primary" id="runBacktest" type="button">运行独立回测</button>
+          </div>
+          <div class="report" id="backtestReport">
+            <div class="report-status">等待运行。足球会抓取五大联赛 2021-22 到 2024-25；其它领域不会用假数据。</div>
+          </div>
         </div>
       </section>
 
@@ -451,6 +573,130 @@
       };
 
       const grid = document.getElementById("domainGrid");
+      const report = document.getElementById("backtestReport");
+      const tokenInput = document.getElementById("verifyToken");
+      const sportSelect = document.getElementById("sportSelect");
+      const runButton = document.getElementById("runBacktest");
+
+      function text(value) {
+        return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[char]));
+      }
+
+      function pct(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return "N/A";
+        return `${Number(value).toFixed(0)}%`;
+      }
+
+      function metricCard(label, value, copy) {
+        return `
+          <article class="metric">
+            <span>${text(label)}</span>
+            <strong>${text(value)}</strong>
+            <p class="small">${text(copy)}</p>
+          </article>
+        `;
+      }
+
+      function metricSummary(metric = {}) {
+        return `${metric.correct || 0}/${metric.graded || 0} · ${pct(metric.accuracy)} · Brier ${metric.brier ?? "N/A"}`;
+      }
+
+      function renderNotConfigured(data) {
+        report.innerHTML = `
+          <div class="report-status">${text(data.message || "该领域暂未配置真实数据源。")}</div>
+          <div class="grid grid--three">
+            ${(data.requiredData || []).map((item) => `
+              <article class="module">
+                <span>Required data</span>
+                <h3>${text(item)}</h3>
+                <p>该领域会单独建池，不能与足球或世界杯准确率混合。</p>
+              </article>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      function renderBacktest(data) {
+        if (data.status === "not-configured") {
+          renderNotConfigured(data);
+          return;
+        }
+        const aggregate = data.aggregate || {};
+        const metrics = aggregate.metrics || {};
+        const edge = aggregate.edge || {};
+        const edgeClass = Number(edge.universalMinusMarket || 0) >= 0 ? "good" : "bad";
+        report.innerHTML = `
+          <div class="report-status">
+            ${text(data.pool)} · ${text(data.dataPolicy)} · Generated ${text(new Date(data.generatedAt).toLocaleString())}
+          </div>
+          <div class="grid grid--four">
+            ${metricCard("样本场次", aggregate.matches || 0, `${aggregate.datasets || 0} 个独立数据集`)}
+            ${metricCard("Universal PAUL", metricSummary(metrics.universal), "候选跨赛事模型，独立于世界杯")}
+            ${metricCard("Market favorite", metricSummary(metrics.market), "市场热门基准")}
+            ${metricCard("相对市场", `${Number(edge.universalMinusMarket || 0) >= 0 ? "+" : ""}${edge.universalMinusMarket || 0}`, `Override ${edge.overrideHits || 0}/${edge.overrides || 0}`)}
+          </div>
+          <article class="module">
+            <span>隔离声明</span>
+            <h3>这不是世界杯 PAUL 准确率。</h3>
+            <p>${text(data.isolation || "独立回测池。")} 当前结果只用于评估 Universal PAUL 的跨赛事潜力，不会写入世界杯 Proof、Match Trace、公开准确率或凯利实验室。</p>
+          </article>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>联赛 / 赛季</th>
+                  <th>样本</th>
+                  <th>Universal</th>
+                  <th>Market</th>
+                  <th>Edge</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(aggregate.stability || []).map((row) => `
+                  <tr>
+                    <td><strong>${text(row.competition)}</strong><br><span class="small">${text(row.season)}</span></td>
+                    <td>${text(row.matches)}</td>
+                    <td>${pct(row.universalAccuracy)}</td>
+                    <td>${pct(row.marketAccuracy)}</td>
+                    <td class="${Number(row.edge || 0) >= 0 ? "good" : "bad"}">${Number(row.edge || 0) >= 0 ? "+" : ""}${text(row.edge)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Trace 样例</th>
+                  <th>赛果</th>
+                  <th>Universal / Market</th>
+                  <th>信号</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(aggregate.trace || []).slice(0, 12).map((row) => `
+                  <tr>
+                    <td><strong>${text(row.match)}</strong><br><span class="small">${text(row.competition)} · ${text(row.season)}</span></td>
+                    <td>${text(row.score)} · ${text(row.actual)}</td>
+                    <td>${text(row.picks?.universal)} / ${text(row.picks?.market)} · ${text(row.confidence)}%</td>
+                    <td>${text((row.signals || []).join(", ") || "market anchored")}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+          ${data.errors?.length ? `<article class="module"><span>数据源错误</span><p>${text(data.errors.map((item) => `${item.id || ""} ${item.error}`).join("；"))}</p></article>` : ""}
+        `;
+        report.querySelector(".grid--four .metric:last-child strong")?.classList.add(edgeClass);
+      }
+
       function renderDomain(key) {
         grid.innerHTML = domains[key].map(([title, copy]) => `
           <article class="module">
@@ -466,6 +712,29 @@
           document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("is-active", item === button));
           renderDomain(button.dataset.domain);
         });
+      });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get("verify")) tokenInput.value = urlParams.get("verify");
+
+      runButton.addEventListener("click", async () => {
+        const token = tokenInput.value.trim() || urlParams.get("verify") || "";
+        if (!token) {
+          report.innerHTML = `<div class="report-status bad">请输入 VERIFY_TOKEN，或用 /universal.html?verify=... 打开。</div>`;
+          return;
+        }
+        runButton.disabled = true;
+        report.innerHTML = `<div class="report-status">正在运行 ${text(sportSelect.value)} 独立回测。足球会从公开 CSV 拉取数据，可能需要几十秒。</div>`;
+        try {
+          const response = await fetch(`/api/universal/backtest?sport=${encodeURIComponent(sportSelect.value)}&verify=${encodeURIComponent(token)}`);
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+          renderBacktest(data);
+        } catch (error) {
+          report.innerHTML = `<div class="report-status bad">回测失败：${text(error.message)}</div>`;
+        } finally {
+          runButton.disabled = false;
+        }
       });
 
       renderDomain("football");
