@@ -354,6 +354,19 @@
         color: var(--red);
       }
 
+      .strategy-note {
+        display: grid;
+        gap: 8px;
+      }
+
+      .strategy-note strong {
+        color: var(--gold);
+      }
+
+      .strategy-note .small {
+        margin: 0;
+      }
+
       @media (max-width: 860px) {
         main {
           width: min(100% - 20px, 680px);
@@ -593,6 +606,16 @@
         return `${Number(value).toFixed(0)}%`;
       }
 
+      function signed(value) {
+        const number = Number(value || 0);
+        return `${number >= 0 ? "+" : ""}${number}`;
+      }
+
+      function brierDelta(value) {
+        const number = Number(value || 0);
+        return `${number >= 0 ? "+" : ""}${number.toFixed(3)}`;
+      }
+
       function metricCard(label, value, copy) {
         return `
           <article class="metric">
@@ -630,7 +653,10 @@
         const aggregate = data.aggregate || {};
         const metrics = aggregate.metrics || {};
         const edge = aggregate.edge || {};
+        const selected = data.strategyLab?.selected;
+        const candidates = data.strategyLab?.candidates || [];
         const edgeClass = Number(edge.universalMinusMarket || 0) >= 0 ? "good" : "bad";
+        const selectedEdgeClass = Number(selected?.holdout?.edge || 0) > 0 ? "good" : Number(selected?.holdout?.edge || 0) < 0 ? "bad" : "";
         report.innerHTML = `
           <div class="report-status">
             ${text(data.pool)} · ${text(data.dataPolicy)} · Generated ${text(new Date(data.generatedAt).toLocaleString())}
@@ -646,6 +672,50 @@
             <h3>这不是世界杯 PAUL 准确率。</h3>
             <p>${text(data.isolation || "独立回测池。")} 当前结果只用于评估 Universal PAUL 的跨赛事潜力，不会写入世界杯 Proof、Match Trace、公开准确率或凯利实验室。</p>
           </article>
+          ${selected ? `
+            <article class="module strategy-note">
+              <span>真实选型规则</span>
+              <h3>当前采用：${text(selected.strategy?.label || selected.strategy?.id || "unknown")}</h3>
+              <p>系统只用训练集选择策略：${text((data.split?.trainSeasons || []).join("、"))}。${text(data.split?.holdoutSeason || "留出赛季")} 只用于赛后验证，不参与挑选。</p>
+              <p class="small">
+                训练集：PAUL ${pct(selected.train?.universalAccuracy)}，市场 ${pct(selected.train?.marketAccuracy)}，Edge <strong class="${Number(selected.train?.edge || 0) >= 0 ? "good" : "bad"}">${signed(selected.train?.edge)}</strong>，Brier 改善 <strong class="${Number(selected.train?.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(selected.train?.brierDelta)}</strong>。
+              </p>
+              <p class="small">
+                留出集：PAUL ${pct(selected.holdout?.universalAccuracy)}，市场 ${pct(selected.holdout?.marketAccuracy)}，Edge <strong class="${selectedEdgeClass}">${signed(selected.holdout?.edge)}</strong>，Brier 改善 <strong class="${Number(selected.holdout?.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(selected.holdout?.brierDelta)}</strong>。
+              </p>
+              <p class="small">${text(data.strategyLab?.deploymentGate || "如果训练集没有稳定跑赢市场，系统会保守停在市场锚定层；这代表还没找到可部署优势，不会硬编一个“稳赢策略”。")}</p>
+            </article>
+          ` : ""}
+          ${candidates.length ? `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>候选策略</th>
+                    <th>训练集 Edge</th>
+                    <th>训练集准确率</th>
+                    <th>训练集 Brier 改善</th>
+                    <th>留出集 Edge</th>
+                    <th>留出集准确率</th>
+                    <th>留出集 Brier 改善</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${candidates.map((item) => `
+                    <tr>
+                      <td><strong>${text(item.strategy?.label || item.strategy?.id)}</strong><br><span class="small">${text(item.strategy?.id)}</span></td>
+                      <td class="${Number(item.train?.edge || 0) >= 0 ? "good" : "bad"}">${signed(item.train?.edge)}</td>
+                      <td>${pct(item.train?.universalAccuracy)} / 市场 ${pct(item.train?.marketAccuracy)}</td>
+                      <td class="${Number(item.train?.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(item.train?.brierDelta)}</td>
+                      <td class="${Number(item.holdout?.edge || 0) >= 0 ? "good" : "bad"}">${signed(item.holdout?.edge)}</td>
+                      <td>${pct(item.holdout?.universalAccuracy)} / 市场 ${pct(item.holdout?.marketAccuracy)}</td>
+                      <td class="${Number(item.holdout?.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(item.holdout?.brierDelta)}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : ""}
           <div class="table-wrap">
             <table>
               <thead>

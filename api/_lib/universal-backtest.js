@@ -14,6 +14,15 @@ const footballLeagues = [
 ];
 
 const footballSeasons = ["2122", "2223", "2324", "2425"];
+const holdoutSeason = "2425";
+const strategyCandidates = [
+  { id: "market-anchor", label: "Market anchor", weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
+  { id: "balanced-v1", label: "Balanced v1", weights: { market: 0.62, rating: 0.23, form: 0.15 }, drawMin: 0.28, drawMarginMax: 0.055, drawEdgeMin: 0, overrideMarginMax: 0.075, overrideEdgeMin: 0.045, minOverrideOdds: 2.35, strongAnchor: 0.62 },
+  { id: "draw-watch-1", label: "Draw watch 1", weights: { market: 0.7, rating: 0.18, form: 0.12 }, drawMin: 0.285, drawMarginMax: 0.075, drawEdgeMin: 0.015, overrideMarginMax: 0.04, overrideEdgeMin: 0.06, minOverrideOdds: 3.1, strongAnchor: 0.6 },
+  { id: "draw-watch-2", label: "Draw watch 2", weights: { market: 0.72, rating: 0.16, form: 0.12 }, drawMin: 0.295, drawMarginMax: 0.09, drawEdgeMin: 0, overrideMarginMax: 0.035, overrideEdgeMin: 0.07, minOverrideOdds: 3.4, strongAnchor: 0.58 },
+  { id: "form-nudge", label: "Form nudge", weights: { market: 0.66, rating: 0.18, form: 0.16 }, drawMin: 0.3, drawMarginMax: 0.055, drawEdgeMin: 0.02, overrideMarginMax: 0.065, overrideEdgeMin: 0.055, minOverrideOdds: 2.8, strongAnchor: 0.6 },
+  { id: "rating-nudge", label: "Rating nudge", weights: { market: 0.66, rating: 0.24, form: 0.1 }, drawMin: 0.29, drawMarginMax: 0.06, drawEdgeMin: 0.015, overrideMarginMax: 0.06, overrideEdgeMin: 0.05, minOverrideOdds: 2.9, strongAnchor: 0.6 }
+];
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -155,9 +164,9 @@ function blend(models, weights = { market: 0.62, rating: 0.23, form: 0.15 }) {
   });
 }
 
-function universalPick(match, models) {
+function universalPick(match, models, strategy = strategyCandidates[1]) {
   const marketPick = favorite(models.market);
-  const blended = blend(models);
+  const blended = blend(models, strategy.weights);
   const blendedPick = favorite(blended);
   const sorted = ["home", "draw", "away"].sort((a, b) => models.market[b] - models.market[a]);
   const marketMargin = models.market[sorted[0]] - models.market[sorted[1]];
@@ -166,19 +175,20 @@ function universalPick(match, models) {
   const signals = [];
   const selectedOdds = match.odds[blendedPick];
   const edge = blended[blendedPick] - models.market[blendedPick];
-  if (blendedPick !== marketPick && marketMargin <= 0.075 && edge >= 0.045 && disagreement >= 2) {
+  const strongAnchor = models.market[marketPick] >= strategy.strongAnchor;
+  if (!strongAnchor && blendedPick !== marketPick && marketMargin <= strategy.overrideMarginMax && edge >= strategy.overrideEdgeMin && disagreement >= 2) {
     pick = blendedPick;
     signals.push("narrow-market model override");
   }
-  if (blendedPick === "draw" && models.market.draw >= 0.28 && marketMargin <= 0.055) {
+  if (!strongAnchor && blendedPick === "draw" && models.market.draw >= strategy.drawMin && marketMargin <= strategy.drawMarginMax && (blended.draw - models.market.draw) >= strategy.drawEdgeMin) {
     pick = "draw";
     signals.push("draw compression");
   }
-  if (pick !== marketPick && pick !== "draw" && selectedOdds < 2.35) {
+  if (pick !== marketPick && pick !== "draw" && selectedOdds < strategy.minOverrideOdds) {
     pick = marketPick;
     signals.push("override rejected: price too short");
   }
-  return { pick, probabilities: blended, confidence: Math.round(Math.max(blended[pick], models.market[pick]) * 100), signals };
+  return { pick, probabilities: blended, confidence: Math.round(Math.max(blended[pick], models.market[pick]) * 100), signals, strategyId: strategy.id };
 }
 
 function updateRecords(records, match) {
@@ -213,7 +223,7 @@ function actualSide(match) {
   return match.score.home > match.score.away ? "home" : "away";
 }
 
-function runFootballDataset(source, matches) {
+function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
   const records = {};
   const metrics = {
     universal: emptyMetric(),
@@ -231,7 +241,7 @@ function runFootballDataset(source, matches) {
       form: formProbabilities(match, records)
     };
     const actual = actualSide(match);
-    const candidate = universalPick(match, models);
+    const candidate = universalPick(match, models, strategy);
     const picks = {
       universal: candidate.pick,
       market: favorite(models.market),
@@ -273,6 +283,7 @@ function runFootballDataset(source, matches) {
     source: source.url,
     matches: matches.length,
     metrics,
+    strategy: { id: strategy.id, label: strategy.label },
     edge: {
       universalMinusMarket: metrics.universal.correct - metrics.market.correct,
       overrides,
@@ -310,6 +321,7 @@ function combineFootballRuns(runs) {
     label: "European top-five football leagues",
     matches: metrics.universal.graded,
     datasets: runs.length,
+    strategy: runs[0]?.strategy || null,
     metrics,
     edge,
     trace: runs.flatMap((run) => run.trace).slice(0, 40),
@@ -321,6 +333,57 @@ function combineFootballRuns(runs) {
       universalAccuracy: run.metrics.universal.accuracy,
       marketAccuracy: run.metrics.market.accuracy,
       edge: run.edge.universalMinusMarket
+    }))
+  };
+}
+
+function selectStrategy(datasetRecords) {
+  const evaluated = strategyCandidates.map((strategy) => {
+    const runs = datasetRecords.map((item) => runFootballDataset(item.source, item.matches, strategy));
+    const trainRuns = runs.filter((run) => run.season !== seasonLabels[holdoutSeason]);
+    const holdoutRuns = runs.filter((run) => run.season === seasonLabels[holdoutSeason]);
+    const train = combineFootballRuns(trainRuns);
+    const holdout = combineFootballRuns(holdoutRuns);
+    return {
+      strategy: { id: strategy.id, label: strategy.label },
+      train: {
+        matches: train.matches,
+        edge: train.edge.universalMinusMarket,
+        universalAccuracy: train.metrics.universal.accuracy,
+        marketAccuracy: train.metrics.market.accuracy,
+        brierDelta: Number((train.metrics.market.brier - train.metrics.universal.brier).toFixed(3))
+      },
+      holdout: {
+        matches: holdout.matches,
+        edge: holdout.edge.universalMinusMarket,
+        universalAccuracy: holdout.metrics.universal.accuracy,
+        marketAccuracy: holdout.metrics.market.accuracy,
+        brierDelta: Number((holdout.metrics.market.brier - holdout.metrics.universal.brier).toFixed(3))
+      },
+      runs
+    };
+  });
+  const deployable = evaluated.filter((item) => item.train.edge > 0 && item.train.brierDelta >= 0);
+  const selected = deployable.length ? [...deployable].sort((a, b) => {
+    if (b.train.edge !== a.train.edge) return b.train.edge - a.train.edge;
+    return b.train.brierDelta - a.train.brierDelta;
+  })[0] : evaluated.find((item) => item.strategy.id === "market-anchor") || evaluated[0];
+  const bestHoldout = [...evaluated].sort((a, b) => b.holdout.edge - a.holdout.edge)[0] || evaluated[0];
+  return {
+    selected,
+    deploymentGate: deployable.length
+      ? "通过：所选策略在训练集跑赢市场，且没有恶化 Brier 概率校准。"
+      : "未通过：目前没有候选策略能在训练集跑赢市场并保持 Brier 校准不变差，因此回退到市场锚定层。",
+    bestHoldout: {
+      strategy: bestHoldout.strategy,
+      train: bestHoldout.train,
+      holdout: bestHoldout.holdout,
+      note: "Research reference only. This is selected after seeing the holdout and must not be treated as the deployed strategy."
+    },
+    candidates: evaluated.map((item) => ({
+      strategy: item.strategy,
+      train: item.train,
+      holdout: item.holdout
     }))
   };
 }
@@ -349,12 +412,14 @@ async function runFootballBacktest(options = {}) {
       const text = await fetchText(source.url);
       const matches = parseFootballDataCsv(text, source);
       if (matches.length < 200) throw new Error(`only ${matches.length} usable rows`);
-      return { run: runFootballDataset(source, matches) };
+      return { dataset: { source, matches } };
     } catch (error) {
       return { error: { id: source.id, competition: source.name, season: source.seasonLabel, error: error.message } };
     }
   }));
-  const runs = settled.map((item) => item.run).filter(Boolean);
+  const datasetRecords = settled.map((item) => item.dataset).filter(Boolean);
+  const strategyLab = selectStrategy(datasetRecords);
+  const runs = strategyLab.selected.runs;
   const errors = settled.map((item) => item.error).filter(Boolean);
   return {
     status: runs.length ? "ok" : "error",
@@ -363,6 +428,21 @@ async function runFootballBacktest(options = {}) {
     isolation: "Independent from World Cup predictions, proof records, and calibration.",
     dataPolicy: "Public Football-Data CSV odds/results only; no Chinese football leagues included.",
     aggregate: combineFootballRuns(runs),
+    split: {
+      trainSeasons: footballSeasons.filter((season) => season !== holdoutSeason).map((season) => seasonLabels[season]),
+      holdoutSeason: seasonLabels[holdoutSeason],
+      selectedBy: "highest training edge, then Brier improvement. Holdout is not used to select the deployed strategy."
+    },
+    strategyLab: {
+      deploymentGate: strategyLab.deploymentGate,
+      selected: {
+        strategy: strategyLab.selected.strategy,
+        train: strategyLab.selected.train,
+        holdout: strategyLab.selected.holdout
+      },
+      bestHoldout: strategyLab.bestHoldout,
+      candidates: strategyLab.candidates
+    },
     runs,
     errors
   };
