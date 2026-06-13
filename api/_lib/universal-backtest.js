@@ -17,6 +17,7 @@ const footballSeasons = ["2122", "2223", "2324", "2425"];
 const holdoutSeason = "2425";
 const strategyCandidates = [
   { id: "market-anchor", label: "Market anchor", weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
+  { id: "odds-momentum-mistake", label: "Odds momentum + mistake engine", useClosingMarket: true, useRollingMistakes: true, weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
   { id: "odds-momentum", label: "Odds momentum", useClosingMarket: true, weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
   { id: "balanced-v1", label: "Balanced v1", weights: { market: 0.62, rating: 0.23, form: 0.15 }, drawMin: 0.28, drawMarginMax: 0.055, drawEdgeMin: 0, overrideMarginMax: 0.075, overrideEdgeMin: 0.045, minOverrideOdds: 2.35, strongAnchor: 0.62 },
   { id: "draw-watch-1", label: "Draw watch 1", weights: { market: 0.7, rating: 0.18, form: 0.12 }, drawMin: 0.285, drawMarginMax: 0.075, drawEdgeMin: 0.015, overrideMarginMax: 0.04, overrideEdgeMin: 0.06, minOverrideOdds: 3.1, strongAnchor: 0.6 },
@@ -175,15 +176,92 @@ function blend(models, weights = { market: 0.62, rating: 0.23, form: 0.15 }) {
   });
 }
 
-function universalPick(match, models, strategy = strategyCandidates[1]) {
+function emptyRollingMistakes() {
+  return {
+    moves: 0,
+    closingHits: 0,
+    openingHits: 0,
+    suppressed: 0,
+    league: {}
+  };
+}
+
+function rollingBucket(memory, leagueCode) {
+  memory.league[leagueCode] ||= { moves: 0, closingHits: 0, openingHits: 0, suppressed: 0 };
+  return memory.league[leagueCode];
+}
+
+function moveDelta(bucket = {}) {
+  return Number(bucket.closingHits || 0) - Number(bucket.openingHits || 0);
+}
+
+function shouldSuppressMomentum(memory, leagueCode) {
+  const league = memory.league?.[leagueCode] || null;
+  const globalBad = memory.moves >= 50 && moveDelta(memory) <= -12;
+  const leagueBad = league && league.moves >= 25 && moveDelta(league) <= -6;
+  return Boolean(globalBad || leagueBad);
+}
+
+function updateRollingMistakes(memory, leagueCode, candidate, actual) {
+  if (!candidate?.momentumMove) return;
+  const league = rollingBucket(memory, leagueCode);
+  const closingHit = candidate.closingPick === actual ? 1 : 0;
+  const openingHit = candidate.openingPick === actual ? 1 : 0;
+  memory.moves += 1;
+  memory.closingHits += closingHit;
+  memory.openingHits += openingHit;
+  league.moves += 1;
+  league.closingHits += closingHit;
+  league.openingHits += openingHit;
+  if (candidate.suppressedByMistakeEngine) {
+    memory.suppressed += 1;
+    league.suppressed += 1;
+  }
+}
+
+function summarizeRollingMistakes(memory) {
+  const league = Object.fromEntries(Object.entries(memory.league || {}).map(([code, item]) => [
+    code,
+    {
+      moves: item.moves,
+      closingHits: item.closingHits,
+      openingHits: item.openingHits,
+      edge: moveDelta(item),
+      suppressed: item.suppressed
+    }
+  ]));
+  return {
+    source: "rolling-universal-backtest-memory",
+    moves: memory.moves,
+    closingHits: memory.closingHits,
+    openingHits: memory.openingHits,
+    edge: moveDelta(memory),
+    suppressed: memory.suppressed,
+    league
+  };
+}
+
+function universalPick(match, models, strategy = strategyCandidates[1], rollingMistakes = null, leagueCode = "global") {
   const marketPick = favorite(models.market);
   if (strategy.useClosingMarket && models.closing) {
-    const pick = favorite(models.closing);
+    const closingPick = favorite(models.closing);
+    const momentumMove = closingPick !== marketPick;
+    const suppressedByMistakeEngine = Boolean(strategy.useRollingMistakes && momentumMove && rollingMistakes && shouldSuppressMomentum(rollingMistakes, leagueCode));
+    const pick = suppressedByMistakeEngine ? marketPick : closingPick;
+    const probabilities = suppressedByMistakeEngine ? models.market : models.closing;
+    const signals = [];
+    if (!momentumMove) signals.push("odds momentum confirms market");
+    if (momentumMove && !suppressedByMistakeEngine) signals.push("odds momentum moved away from opening market");
+    if (suppressedByMistakeEngine) signals.push("mistake engine suppressed weak momentum");
     return {
       pick,
-      probabilities: models.closing,
-      confidence: Math.round(models.closing[pick] * 100),
-      signals: pick === marketPick ? ["odds momentum confirms market"] : ["odds momentum moved away from opening market"],
+      probabilities,
+      confidence: Math.round(probabilities[pick] * 100),
+      signals,
+      momentumMove,
+      openingPick: marketPick,
+      closingPick,
+      suppressedByMistakeEngine,
       strategyId: strategy.id
     };
   }
@@ -246,6 +324,7 @@ function actualSide(match) {
 
 function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
   const records = {};
+  const rollingMistakes = emptyRollingMistakes();
   const metrics = {
     universal: emptyMetric(),
     market: emptyMetric(),
@@ -263,7 +342,7 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
       form: formProbabilities(match, records)
     };
     const actual = actualSide(match);
-    const candidate = universalPick(match, models, strategy);
+    const candidate = universalPick(match, models, strategy, rollingMistakes, source.code || source.id || "global");
     const picks = {
       universal: candidate.pick,
       market: favorite(models.market),
@@ -291,6 +370,9 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
         odds: match.odds
       });
     }
+    if (strategy.useRollingMistakes) {
+      updateRollingMistakes(rollingMistakes, source.code || source.id || "global", candidate, actual);
+    }
     updateRecords(records, match);
   });
   Object.keys(metrics).forEach((key) => {
@@ -306,6 +388,7 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
     matches: matches.length,
     metrics,
     strategy: { id: strategy.id, label: strategy.label },
+    mistakeEngine: strategy.useRollingMistakes ? summarizeRollingMistakes(rollingMistakes) : null,
     edge: {
       universalMinusMarket: metrics.universal.correct - metrics.market.correct,
       overrides,
@@ -324,6 +407,7 @@ function combineFootballRuns(runs) {
     form: emptyMetric()
   };
   const edge = { overrides: 0, overrideHits: 0 };
+  const mistakeEngine = emptyRollingMistakes();
   runs.forEach((run) => {
     Object.keys(metrics).forEach((key) => {
       metrics[key].graded += run.metrics[key].graded;
@@ -332,6 +416,19 @@ function combineFootballRuns(runs) {
     });
     edge.overrides += run.edge.overrides;
     edge.overrideHits += run.edge.overrideHits;
+    if (run.mistakeEngine) {
+      mistakeEngine.moves += Number(run.mistakeEngine.moves || 0);
+      mistakeEngine.closingHits += Number(run.mistakeEngine.closingHits || 0);
+      mistakeEngine.openingHits += Number(run.mistakeEngine.openingHits || 0);
+      mistakeEngine.suppressed += Number(run.mistakeEngine.suppressed || 0);
+      Object.entries(run.mistakeEngine.league || {}).forEach(([code, item]) => {
+        const bucket = rollingBucket(mistakeEngine, code);
+        bucket.moves += Number(item.moves || 0);
+        bucket.closingHits += Number(item.closingHits || 0);
+        bucket.openingHits += Number(item.openingHits || 0);
+        bucket.suppressed += Number(item.suppressed || 0);
+      });
+    }
   });
   Object.keys(metrics).forEach((key) => {
     metrics[key] = finalize(metrics[key]);
@@ -346,6 +443,7 @@ function combineFootballRuns(runs) {
     strategy: runs[0]?.strategy || null,
     metrics,
     edge,
+    mistakeEngine: mistakeEngine.moves ? summarizeRollingMistakes(mistakeEngine) : null,
     trace: runs.flatMap((run) => run.trace).slice(0, 40),
     stability: runs.map((run) => ({
       id: run.id,

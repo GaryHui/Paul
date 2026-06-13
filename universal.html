@@ -664,9 +664,11 @@
         const selectedEdgeClass = Number(selected?.holdout?.edge || 0) > 0 ? "good" : Number(selected?.holdout?.edge || 0) < 0 ? "bad" : "";
         const isMarketAnchor = selected?.strategy?.id === "market-anchor";
         const isOddsMomentum = selected?.strategy?.id === "odds-momentum";
+        const isMistakeMomentum = selected?.strategy?.id === "odds-momentum-mistake";
+        const mistakeEngine = aggregate.mistakeEngine || null;
         const universalCopy = isMarketAnchor
           ? "当前回退市场锚定：这一列等于市场热门基准，不代表独立优势。"
-          : isOddsMomentum
+          : isOddsMomentum || isMistakeMomentum
             ? "盘口移动候选：使用赛前赔率变化代理最新市场情报。"
           : "候选跨赛事模型，独立于世界杯。";
         const comparisonCopy = isMarketAnchor
@@ -688,6 +690,14 @@
               <h3>结果与市场完全一致，是因为系统主动回退到 Market anchor。</h3>
               <p>这不是把 PAUL 做成市场，也不是造数。当前候选策略没有通过部署门槛：训练集必须跑赢市场，并且 Brier 概率校准不能变差。未通过时，系统宁愿展示市场基线，也不硬凑一个看起来更厉害的数字。</p>
               <p class="small">所以当前 Universal PAUL = Market favorite，Edge +0、Override 0/0 都是预期结果。真正要跑赢市场，需要继续加入更多独立信息源和只在高把握场次出手的选择性策略。</p>
+            </article>
+          ` : ""}
+          ${isMistakeMomentum && mistakeEngine ? `
+            <article class="module strategy-note">
+              <span>失误引擎互连</span>
+              <h3>复盘后继续信盘口移动：${text(mistakeEngine.closingHits || 0)} / ${text(mistakeEngine.moves || 0)} 次命中，早盘同场 ${text(mistakeEngine.openingHits || 0)} 次。</h3>
+              <p>Universal 失误引擎按时间顺序滚动学习：每场结束后记录盘口移动是否害了 PAUL，下一场只能读取之前的记忆。如果某个联赛或全局出现长期负反馈，它会临时回退早盘；本次回测中盘口移动累计多中 ${text(mistakeEngine.edge || 0)} 场，没有触发回退。</p>
+              <p class="small">这说明当前更好的校准不是“少信盘口”，而是继续抓每日赔率变化，同时把失误样本留给后续更细的规则。</p>
             </article>
           ` : ""}
           ${isOddsMomentum ? `
