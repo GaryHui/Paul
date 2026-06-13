@@ -313,8 +313,14 @@ function reasonMarkup(row) {
   const riskText = pick.upsetRiskZh || pick.upsetRisk || "";
   const risk = riskText ? `<span class="sub">风险：${text(riskText)}</span>` : "";
   const review = row.postMatchReview?.summaryZh ? `<span class="sub result-${row.pickOutcome === "correct" ? "correct" : "missed"}">赛后复盘：${text(row.postMatchReview.summaryZh)}</span>` : "";
+  const mistakeTags = Array.isArray(row.postMatchReview?.causeTags) && row.postMatchReview.causeTags.length
+    ? `<span class="sub">失误引擎标签：${text(row.postMatchReview.causeTags.join(" / "))}</span>`
+    : "";
+  const newsFindings = Array.isArray(row.postMatchReview?.newsFindings) && row.postMatchReview.newsFindings.length
+    ? `<span class="sub">赛后新闻发现：${text(row.postMatchReview.newsFindings.join("；"))}</span>`
+    : "";
   const calibrationHints = row.postMatchReview?.calibrationHints
-    ? `<span class="sub">校准提示：只调整校准层；Edge ${row.postMatchReview.calibrationHints.edgeTrustDelta ?? 0}，比分层 ${row.postMatchReview.calibrationHints.scoreModelDelta ?? 0}，市场回缩 ${row.postMatchReview.calibrationHints.marketShrinkDelta ?? 0}。</span>`
+    ? `<span class="sub">校准提示：只调整校准层；Edge ${row.postMatchReview.calibrationHints.edgeTrustDelta ?? 0}，比分层 ${row.postMatchReview.calibrationHints.scoreModelDelta ?? 0}，市场回缩 ${row.postMatchReview.calibrationHints.marketShrinkDelta ?? 0}，平局 ${row.postMatchReview.calibrationHints.drawRiskDelta ?? 0}，冷门 ${row.postMatchReview.calibrationHints.upsetSensitivityDelta ?? 0}。</span>`
     : "";
   const daily = row.dailyCalibration?.count
     ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
@@ -330,6 +336,8 @@ function reasonMarkup(row) {
         `每日 PAUL：${row.dailyCalibration?.count || 0} 次；同向率 ${pct(row.dailyCalibration?.samePickRate)}；趋势 ${pct(row.dailyCalibration?.trendPct)}。`,
         riskText ? `风险：${riskText}` : "风险：无单独记录。",
         row.postMatchReview?.summaryZh ? `赛后复盘：${row.postMatchReview.summaryZh}` : "",
+        row.postMatchReview?.causeTags?.length ? `失误标签：${row.postMatchReview.causeTags.join(", ")}` : "",
+        row.postMatchReview?.newsFindings?.length ? `新闻发现：${row.postMatchReview.newsFindings.join("；")}` : "",
         row.decision?.reasons?.length ? `过滤器：${row.decision.reasons.join(" ")}` : "过滤器：已通过主要过滤器。",
         `skipReason：${row.skipReason || "无"}。`
       ])}</strong>
@@ -337,6 +345,8 @@ function reasonMarkup(row) {
       ${daily}
       ${decisionReasons}
       ${review}
+      ${mistakeTags}
+      ${newsFindings}
       ${calibrationHints}
       ${risk}
       ${evidence}

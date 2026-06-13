@@ -1,4 +1,5 @@
 const { parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
+const { recordMistakeReview } = require("../_lib/mistake-engine");
 const { loadSnapshot } = require("../_lib/paul");
 const { fetchMatchResult } = require("../_lib/results");
 const { getEvidenceCache, getPredictions, getResults, setResult } = require("../_lib/store");
@@ -177,9 +178,19 @@ module.exports = async function handler(req, res) {
         if (result) {
           const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
           const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || prediction?.evidence || null;
+          const baseReview = buildPostMatchReview(match, result, prediction, evidence);
+          let postMatchReview = baseReview;
+          try {
+            postMatchReview = await recordMistakeReview({ match, result, prediction, evidence, baseReview }) || baseReview;
+          } catch (error) {
+            postMatchReview = {
+              ...baseReview,
+              mistakeEngineError: error.message
+            };
+          }
           const reviewedResult = {
             ...result,
-            postMatchReview: buildPostMatchReview(match, result, prediction, evidence)
+            postMatchReview
           };
           await setResult(match.id, reviewedResult);
           synced += 1;

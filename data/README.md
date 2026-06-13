@@ -75,6 +75,38 @@ The Daily PAUL Read is not a formal proof record. Official predictions are still
 
 Formal prediction proof records use `paul-proof-v2`, which includes a compact public evidence snapshot: provider, event id, bookmaker count, sample bookmakers, consensus 1X2 odds, and implied probabilities. API keys and raw private responses are never included in the public proof.
 
+## PAUL Mistake Engine
+
+After final scores are synced, PAUL now runs a post-match mistake engine. This engine never rewrites locked predictions or proof payloads. It only creates calibration-layer memory for future matches.
+
+The engine records:
+
+- whether PAUL hit the match direction
+- whether PAUL hit the exact score
+- whether the market favorite hit
+- score error size
+- cause tags such as `draw_underestimated`, `upset_underestimated`, `market_anchor_underweighted`, `pace_or_finishing_underestimated`, and `false_upset_override`
+- Chinese post-match review text
+- calibration hints for risk sizing, draw risk, upset sensitivity, score confidence, and market shrinkage
+- optional PAUL/Qwen search-backed post-match findings when `MISTAKE_ENGINE_USE_AI` is not `0`
+
+The memory is stored in Vercel KV under `paul:mistake-memory:v1`. Future evidence collection reads this memory and adds a compact `evidence.mistakeEngine` object to the PAUL evidence package. This gives PAUL calibration context, but does not change PAUL Edge v4 weights or the protected official prediction prompt structure.
+
+Owner inspection endpoint:
+
+```text
+/api/admin/mistakes?verify=<VERIFY_TOKEN>
+```
+
+Useful env flags:
+
+```text
+MISTAKE_ENGINE_DISABLED=1
+MISTAKE_ENGINE_USE_AI=0
+```
+
+Set `MISTAKE_ENGINE_USE_AI=0` to keep the local rule-based review while disabling post-match news/search calls.
+
 ## PAUL Edge Engine v4
 
 Formal predictions now build a fixed evidence layer before PAUL writes the final call:

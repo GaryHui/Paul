@@ -3,6 +3,7 @@ const resultKey = "paul:results:v1";
 const auditKey = "paul:audit:v1";
 const evidenceKey = "paul:evidence:v1";
 const dailyAnalysisKey = "paul:daily-analysis:v1";
+const mistakeMemoryKey = "paul:mistake-memory:v1";
 const pollKey = "paul:polls:v1";
 const rateLimitPrefix = "paul:rate:";
 
@@ -147,6 +148,34 @@ async function setDailyAnalysisEntry(matchId, record) {
   return true;
 }
 
+async function getMistakeMemory() {
+  if (!isSharedStoreConfigured()) return {};
+  const value = await redisCommand(["GET", mistakeMemoryKey]);
+  if (!value) return {};
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return {};
+  }
+}
+
+async function setMistakeMemory(record) {
+  if (!isSharedStoreConfigured()) return false;
+  await redisCommand(["SET", mistakeMemoryKey, JSON.stringify(record || {})]);
+  return true;
+}
+
+async function setMistakeEntry(matchId, review) {
+  if (!isSharedStoreConfigured()) return false;
+  const memory = await getMistakeMemory();
+  memory.matches ||= {};
+  memory.matches[matchId] = review;
+  memory.updatedAt = new Date().toISOString();
+  await redisCommand(["SET", mistakeMemoryKey, JSON.stringify(memory)]);
+  return true;
+}
+
 async function getPolls() {
   if (!isSharedStoreConfigured()) return {};
   const value = await redisCommand(["GET", pollKey]);
@@ -217,6 +246,7 @@ async function setRateLimit(key, record, ttlSeconds = 3600) {
 module.exports = {
   getDailyAnalysis,
   getEvidenceCache,
+  getMistakeMemory,
   getPoll,
   getRateLimit,
   getAuditLog,
@@ -226,6 +256,8 @@ module.exports = {
   setAuditEntry,
   setDailyAnalysisEntry,
   setEvidenceEntry,
+  setMistakeEntry,
+  setMistakeMemory,
   setPollVote,
   setPrediction,
   setRateLimit,

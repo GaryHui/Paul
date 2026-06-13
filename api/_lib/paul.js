@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
 const { parseMatchTime } = require("./bracket");
-const { getEvidenceCache, setEvidenceEntry } = require("./store");
+const { mistakeAdjustmentFromMemory, summarizeRelevantMistakes } = require("./mistake-engine");
+const { getEvidenceCache, getMistakeMemory, setEvidenceEntry } = require("./store");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -287,6 +288,7 @@ async function collectPredictionEvidence(match, options = {}) {
   const allRatings = readJson(ratingsFile, {});
   const allForm = readJson(formFile, {});
   const evidenceCache = options.cache === false ? {} : await getEvidenceCache();
+  const mistakeMemory = options.mistakeMemory === false || process.env.MISTAKE_ENGINE_DISABLED === "1" ? {} : await getMistakeMemory();
   const cachedEvidence = findByMatchId(evidenceCache, match.id);
   const cachedOdds = cachedEvidenceIsFresh(cachedEvidence) ? cachedEvidence.market : null;
   const shouldFetchLive = options.liveOdds !== false && (options.forceLiveOdds || !cachedOdds);
@@ -321,6 +323,8 @@ async function collectPredictionEvidence(match, options = {}) {
     { name: "poisson", probabilities: poisson?.probabilities, weight: 20 }
   ]);
   const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson || providerIntelligence);
+  const mistakeSummary = summarizeRelevantMistakes(match, mistakeMemory);
+  const mistakeAdjustment = mistakeAdjustmentFromMemory(mistakeSummary);
   const missing = [];
   if (!marketProb) missing.push("market odds");
   if (!(ratingA?.elo && ratingB?.elo)) missing.push("real Elo or team ratings");
@@ -357,6 +361,12 @@ async function collectPredictionEvidence(match, options = {}) {
     ratings: ratingA && ratingB ? { teamA: ratingA, teamB: ratingB, probabilities: eloProb } : null,
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
     intelligence: providerIntelligence,
+    mistakeEngine: mistakeAdjustment
+      ? {
+          ...mistakeSummary,
+          calibrationAdjustment: mistakeAdjustment
+        }
+      : null,
     poisson,
     modelBlend,
     baselines: {
