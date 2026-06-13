@@ -2,7 +2,7 @@ const { parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/br
 const { recordMistakeReview } = require("../_lib/mistake-engine");
 const { loadSnapshot } = require("../_lib/paul");
 const { fetchMatchResult } = require("../_lib/results");
-const { getEvidenceCache, getPredictions, getResults, setResult } = require("../_lib/store");
+const { getEvidenceCache, getMistakeMemory, getPredictions, getResults, setResult } = require("../_lib/store");
 
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2);
 const defaultMaxMatches = Number(process.env.RESULT_SYNC_MAX_MATCHES || 12);
@@ -149,20 +149,56 @@ module.exports = async function handler(req, res) {
     const force = req.method === "POST" && (req.body?.force || url.searchParams.get("force") === "1");
     const limit = Math.max(1, Math.min(72, Number(url.searchParams.get("limit") || defaultMaxMatches)));
     const snapshot = loadSnapshot();
-    const [predictions, results, evidenceCache] = await Promise.all([
+    const [predictions, results, evidenceCache, mistakeMemory] = await Promise.all([
       getPredictions(),
       getResults(),
-      getEvidenceCache()
+      getEvidenceCache(),
+      getMistakeMemory()
     ]);
     const now = new Date();
     const events = [];
     let attempted = 0;
     let synced = 0;
+    let reviewed = 0;
     let eligible = 0;
     const resolvedMatches = resolveMatches(snapshot.matches || [], results);
 
     for (const match of resolvedMatches) {
-      if (!match.teamA?.code || !match.teamB?.code || results[match.id] || results[String(match.id)]) continue;
+      if (!match.teamA?.code || !match.teamB?.code) continue;
+      const existingResult = results[match.id] || results[String(match.id)] || null;
+      const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
+      const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || prediction?.evidence || null;
+      const memoryReview = mistakeMemory?.matches?.[match.id] || mistakeMemory?.matches?.[String(match.id)] || null;
+      if (existingResult) {
+        if (existingResult.postMatchReview && memoryReview) continue;
+        if (!prediction) {
+          events.push({ type: "review", matchId: match.id, status: "skipped", reason: "missing locked prediction" });
+          continue;
+        }
+        eligible += 1;
+        if (attempted >= limit) {
+          events.push({ type: "review", matchId: match.id, status: "skipped", reason: "limit reached" });
+          continue;
+        }
+        attempted += 1;
+        try {
+          const baseReview = existingResult.postMatchReview || buildPostMatchReview(match, existingResult, prediction, evidence);
+          const postMatchReview = await recordMistakeReview({ match, result: existingResult, prediction, evidence, baseReview }) || baseReview;
+          await setResult(match.id, { ...existingResult, postMatchReview });
+          reviewed += 1;
+          events.push({
+            type: "review",
+            matchId: match.id,
+            status: "ok",
+            score: `${existingResult.homeScore}-${existingResult.awayScore}`,
+            winnerCode: resultWinnerCode(match, existingResult),
+            postMatchReviewed: Boolean(postMatchReview)
+          });
+        } catch (error) {
+          events.push({ type: "review", matchId: match.id, status: "error", error: error.message });
+        }
+        continue;
+      }
       const kickoffAt = storedKickoffAt(match, predictions, evidenceCache);
       if (!kickoffAt || Number.isNaN(kickoffAt.getTime())) continue;
       const resultAt = new Date(kickoffAt.getTime() + resultSyncDelayHours * 60 * 60 * 1000);
@@ -176,8 +212,6 @@ module.exports = async function handler(req, res) {
       try {
         const result = await fetchMatchResult(match);
         if (result) {
-          const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
-          const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || prediction?.evidence || null;
           const baseReview = buildPostMatchReview(match, result, prediction, evidence);
           let postMatchReview = baseReview;
           try {
@@ -219,6 +253,7 @@ module.exports = async function handler(req, res) {
       eligible,
       attempted,
       synced,
+      reviewed,
       existingResults: Object.keys(results).length,
       events
     });
