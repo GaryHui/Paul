@@ -606,6 +606,11 @@
         return `${Number(value).toFixed(0)}%`;
       }
 
+      function metricPct(metric = {}) {
+        if (!metric.graded) return "N/A";
+        return `${((Number(metric.correct || 0) / Number(metric.graded || 1)) * 100).toFixed(1)}%`;
+      }
+
       function signed(value) {
         const number = Number(value || 0);
         return `${number >= 0 ? "+" : ""}${number}`;
@@ -627,7 +632,7 @@
       }
 
       function metricSummary(metric = {}) {
-        return `${metric.correct || 0}/${metric.graded || 0} · ${pct(metric.accuracy)} · Brier ${metric.brier ?? "N/A"}`;
+        return `${metric.correct || 0}/${metric.graded || 0} · ${metricPct(metric)} · Brier ${metric.brier ?? "N/A"}`;
       }
 
       function renderNotConfigured(data) {
@@ -658,8 +663,11 @@
         const edgeClass = Number(edge.universalMinusMarket || 0) >= 0 ? "good" : "bad";
         const selectedEdgeClass = Number(selected?.holdout?.edge || 0) > 0 ? "good" : Number(selected?.holdout?.edge || 0) < 0 ? "bad" : "";
         const isMarketAnchor = selected?.strategy?.id === "market-anchor";
+        const isOddsMomentum = selected?.strategy?.id === "odds-momentum";
         const universalCopy = isMarketAnchor
           ? "当前回退市场锚定：这一列等于市场热门基准，不代表独立优势。"
+          : isOddsMomentum
+            ? "盘口移动候选：使用赛前赔率变化代理最新市场情报。"
           : "候选跨赛事模型，独立于世界杯。";
         const comparisonCopy = isMarketAnchor
           ? "没有执行覆盖：Override 0/0 是预期结果。"
@@ -680,6 +688,14 @@
               <h3>结果与市场完全一致，是因为系统主动回退到 Market anchor。</h3>
               <p>这不是把 PAUL 做成市场，也不是造数。当前候选策略没有通过部署门槛：训练集必须跑赢市场，并且 Brier 概率校准不能变差。未通过时，系统宁愿展示市场基线，也不硬凑一个看起来更厉害的数字。</p>
               <p class="small">所以当前 Universal PAUL = Market favorite，Edge +0、Override 0/0 都是预期结果。真正要跑赢市场，需要继续加入更多独立信息源和只在高把握场次出手的选择性策略。</p>
+            </article>
+          ` : ""}
+          ${isOddsMomentum ? `
+            <article class="module strategy-note">
+              <span>优势来源</span>
+              <h3>PAUL 当前跑赢的是“早盘市场”，优势来自盘口移动。</h3>
+              <p>Football-Data 同时提供早盘平均赔率和临场/收盘平均赔率。Universal Lab 把临场赔率当作“每日赔率持续刷新”的历史代理：如果盘口在赛前移动，PAUL 跟随最新市场情报，而不是停留在旧市场基准。</p>
+              <p class="small">这不等于赛后偷看结果；但它也提醒我们：正式预测必须只使用锁定前已经抓到的赔率和情报，不能使用开赛后或赛果后的数据。当前优势说明“持续抓赔率”是值得做的。</p>
             </article>
           ` : ""}
           <article class="module">

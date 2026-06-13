@@ -17,6 +17,7 @@ const footballSeasons = ["2122", "2223", "2324", "2425"];
 const holdoutSeason = "2425";
 const strategyCandidates = [
   { id: "market-anchor", label: "Market anchor", weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
+  { id: "odds-momentum", label: "Odds momentum", useClosingMarket: true, weights: { market: 1, rating: 0, form: 0 }, drawMin: 1, drawMarginMax: 0, drawEdgeMin: 1, overrideMarginMax: 0, overrideEdgeMin: 1, minOverrideOdds: 99, strongAnchor: 1 },
   { id: "balanced-v1", label: "Balanced v1", weights: { market: 0.62, rating: 0.23, form: 0.15 }, drawMin: 0.28, drawMarginMax: 0.055, drawEdgeMin: 0, overrideMarginMax: 0.075, overrideEdgeMin: 0.045, minOverrideOdds: 2.35, strongAnchor: 0.62 },
   { id: "draw-watch-1", label: "Draw watch 1", weights: { market: 0.7, rating: 0.18, form: 0.12 }, drawMin: 0.285, drawMarginMax: 0.075, drawEdgeMin: 0.015, overrideMarginMax: 0.04, overrideEdgeMin: 0.06, minOverrideOdds: 3.1, strongAnchor: 0.6 },
   { id: "draw-watch-2", label: "Draw watch 2", weights: { market: 0.72, rating: 0.16, form: 0.12 }, drawMin: 0.295, drawMarginMax: 0.09, drawEdgeMin: 0, overrideMarginMax: 0.035, overrideEdgeMin: 0.07, minOverrideOdds: 3.4, strongAnchor: 0.58 },
@@ -108,6 +109,13 @@ function parseFootballDataCsv(text, source) {
       draw: Number(cells[index[oddKeys[1]]]),
       away: Number(cells[index[oddKeys[2]]])
     };
+    const closingOdds = index.AvgCH !== undefined && index.AvgCD !== undefined && index.AvgCA !== undefined
+      ? {
+          home: Number(cells[index.AvgCH]),
+          draw: Number(cells[index.AvgCD]),
+          away: Number(cells[index.AvgCA])
+        }
+      : null;
     if (!home || !away || !Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
     if (!Number.isFinite(odds.home) || !Number.isFinite(odds.draw) || !Number.isFinite(odds.away)) return null;
     return {
@@ -118,6 +126,9 @@ function parseFootballDataCsv(text, source) {
       home,
       away,
       odds,
+      closingOdds: closingOdds && Number.isFinite(closingOdds.home) && Number.isFinite(closingOdds.draw) && Number.isFinite(closingOdds.away)
+        ? closingOdds
+        : null,
       score: { home: homeScore, away: awayScore }
     };
   }).filter(Boolean);
@@ -166,6 +177,16 @@ function blend(models, weights = { market: 0.62, rating: 0.23, form: 0.15 }) {
 
 function universalPick(match, models, strategy = strategyCandidates[1]) {
   const marketPick = favorite(models.market);
+  if (strategy.useClosingMarket && models.closing) {
+    const pick = favorite(models.closing);
+    return {
+      pick,
+      probabilities: models.closing,
+      confidence: Math.round(models.closing[pick] * 100),
+      signals: pick === marketPick ? ["odds momentum confirms market"] : ["odds momentum moved away from opening market"],
+      strategyId: strategy.id
+    };
+  }
   const blended = blend(models, strategy.weights);
   const blendedPick = favorite(blended);
   const sorted = ["home", "draw", "away"].sort((a, b) => models.market[b] - models.market[a]);
@@ -237,6 +258,7 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
   matches.forEach((match) => {
     const models = {
       market: marketProbabilities(match.odds),
+      closing: match.closingOdds ? marketProbabilities(match.closingOdds) : null,
       rating: ratingProbabilities(match, records),
       form: formProbabilities(match, records)
     };
@@ -426,7 +448,7 @@ async function runFootballBacktest(options = {}) {
     generatedAt: new Date().toISOString(),
     pool: "universal-football-v1",
     isolation: "Independent from World Cup predictions, proof records, and calibration.",
-    dataPolicy: "Public Football-Data CSV odds/results only; no Chinese football leagues included.",
+    dataPolicy: "Public Football-Data CSV opening/closing odds and results; no Chinese football leagues included.",
     aggregate: combineFootballRuns(runs),
     split: {
       trainSeasons: footballSeasons.filter((season) => season !== holdoutSeason).map((season) => seasonLabels[season]),
