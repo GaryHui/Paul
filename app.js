@@ -143,6 +143,18 @@ Object.assign(languageCopy.zh, {
   correct: "命中", missed: "未命中", final: "已完赛", locked: "已锁定", proofLocked: "证明已锁定", notLocked: "未锁定", lockedAt: "锁定时间", kickoff: "开赛时间", generatedAt: "生成时间", updated: "已更新", officialConfidence: "正式信心", officialPredictionPending: "正式预测待定", officialPredictionNotLocked: "PAUL 正式预测还未锁定。", bracketNotResolved: "这个签表席位还没有确定。", kickoffCountdown: "开赛倒计时", finalScorePending: "最终比分还未同步。完赛后会更新命中率。", predictedScore: "预测比分", officialPaulPick: "PAUL 正式选择", upsetWatch: "冷门观察", proofStatus: "证明状态", upsetRisk: "冷门风险", proofLockedPublicRecord: "完赛后，这个预测会计入 PAUL 公开战绩。", finalScoresVerify: "赛后比分会验证这个预测。", officialPredictionFallback: "PAUL 已返回正式预测。", lockedWithoutDetails: "PAUL 已锁定本场预测，但没有提供详细说明。", awaitingGroups: "等待小组赛", awaitingGroupPick: "等待小组赛 PAUL 预测", awaitingKnockoutPick: "等待淘汰赛 PAUL 神谕", waitingBracketResults: "等待签表结果", pendingGroupPickCopy: "这场小组赛预测会在开赛前生成证明并锁定，并计入 PAUL 公开基础战绩。", pendingKnockoutPickCopy: "淘汰赛神谕模式会在开赛前锁定这场定生死预测，并考虑冷门风险和签表路径。", unresolvedSlotCopy: "前序真实赛果填充正式签表后，这个淘汰赛席位才会进入可预测状态。", pendingModelCopy: "正式证明预测仍在等待锁定。锁定窗口前，上方每日概率仍可更新。", unresolvedModelCopy: "前序胜者确定后，这场比赛才会进入可预测状态。", knockoutFixturesPending: "真实小组赛结果和正式签表可用后，淘汰赛列表才会显示。", groupStageRecord: "小组赛战绩", knockoutOracleMode: "淘汰赛神谕模式", noMatchingProofs: "没有匹配的证明", noProofsMatchCopy: "请更换轮次筛选或搜索词。正式证明账本仍会保留每一个锁定预测。", proofServiceUnavailable: "证明服务暂时不可用", copy: "复制", loadInVerifier: "载入验证器", downloadCanonical: "下载标准 JSON", downloadOts: "下载 .ots", copiedProofJson: "证明 JSON 已复制。", copiedProofForMatch: "已复制比赛证明", proofJsonLoaded: "证明 JSON 已载入。点击验证证明。", demoProofLoaded: "固定演示证明和内置 .ots 已载入。点击验证证明。", proofVerificationComplete: "证明已在本浏览器本地验证完成。", proofInputPlaceholder: "在这里粘贴证明 JSON...", proofVerifierEyebrow: "公开证明验证器", proofVerifierTitle: "自己验证 PAUL 证明。", proofVerifierCopy: "粘贴任意卡片中的证明 JSON。浏览器会在本地重新计算 SHA-256，检查标准内容一致性，并显示 GitHub/OpenTimestamps 证据。", loadDemoProof: "载入演示证明", verifyProof: "验证证明", clear: "清空", noProofLoaded: "还没有载入证明。", showLatest: "显示最新", showAll: "显示全部", retainedProofs: "条已保留正式证明", matchingProofs: "条匹配证明", showing: "显示", latest: "最新", of: "/", hashVerified: "哈希已验证", hashMismatch: "哈希不匹配", beforeKickoff: "早于开赛", checkTime: "检查时间", otsReceipt: "OTS 收据", unknown: "未知", pick: "选择", githubProof: "GitHub 证明", noGithubTimestamp: "暂无 GitHub 时间戳", githubPending: "GitHub 待处理", noOtsProof: "暂无 OpenTimestamps 证明", otsPending: "OpenTimestamps 待处理", openOtsVerifier: "打开 OTS 验证器"
   , all: "全部"
 });
+Object.assign(languageCopy.en, {
+  yourTime: "Your time",
+  venueLocalTime: "Venue local time",
+  officialScheduleSource: "Official schedule source"
+});
+
+Object.assign(languageCopy.zh, {
+  yourTime: "你的时间",
+  venueLocalTime: "比赛当地时间",
+  officialScheduleSource: "官方赛程来源"
+});
+
 ["es", "fr", "de", "pt", "ar", "ja", "ko", "it", "nl", "tr"].forEach((key) => {
   Object.entries(languageCopy.en).forEach(([copyKey, value]) => {
     languageCopy[key][copyKey] ||= value;
@@ -434,6 +446,629 @@ const cityRoute = {
 const pairPattern = [[1, 2], [3, 4], [4, 2], [1, 3], [4, 1], [2, 3]];
 const modelNames = ["EloPulse", "FormNet", "TacticalLens", "OracleSynth"];
 
+const kickoffInfoByMatchId = {
+  "3": {
+    "kickoffAt": "2026-06-18T16:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−4",
+    "officialMatchId": 25,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "4": {
+    "kickoffAt": "2026-06-19T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 28,
+    "officialVenue": "Estadio Akron, Zapopan",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "5": {
+    "kickoffAt": "2026-06-25T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 53,
+    "officialVenue": "Estadio Azteca, Mexico City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "6": {
+    "kickoffAt": "2026-06-25T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 54,
+    "officialVenue": "Estadio BBVA, Guadalupe",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "9": {
+    "kickoffAt": "2026-06-18T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 26,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "10": {
+    "kickoffAt": "2026-06-18T22:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−7",
+    "officialMatchId": 27,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "11": {
+    "kickoffAt": "2026-06-24T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 51,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "12": {
+    "kickoffAt": "2026-06-24T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 52,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "15": {
+    "kickoffAt": "2026-06-19T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 30,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "16": {
+    "kickoffAt": "2026-06-20T00:30:00.000Z",
+    "venueLocalTime": "8:30 p.m. UTC−4",
+    "officialMatchId": 29,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "17": {
+    "kickoffAt": "2026-06-24T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 49,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "18": {
+    "kickoffAt": "2026-06-24T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 50,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "21": {
+    "kickoffAt": "2026-06-20T03:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−7",
+    "officialMatchId": 31,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "22": {
+    "kickoffAt": "2026-06-19T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 32,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "23": {
+    "kickoffAt": "2026-06-26T02:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−7",
+    "officialMatchId": 59,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "24": {
+    "kickoffAt": "2026-06-26T02:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−7",
+    "officialMatchId": 60,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "27": {
+    "kickoffAt": "2026-06-21T00:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−5",
+    "officialMatchId": 34,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "28": {
+    "kickoffAt": "2026-06-20T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 33,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "29": {
+    "kickoffAt": "2026-06-25T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 56,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "30": {
+    "kickoffAt": "2026-06-25T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 55,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "33": {
+    "kickoffAt": "2026-06-21T04:00:00.000Z",
+    "venueLocalTime": "10:00 p.m. UTC−6",
+    "officialMatchId": 36,
+    "officialVenue": "Estadio BBVA, Guadalupe",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "34": {
+    "kickoffAt": "2026-06-20T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 35,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "35": {
+    "kickoffAt": "2026-06-25T23:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−5",
+    "officialMatchId": 58,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "36": {
+    "kickoffAt": "2026-06-25T23:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−5",
+    "officialMatchId": 57,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "39": {
+    "kickoffAt": "2026-06-22T01:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−7",
+    "officialMatchId": 40,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "40": {
+    "kickoffAt": "2026-06-21T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 39,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "41": {
+    "kickoffAt": "2026-06-27T03:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−7",
+    "officialMatchId": 64,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "42": {
+    "kickoffAt": "2026-06-27T03:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−7",
+    "officialMatchId": 63,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "45": {
+    "kickoffAt": "2026-06-21T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 37,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "46": {
+    "kickoffAt": "2026-06-21T16:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−4",
+    "officialMatchId": 38,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "47": {
+    "kickoffAt": "2026-06-27T00:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−6",
+    "officialMatchId": 66,
+    "officialVenue": "Estadio Akron, Zapopan",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "48": {
+    "kickoffAt": "2026-06-27T00:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−5",
+    "officialMatchId": 65,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "49": {
+    "kickoffAt": "2026-06-16T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 17,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "50": {
+    "kickoffAt": "2026-06-16T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 18,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "51": {
+    "kickoffAt": "2026-06-23T00:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−4",
+    "officialMatchId": 41,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "52": {
+    "kickoffAt": "2026-06-22T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 42,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "53": {
+    "kickoffAt": "2026-06-26T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 61,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "54": {
+    "kickoffAt": "2026-06-26T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 62,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "55": {
+    "kickoffAt": "2026-06-17T01:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−5",
+    "officialMatchId": 19,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "56": {
+    "kickoffAt": "2026-06-17T04:00:00.000Z",
+    "venueLocalTime": "9:00 p.m. UTC−7",
+    "officialMatchId": 20,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "57": {
+    "kickoffAt": "2026-06-23T03:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−7",
+    "officialMatchId": 44,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "58": {
+    "kickoffAt": "2026-06-22T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 43,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "59": {
+    "kickoffAt": "2026-06-28T02:00:00.000Z",
+    "venueLocalTime": "9:00 p.m. UTC−5",
+    "officialMatchId": 70,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "60": {
+    "kickoffAt": "2026-06-28T02:00:00.000Z",
+    "venueLocalTime": "9:00 p.m. UTC−5",
+    "officialMatchId": 69,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "61": {
+    "kickoffAt": "2026-06-17T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 23,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "62": {
+    "kickoffAt": "2026-06-18T02:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−6",
+    "officialMatchId": 24,
+    "officialVenue": "Estadio Azteca, Mexico City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "63": {
+    "kickoffAt": "2026-06-24T02:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−6",
+    "officialMatchId": 48,
+    "officialVenue": "Estadio Akron, Zapopan",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "64": {
+    "kickoffAt": "2026-06-23T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 47,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "65": {
+    "kickoffAt": "2026-06-27T23:30:00.000Z",
+    "venueLocalTime": "7:30 p.m. UTC−4",
+    "officialMatchId": 71,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "66": {
+    "kickoffAt": "2026-06-27T23:30:00.000Z",
+    "venueLocalTime": "7:30 p.m. UTC−4",
+    "officialMatchId": 72,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "67": {
+    "kickoffAt": "2026-06-17T20:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−5",
+    "officialMatchId": 22,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "68": {
+    "kickoffAt": "2026-06-17T23:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−4",
+    "officialMatchId": 21,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "69": {
+    "kickoffAt": "2026-06-23T23:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−4",
+    "officialMatchId": 46,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "70": {
+    "kickoffAt": "2026-06-23T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 45,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "71": {
+    "kickoffAt": "2026-06-27T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 67,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "72": {
+    "kickoffAt": "2026-06-27T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 68,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "73": {
+    "kickoffAt": "2026-06-28T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 73,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "74": {
+    "kickoffAt": "2026-06-29T20:30:00.000Z",
+    "venueLocalTime": "4:30 p.m. UTC−4",
+    "officialMatchId": 74,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "75": {
+    "kickoffAt": "2026-06-30T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 75,
+    "officialVenue": "Estadio BBVA, Guadalupe",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "76": {
+    "kickoffAt": "2026-06-29T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 76,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "77": {
+    "kickoffAt": "2026-06-30T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 77,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "78": {
+    "kickoffAt": "2026-06-30T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 78,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "79": {
+    "kickoffAt": "2026-07-01T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 79,
+    "officialVenue": "Estadio Azteca, Mexico City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "80": {
+    "kickoffAt": "2026-07-01T16:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−4",
+    "officialMatchId": 80,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "81": {
+    "kickoffAt": "2026-07-02T00:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−7",
+    "officialMatchId": 81,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "82": {
+    "kickoffAt": "2026-07-01T20:00:00.000Z",
+    "venueLocalTime": "1:00 p.m. UTC−7",
+    "officialMatchId": 82,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "83": {
+    "kickoffAt": "2026-07-02T23:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−4",
+    "officialMatchId": 83,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "84": {
+    "kickoffAt": "2026-07-02T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 84,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "85": {
+    "kickoffAt": "2026-07-03T03:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−7",
+    "officialMatchId": 85,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "86": {
+    "kickoffAt": "2026-07-03T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 86,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "87": {
+    "kickoffAt": "2026-07-04T01:30:00.000Z",
+    "venueLocalTime": "8:30 p.m. UTC−5",
+    "officialMatchId": 87,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "88": {
+    "kickoffAt": "2026-07-03T18:00:00.000Z",
+    "venueLocalTime": "1:00 p.m. UTC−5",
+    "officialMatchId": 88,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "89": {
+    "kickoffAt": "2026-07-04T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 89,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "90": {
+    "kickoffAt": "2026-07-04T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 90,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "91": {
+    "kickoffAt": "2026-07-05T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 91,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "92": {
+    "kickoffAt": "2026-07-06T00:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−6",
+    "officialMatchId": 92,
+    "officialVenue": "Estadio Azteca, Mexico City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "93": {
+    "kickoffAt": "2026-07-06T19:00:00.000Z",
+    "venueLocalTime": "2:00 p.m. UTC−5",
+    "officialMatchId": 93,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "94": {
+    "kickoffAt": "2026-07-07T00:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−7",
+    "officialMatchId": 94,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "95": {
+    "kickoffAt": "2026-07-07T16:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−4",
+    "officialMatchId": 95,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "96": {
+    "kickoffAt": "2026-07-07T20:00:00.000Z",
+    "venueLocalTime": "1:00 p.m. UTC−7",
+    "officialMatchId": 96,
+    "officialVenue": "BC Place, Vancouver",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "97": {
+    "kickoffAt": "2026-07-09T20:00:00.000Z",
+    "venueLocalTime": "4:00 p.m. UTC−4",
+    "officialMatchId": 97,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "98": {
+    "kickoffAt": "2026-07-10T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 98,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "99": {
+    "kickoffAt": "2026-07-11T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 99,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "100": {
+    "kickoffAt": "2026-07-12T01:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−5",
+    "officialMatchId": 100,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "101": {
+    "kickoffAt": "2026-07-14T19:00:00.000Z",
+    "venueLocalTime": "2:00 p.m. UTC−5",
+    "officialMatchId": 101,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "102": {
+    "kickoffAt": "2026-07-15T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 102,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "103": {
+    "kickoffAt": "2026-07-18T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
+    "officialMatchId": 103,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "104": {
+    "kickoffAt": "2026-07-19T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 104,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  }
+};
+
+function withKickoffInfo(match) {
+  return { ...match, ...(kickoffInfoByMatchId[match.id] || {}) };
+}
+
 function teamByGroupPos(group, pos) {
   return Object.entries(teams).find(([, team]) => team.group === group && team.pos === pos)?.[0];
 }
@@ -523,7 +1158,7 @@ function buildGroupMatches() {
     pairPattern.forEach(([left, right], idx) => {
       const aCode = teamByGroupPos(group, left);
       const bCode = teamByGroupPos(group, right);
-      matches.push({
+      matches.push(withKickoffInfo({
         id: id++,
         round: "Group Stage",
         group,
@@ -532,7 +1167,7 @@ function buildGroupMatches() {
         aCode,
         bCode,
         slot: `Group ${group}`
-      });
+      }));
     });
   });
   return matches;
@@ -831,7 +1466,7 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
       if (officialResult(match)?.status === "final") return null;
       const resolved = resolvedTeams(match);
       if (!resolved.aCode || !resolved.bCode) return null;
-      const matchTime = new Date(`${match.date} 20:00:00 GMT+0000`);
+      const matchTime = matchKickoffTime(match);
       if (Number.isNaN(matchTime.getTime())) return null;
       return {
         id: match.id,
@@ -845,7 +1480,7 @@ function nextPredictionFromMatches(predictions, leadHours = 24, now = new Date()
 }
 
 function matchKickoffTime(match) {
-  return new Date(`${match.date} 20:00:00 GMT+0000`);
+  return match?.kickoffAt ? new Date(match.kickoffAt) : new Date(`${match.date} 20:00:00 GMT+0000`);
 }
 
 function setText(id, value) {
@@ -896,8 +1531,26 @@ function formatMatchDate(match) {
   if (Number.isNaN(kickoff.getTime())) return match?.date || "";
   return new Intl.DateTimeFormat(currentLocale(), {
     month: "short",
-    day: "numeric"
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
   }).format(kickoff);
+}
+
+function viewerTimeZoneLabel() {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "local";
+  } catch {
+    return "local";
+  }
+}
+
+function formatMatchDateWithZone(match) {
+  const kickoff = matchKickoffTime(match);
+  if (Number.isNaN(kickoff.getTime())) return match?.date || "";
+  const viewer = formatDisplayDateTime(kickoff);
+  const local = match?.venueLocalTime ? `${tr("venueLocalTime")}: ${match.venueLocalTime}` : "";
+  return `${tr("yourTime")}: ${viewer} (${viewerTimeZoneLabel()})${local ? ` - ${local}` : ""}`;
 }
 
 function setupLanguageSelect() {
@@ -1518,7 +2171,7 @@ function renderPublicTraceUnsafe() {
           <div class="trace-row ${settledClass}" role="row">
             <span>
               <strong>#${match.id} ${escapeHtml(matchName)}</strong>
-              <em>${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}</em>
+              <em>${roundLabel(match.round)} · ${formatMatchDateWithZone(match)} · ${match.venue}</em>
             </span>
             <span class="${paulClass}">
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
@@ -1856,7 +2509,7 @@ function renderPK() {
 
   pkPanel.dataset.mode = match.round === "Group Stage" ? "group" : "knockout";
   pkPanel.dataset.direction = direction;
-  document.getElementById("pkMeta").textContent = `${mode} · ${tr("match")} ${match.id} · ${roundLabel(match.round)} · ${formatMatchDate(match)} · ${match.venue}`;
+  document.getElementById("pkMeta").textContent = `${mode} · ${tr("match")} ${match.id} · ${roundLabel(match.round)} · ${formatMatchDateWithZone(match)} · ${match.venue}`;
   document.getElementById("pkConfidence").innerHTML = official
     ? `${tr("officialConfidence")} ${official.analysis?.confidence || "N/A"}% · ${countdownMarkup(match)}`
     : `${resolved.aCode && resolved.bCode ? tr("officialPredictionPending") : tr("bracketSlotPending")} · ${countdownMarkup(match)}`;
@@ -1928,6 +2581,11 @@ function qwenPayload(match) {
     round: match.round,
     group: match.group,
     date: match.date,
+    kickoffAt: match.kickoffAt,
+    venueLocalTime: match.venueLocalTime,
+    officialMatchId: match.officialMatchId,
+    officialVenue: match.officialVenue,
+    timeSource: match.timeSource,
     venue: match.venue,
     slot: match.slot,
     teamA: makeTeam(resolved.aCode),
@@ -2014,6 +2672,11 @@ async function syncAutomationSnapshot() {
     round: match.round,
     group: match.group,
     date: match.date,
+    kickoffAt: match.kickoffAt,
+    venueLocalTime: match.venueLocalTime,
+    officialMatchId: match.officialMatchId,
+    officialVenue: match.officialVenue,
+    timeSource: match.timeSource,
     venue: match.venue,
     slot: match.slot,
     aSlot: match.aSlot,
@@ -2035,7 +2698,7 @@ function formatNextPrediction(nextPrediction) {
   if (!nextPrediction.dueAt) return `${nextPrediction.label} · Time pending`;
   const dueAt = new Date(nextPrediction.dueAt);
   if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · Time pending`;
-  return `${nextPrediction.label} · ${dueAt.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`;
+  return `${nextPrediction.label} - ${tr("yourTime")}: ${formatDisplayDateTime(dueAt)} (${viewerTimeZoneLabel()})`;
 }
 
 function formatLocalizedNextPrediction(nextPrediction) {
@@ -2043,7 +2706,7 @@ function formatLocalizedNextPrediction(nextPrediction) {
   if (!nextPrediction.dueAt) return `${nextPrediction.label} · ${tr("timePending")}`;
   const dueAt = new Date(nextPrediction.dueAt);
   if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · ${tr("timePending")}`;
-  return `${nextPrediction.label} · ${formatDisplayDateTime(dueAt)}`;
+  return `${nextPrediction.label} - ${tr("yourTime")}: ${formatDisplayDateTime(dueAt)} (${viewerTimeZoneLabel()})`;
 }
 
 function formatNextPredictionSynced(nextPrediction) {
@@ -2051,7 +2714,7 @@ function formatNextPredictionSynced(nextPrediction) {
   if (!nextPrediction.dueAt) return `${nextPrediction.label} · ${tr("timePending")}`;
   const dueAt = new Date(nextPrediction.dueAt);
   if (Number.isNaN(dueAt.getTime())) return `${nextPrediction.label} · ${tr("timePending")}`;
-  return `${nextPrediction.label} · ${formatDisplayDateTime(dueAt)}`;
+  return `${nextPrediction.label} - ${tr("yourTime")}: ${formatDisplayDateTime(dueAt)} (${viewerTimeZoneLabel()})`;
 }
 
 formatNextPrediction = formatNextPredictionSynced;
