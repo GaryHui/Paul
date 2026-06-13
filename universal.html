@@ -796,7 +796,7 @@
         runButton.disabled = true;
         report.innerHTML = `<div class="report-status">正在运行 ${text(sportSelect.value)} 独立回测。足球会从公开 CSV 拉取数据，可能需要几十秒。</div>`;
         try {
-          const response = await fetch(`/api/universal/backtest?sport=${encodeURIComponent(sportSelect.value)}&verify=${encodeURIComponent(token)}`);
+          const response = await fetch(`/api/universal-backtest?sport=${encodeURIComponent(sportSelect.value)}&verify=${encodeURIComponent(token)}`);
           const data = await response.json();
           if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
           renderBacktest(data);
