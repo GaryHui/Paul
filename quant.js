@@ -270,8 +270,14 @@ function decisionClass(decision) {
 
 function reasonMarkup(row) {
   const pick = row.pick || {};
-  const evidence = Array.isArray(pick.evidenceUsed) && pick.evidenceUsed.length ? `<span class="sub">证据：${text(pick.evidenceUsed.join(", "))}</span>` : "";
-  const risk = pick.upsetRisk ? `<span class="sub">风险：${text(pick.upsetRisk)}</span>` : "";
+  const evidenceItems = Array.isArray(pick.evidenceUsedZh) && pick.evidenceUsedZh.length ? pick.evidenceUsedZh : pick.evidenceUsed;
+  const evidence = Array.isArray(evidenceItems) && evidenceItems.length ? `<span class="sub">证据：${text(evidenceItems.join("；"))}</span>` : "";
+  const riskText = pick.upsetRiskZh || pick.upsetRisk || "";
+  const risk = riskText ? `<span class="sub">风险：${text(riskText)}</span>` : "";
+  const review = row.postMatchReview?.summaryZh ? `<span class="sub result-${row.pickOutcome === "correct" ? "correct" : "missed"}">赛后复盘：${text(row.postMatchReview.summaryZh)}</span>` : "";
+  const calibrationHints = row.postMatchReview?.calibrationHints
+    ? `<span class="sub">校准提示：只调整校准层；Edge ${row.postMatchReview.calibrationHints.edgeTrustDelta ?? 0}，比分层 ${row.postMatchReview.calibrationHints.scoreModelDelta ?? 0}，市场回缩 ${row.postMatchReview.calibrationHints.marketShrinkDelta ?? 0}。</span>`
+    : "";
   const daily = row.dailyCalibration?.count
     ? `<span class="sub">每日 PAUL：${text(row.dailyCalibration.count)} 次 · 同向率 ${pct(row.dailyCalibration.samePickRate)} · 趋势 ${pct(row.dailyCalibration.trendPct)} · 信任调整 ${pct(row.dailyCalibration.trustAdjustment)}</span>`
     : `<span class="sub">每日 PAUL：暂无足够历史样本。</span>`;
@@ -284,13 +290,16 @@ function reasonMarkup(row) {
         `选择来源：${labelSource(pick.source)}。`,
         pick.source === "Market fallback" ? "没有 PAUL read 时只显示市场参考，不作为下注依据。" : "来自 PAUL 的正式锁定预测或每日判断。",
         `每日 PAUL：${row.dailyCalibration?.count || 0} 次；同向率 ${pct(row.dailyCalibration?.samePickRate)}；趋势 ${pct(row.dailyCalibration?.trendPct)}。`,
-        pick.upsetRisk ? `风险：${pick.upsetRisk}` : "风险：无单独记录。",
+        riskText ? `风险：${riskText}` : "风险：无单独记录。",
+        row.postMatchReview?.summaryZh ? `赛后复盘：${row.postMatchReview.summaryZh}` : "",
         row.decision?.reasons?.length ? `过滤器：${row.decision.reasons.join(" ")}` : "过滤器：已通过主要过滤器。",
         `skipReason：${row.skipReason || "无"}。`
       ])}</strong>
       <p>${text(row.analysisReasonZh || pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
       ${daily}
       ${decisionReasons}
+      ${review}
+      ${calibrationHints}
       ${risk}
       ${evidence}
     </div>

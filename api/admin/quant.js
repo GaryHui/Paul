@@ -143,6 +143,50 @@ function listify(value) {
   return [];
 }
 
+function zhEvidenceItem(item) {
+  const text = String(item || "").trim();
+  if (!text) return "";
+  const lower = text.toLowerCase();
+  const replacements = [
+    [/market odds|odds|bookmaker|bsd consensus/i, "市场赔率"],
+    [/coach tactical profiles|coach|formation|tactical/i, "教练与阵型信息"],
+    [/recent form|form/i, "近期状态"],
+    [/xg|expected goals/i, "预期进球数据"],
+    [/paul edge|edge engine|consensus lean/i, "PAUL Edge 共识判断"],
+    [/injur|unavailable|lineup/i, "伤停与阵容信息"],
+    [/over\/under|under25|over25|btts/i, "大小球与进球盘口"],
+    [/elo|rating/i, "球队评级"],
+    [/poisson/i, "进球分布模型"]
+  ];
+  for (const [pattern, label] of replacements) {
+    if (pattern.test(text)) return `${label}：${text}`;
+  }
+  if (lower.includes("market")) return `市场参考：${text}`;
+  return `证据：${text}`;
+}
+
+function zhRiskText(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const lower = text.toLowerCase();
+  const level = lower.includes("low")
+    ? "低"
+    : lower.includes("moderate") || lower.includes("medium")
+      ? "中"
+      : lower.includes("high")
+        ? "高"
+        : "未分级";
+  const reasons = [];
+  if (lower.includes("counter")) reasons.push("对手反击可能制造威胁");
+  if (lower.includes("draw")) reasons.push("存在平局风险");
+  if (lower.includes("line") || lower.includes("defensive")) reasons.push("防线站位和身后空间是变量");
+  if (lower.includes("price") || lower.includes("odds")) reasons.push("赔率没有给出足够冷门补偿");
+  if (lower.includes("margin")) reasons.push("市场差距需要重点观察");
+  if (lower.includes("injur") || lower.includes("lineup")) reasons.push("阵容和伤停会影响判断");
+  if (!reasons.length) reasons.push(text);
+  return `风险等级：${level}。${reasons.join("；")}。`;
+}
+
 function pickFromPrediction(match, prediction) {
   const analysis = prediction?.analysis || prediction?.proof?.payload?.prediction || null;
   if (!analysis) return null;
@@ -158,7 +202,9 @@ function pickFromPrediction(match, prediction) {
     probabilities: normalizeProbabilities(analysis.probabilities),
     reasoning: analysis.reasoning || prediction.lockReason || "",
     upsetRisk: analysis.upsetRisk || "",
-    evidenceUsed: listify(analysis.evidenceUsed)
+    upsetRiskZh: zhRiskText(analysis.upsetRisk),
+    evidenceUsed: listify(analysis.evidenceUsed),
+    evidenceUsedZh: listify(analysis.evidenceUsed).map(zhEvidenceItem).filter(Boolean)
   };
 }
 
@@ -177,7 +223,9 @@ function pickFromDaily(match, dailyRead) {
     probabilities,
     reasoning: dailyRead?.summary || pick?.reasoning || "",
     upsetRisk: pick?.upsetRisk || dailyRead?.upsetRisk || "",
-    evidenceUsed: listify(pick?.evidenceUsed || dailyRead?.evidenceUsed)
+    upsetRiskZh: zhRiskText(pick?.upsetRisk || dailyRead?.upsetRisk),
+    evidenceUsed: listify(pick?.evidenceUsed || dailyRead?.evidenceUsed),
+    evidenceUsedZh: listify(pick?.evidenceUsed || dailyRead?.evidenceUsed).map(zhEvidenceItem).filter(Boolean)
   };
 }
 
@@ -205,7 +253,9 @@ function fallbackPickFromMarket(match, market) {
     probabilities: market.probabilities,
     reasoning: "No PAUL read is stored yet, so this row only shows the current market favorite as a reference.",
     upsetRisk: "No proprietary PAUL edge available yet.",
-    evidenceUsed: ["market odds reference"]
+    upsetRiskZh: "风险等级：未分级。暂无 PAUL Edge 独立判断，只能作为市场参考。",
+    evidenceUsed: ["market odds reference"],
+    evidenceUsedZh: ["市场赔率：暂无 PAUL 判断时，仅显示市场热门方向作为参考。"]
   };
 }
 
@@ -272,8 +322,18 @@ function liveModelStats(predictions, results) {
   }, { graded: 0, correct: 0, exactScore: 0 });
 }
 
+function postMatchCalibrationDelta(results) {
+  const delta = Object.values(results || {}).reduce((sum, result) => {
+    if (result?.status !== "final") return sum;
+    const value = Number(result.postMatchReview?.calibrationHints?.edgeTrustDelta || 0);
+    return Number.isFinite(value) ? sum + value : sum;
+  }, 0);
+  return clamp(delta, -0.06, 0.06);
+}
+
 function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }) {
   const live = liveModelStats(predictions, results);
+  const reviewDelta = postMatchCalibrationDelta(results);
   const historicalCorrect = HISTORICAL_BACKTEST.correct;
   const historicalGraded = HISTORICAL_BACKTEST.graded;
   const combinedCorrect = historicalCorrect + live.correct;
@@ -281,7 +341,7 @@ function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }
   const combinedAccuracy = combinedGraded ? combinedCorrect / combinedGraded : modelAccuracy;
   const posteriorHitRate = combinedAccuracy;
   const exactScoreBonus = Math.min(0.04, live.exactScore * 0.015);
-  const edgeTrust = clamp(0.45 + (posteriorHitRate - 0.5) * 4 + exactScoreBonus, 0.35, 0.92);
+  const edgeTrust = clamp(0.45 + (posteriorHitRate - 0.5) * 4 + exactScoreBonus + reviewDelta, 0.35, 0.92);
   return {
     modelAccuracy: combinedAccuracy,
     priorWeight: combinedGraded || priorWeight,
@@ -294,6 +354,7 @@ function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }
     live,
     posteriorHitRate,
     exactScoreBonus,
+    postMatchCalibrationDelta: reviewDelta,
     edgeTrust,
     method: "Kelly uses PAUL's pick, then shrinks PAUL's edge versus market implied probability by a reliability factor based on the historical backtest plus verified official live results, exact-score hits, and each match's daily PAUL trend."
   };
@@ -525,6 +586,27 @@ function outcomeTextZh(row) {
   return "等待赛果";
 }
 
+function buildFallbackPostMatchReview({ pick, result, pickOutcome, exactScoreHit }) {
+  if (!result || result.status !== "final") return null;
+  const score = result.score || `${result.homeScore}-${result.awayScore}`;
+  if (pickOutcome === "correct" && exactScoreHit) {
+    return {
+      summaryZh: `真实赛果 ${score}。PAUL 胜负方向和比分都命中，本场作为正向样本保留。`,
+      calibrationHints: { keepPredictionModel: true, adjustOnlyCalibration: true, edgeTrustDelta: 0.015, scoreModelDelta: 0.02 }
+    };
+  }
+  if (pickOutcome === "correct") {
+    return {
+      summaryZh: `真实赛果 ${score}。PAUL 胜负方向命中，但比分未中；说明强弱判断有效，比分层需要复盘进球数、大小球、临场效率和领先后的比赛节奏。`,
+      calibrationHints: { keepPredictionModel: true, adjustOnlyCalibration: true, edgeTrustDelta: 0.005, scoreModelDelta: -0.01 }
+    };
+  }
+  return {
+    summaryZh: `真实赛果 ${score}。PAUL 胜负方向未命中；需要检查是否低估了冷门/平局、伤停临场变化、战术克制、红牌点球或市场临近变化。主预测模型不回改，只下调类似场景的校准信任。`,
+    calibrationHints: { keepPredictionModel: true, adjustOnlyCalibration: true, edgeTrustDelta: -0.02, scoreModelDelta: -0.015, marketShrinkDelta: 0.03 }
+  };
+}
+
 function chineseAnalysisReason({
   pick,
   market,
@@ -577,7 +659,7 @@ function chineseAnalysisReason({
     lines.push(`真实赛果已同步：${result.score || `${result.homeScore}-${result.awayScore}`}，${outcomeTextZh({ pickOutcome, exactScoreHit })}。完赛后只用于复盘，不再给入场仓位。`);
   }
 
-  if (pick.upsetRisk) lines.push(`风险提示：${pick.upsetRisk}`);
+  if (pick.upsetRiskZh || pick.upsetRisk) lines.push(`风险提示：${pick.upsetRiskZh || pick.upsetRisk}`);
   return lines.join(" ");
 }
 
@@ -782,7 +864,8 @@ module.exports = async function handler(req, res) {
                 score: resultScore,
                 winnerCode,
                 source: result.source || null,
-                updatedAt: result.updatedAt || result.fetchedAt || null
+                updatedAt: result.updatedAt || result.fetchedAt || null,
+                postMatchReview: result.postMatchReview || null
               }
             : null,
           pickOutcome,
@@ -805,6 +888,7 @@ module.exports = async function handler(req, res) {
           recommendedStake: stake.rawStake,
           decision,
           analysisReasonZh,
+          postMatchReview: result?.postMatchReview || buildFallbackPostMatchReview({ pick, result: result ? { ...result, score: resultScore } : null, pickOutcome, exactScoreHit }),
           simulation: {
             strategy,
             eligible: ledgerEligible,
@@ -942,6 +1026,7 @@ module.exports = async function handler(req, res) {
         posteriorHitRate: Number((reliability.posteriorHitRate * 100).toFixed(2)),
         edgeTrust: Number((reliability.edgeTrust * 100).toFixed(2)),
         exactScoreBonus: Number((reliability.exactScoreBonus * 100).toFixed(2)),
+        postMatchCalibrationDelta: Number((reliability.postMatchCalibrationDelta * 100).toFixed(2)),
         modelAccuracy: Number((reliability.modelAccuracy * 100).toFixed(2)),
         combined: {
           ...reliability.combined,

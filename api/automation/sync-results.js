@@ -54,6 +54,89 @@ function storedKickoffAt(match, predictions, evidenceCache) {
   return parseMatchTime(match);
 }
 
+function predictionAnalysis(prediction) {
+  return prediction?.analysis || prediction?.proof?.payload?.prediction || null;
+}
+
+function winnerForResult(match, result) {
+  if (result?.winnerCode) return String(result.winnerCode).toUpperCase();
+  if (Number(result?.homeScore) === Number(result?.awayScore)) return "DRAW";
+  return Number(result?.homeScore) > Number(result?.awayScore)
+    ? String(match.teamA?.code || "").toUpperCase()
+    : String(match.teamB?.code || "").toUpperCase();
+}
+
+function scoreParts(score) {
+  const match = String(score || "").match(/(\d+)\s*-\s*(\d+)/);
+  if (!match) return null;
+  return { home: Number(match[1]), away: Number(match[2]) };
+}
+
+function buildPostMatchReview(match, result, prediction, evidence) {
+  const analysis = predictionAnalysis(prediction);
+  if (!analysis) return null;
+  const predictedWinner = String(analysis.winnerCode || analysis.winner || "").toUpperCase();
+  const actualWinner = winnerForResult(match, result);
+  const predictedScore = scoreParts(analysis.predictedScore || analysis.score);
+  const actualScore = {
+    home: Number(result.homeScore),
+    away: Number(result.awayScore)
+  };
+  const directionHit = Boolean(predictedWinner && actualWinner && predictedWinner === actualWinner);
+  const scoreHit = Boolean(predictedScore && predictedScore.home === actualScore.home && predictedScore.away === actualScore.away);
+  const goalDiff = predictedScore
+    ? Math.abs(predictedScore.home - actualScore.home) + Math.abs(predictedScore.away - actualScore.away)
+    : null;
+  const marketFavorite = evidence?.baselines?.marketFavorite?.winnerCode || prediction?.evidence?.baselines?.marketFavorite?.winnerCode || null;
+  const marketHit = marketFavorite ? String(marketFavorite).toUpperCase() === actualWinner : null;
+  const notes = [];
+
+  if (directionHit && scoreHit) {
+    notes.push("PAUL 同时命中胜负方向和比分，本场可作为正向样本保留。");
+  } else if (directionHit) {
+    notes.push("PAUL 命中胜负方向，但比分未中，说明强弱判断有效，进球数和节奏判断需要复盘。");
+  } else {
+    notes.push("PAUL 胜负方向未命中，需要复盘赛前证据是否低估了冷门、平局或临场变量。");
+  }
+
+  if (predictedScore && !scoreHit) {
+    const predictedTotal = predictedScore.home + predictedScore.away;
+    const actualTotal = actualScore.home + actualScore.away;
+    if (Math.abs(actualTotal - predictedTotal) >= 2) {
+      notes.push("总进球数偏差较大，后续应降低比分精确度权重，更多参考 over/under、射门质量和临场效率。");
+    } else {
+      notes.push("比分偏差较小，方向模型可保留，比分层做轻微校准即可。");
+    }
+  }
+
+  if (marketHit !== null) {
+    if (directionHit && !marketHit) notes.push("本场 PAUL 跑赢市场热门，增强 PAUL Edge 但仍保持保守加权。");
+    if (!directionHit && marketHit) notes.push("本场市场热门正确而 PAUL 未中，PAUL Edge 应向市场基准回缩。");
+    if (directionHit && marketHit) notes.push("PAUL 与市场同向且命中，说明共识判断可靠，但不算独立优势样本。");
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    directionHit,
+    scoreHit,
+    goalDiff,
+    predictedWinner,
+    actualWinner,
+    predictedScore: analysis.predictedScore || analysis.score || null,
+    actualScore: `${result.homeScore}-${result.awayScore}`,
+    marketFavorite,
+    marketHit,
+    summaryZh: notes.join(" "),
+    calibrationHints: {
+      keepPredictionModel: true,
+      adjustOnlyCalibration: true,
+      edgeTrustDelta: directionHit ? (scoreHit ? 0.015 : 0.005) : -0.02,
+      scoreModelDelta: scoreHit ? 0.02 : -0.01,
+      marketShrinkDelta: marketHit === true && !directionHit ? 0.03 : 0
+    }
+  };
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (!["GET", "POST"].includes(req.method)) {
@@ -92,7 +175,13 @@ module.exports = async function handler(req, res) {
       try {
         const result = await fetchMatchResult(match);
         if (result) {
-          await setResult(match.id, result);
+          const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
+          const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || prediction?.evidence || null;
+          const reviewedResult = {
+            ...result,
+            postMatchReview: buildPostMatchReview(match, result, prediction, evidence)
+          };
+          await setResult(match.id, reviewedResult);
           synced += 1;
           events.push({
             type: "result",
@@ -101,6 +190,7 @@ module.exports = async function handler(req, res) {
             source: result.source || null,
             score: `${result.homeScore}-${result.awayScore}`,
             winnerCode: resultWinnerCode(match, result),
+            postMatchReviewed: Boolean(reviewedResult.postMatchReview),
             kickoffAt: kickoffAt.toISOString()
           });
         } else {
