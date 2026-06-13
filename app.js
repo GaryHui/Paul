@@ -1824,6 +1824,25 @@ function officialPickCode(record) {
   return record.analysis.winnerCode || record.analysis.winner || null;
 }
 
+function officialPredictedScore(record) {
+  return String(record?.analysis?.predictedScore || record?.analysis?.score || "").replace(/\s/g, "");
+}
+
+function resultScoreString(result) {
+  if (!result || result.homeScore === undefined || result.awayScore === undefined) return "";
+  return `${result.homeScore}-${result.awayScore}`.replace(/\s/g, "");
+}
+
+function predictionOutcomeText(record, result) {
+  if (!record || result?.status !== "final") return "";
+  const winnerHit = String(officialPickCode(record) || "").toUpperCase() === String(resultWinner(result) || "").toUpperCase();
+  if (!winnerHit) return currentLanguage === "zh" ? "胜负未中" : "Win call missed";
+  const scoreHit = officialPredictedScore(record) && officialPredictedScore(record) === resultScoreString(result);
+  return currentLanguage === "zh"
+    ? `胜负命中 · ${scoreHit ? "比分全中" : "比分未中"}`
+    : `Win call hit · score ${scoreHit ? "exact" : "missed"}`;
+}
+
 function pollVoterId() {
   try {
     let id = localStorage.getItem(pollVoterKey);
@@ -2229,7 +2248,8 @@ function correctMatchRows() {
         result,
         proof: proofEntryForMatch(match.id),
         label: `${home} ${result.homeScore}-${result.awayScore} ${away}`,
-        pickName: teamNameForCode(pick, match)
+        pickName: teamNameForCode(pick, match),
+        outcome: predictionOutcomeText(official, result)
       };
     })
     .filter(Boolean);
@@ -2256,11 +2276,11 @@ function renderHitList() {
       <span>${hits.length}</span>
     </div>
     <div class="hit-list__items">
-      ${hits.length ? hits.map(({ match, label, pickName, proof }) => `
+      ${hits.length ? hits.map(({ match, label, pickName, proof, outcome }) => `
         <article class="hit-card">
           <span>#${match.id}</span>
           <strong>${escapeHtml(label)}</strong>
-          <em>${tr("pick")}: ${escapeHtml(pickName)}</em>
+          <em>${tr("pick")}: ${escapeHtml(pickName)}${outcome ? ` · ${escapeHtml(outcome)}` : ""}</em>
           ${proof ? `<button class="button button--ghost hit-json-button" type="button" data-match-id="${match.id}">${tr("verifyJson")}</button>` : ""}
         </article>
       `).join("") : `<p>${tr("noCorrectPicksYet")}</p>`}
@@ -2307,7 +2327,7 @@ function predictionStatus(match) {
   const record = officialPrediction(match);
   const result = officialResult(match);
   if (result?.status === "final" && record) {
-    return String(officialPickCode(record)).toUpperCase() === String(resultWinner(result)).toUpperCase() ? tr("correct") : tr("missed");
+    return predictionOutcomeText(record, result) || tr("final");
   }
   if (result?.status === "final") return tr("final");
   if (record) return tr("locked");
