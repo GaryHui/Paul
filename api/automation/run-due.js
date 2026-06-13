@@ -68,6 +68,7 @@ function storedKickoffAt(match, predictions, evidenceCache) {
   const prediction = predictions?.[match.id] || predictions?.[String(match.id)] || null;
   const evidence = evidenceCache?.[match.id] || evidenceCache?.[String(match.id)] || null;
   const candidates = [
+    match?.kickoffAt,
     prediction?.evidence?.market?.intelligence?.kickoffAt,
     prediction?.proof?.payload?.evidence?.market?.intelligence?.kickoffAt,
     evidence?.market?.intelligence?.kickoffAt,

@@ -447,172 +447,270 @@ const pairPattern = [[1, 2], [3, 4], [4, 2], [1, 3], [4, 1], [2, 3]];
 const modelNames = ["EloPulse", "FormNet", "TacticalLens", "OracleSynth"];
 
 const kickoffInfoByMatchId = {
+  "1": {
+    "kickoffAt": "2026-06-11T19:00:00.000Z",
+    "venueLocalTime": "1:00 p.m. UTC−6",
+    "officialMatchId": 1,
+    "officialVenue": "Estadio Azteca, Mexico City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "2": {
+    "kickoffAt": "2026-06-12T02:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−6",
+    "officialMatchId": 2,
+    "officialVenue": "Estadio Akron, Zapopan",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
   "3": {
     "kickoffAt": "2026-06-18T16:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−4",
-    "officialMatchId": 25,
+    "officialMatchId": 3,
     "officialVenue": "Mercedes-Benz Stadium, Atlanta",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "4": {
     "kickoffAt": "2026-06-19T01:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−6",
-    "officialMatchId": 28,
+    "officialMatchId": 4,
     "officialVenue": "Estadio Akron, Zapopan",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "5": {
     "kickoffAt": "2026-06-25T01:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−6",
-    "officialMatchId": 53,
+    "officialMatchId": 5,
     "officialVenue": "Estadio Azteca, Mexico City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "6": {
     "kickoffAt": "2026-06-25T01:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−6",
-    "officialMatchId": 54,
+    "officialMatchId": 6,
     "officialVenue": "Estadio BBVA, Guadalupe",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "7": {
+    "kickoffAt": "2026-06-12T19:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−4",
+    "officialMatchId": 7,
+    "officialVenue": "BMO Field, Toronto",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "8": {
+    "kickoffAt": "2026-06-13T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 8,
+    "officialVenue": "Levi's Stadium, Santa Clara",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "9": {
     "kickoffAt": "2026-06-18T19:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−7",
-    "officialMatchId": 26,
+    "officialMatchId": 9,
     "officialVenue": "SoFi Stadium, Inglewood",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "10": {
     "kickoffAt": "2026-06-18T22:00:00.000Z",
     "venueLocalTime": "3:00 p.m. UTC−7",
-    "officialMatchId": 27,
+    "officialMatchId": 10,
     "officialVenue": "BC Place, Vancouver",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "11": {
     "kickoffAt": "2026-06-24T19:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−7",
-    "officialMatchId": 51,
+    "officialMatchId": 11,
     "officialVenue": "BC Place, Vancouver",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "12": {
     "kickoffAt": "2026-06-24T19:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−7",
-    "officialMatchId": 52,
+    "officialMatchId": 12,
     "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "13": {
+    "kickoffAt": "2026-06-13T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 13,
+    "officialVenue": "MetLife Stadium, East Rutherford",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "14": {
+    "kickoffAt": "2026-06-14T01:00:00.000Z",
+    "venueLocalTime": "9:00 p.m. UTC−4",
+    "officialMatchId": 14,
+    "officialVenue": "Gillette Stadium, Foxborough",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "15": {
     "kickoffAt": "2026-06-19T22:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 30,
+    "officialMatchId": 15,
     "officialVenue": "Gillette Stadium, Foxborough",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "16": {
     "kickoffAt": "2026-06-20T00:30:00.000Z",
     "venueLocalTime": "8:30 p.m. UTC−4",
-    "officialMatchId": 29,
+    "officialMatchId": 16,
     "officialVenue": "Lincoln Financial Field, Philadelphia",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "17": {
     "kickoffAt": "2026-06-24T22:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 49,
+    "officialMatchId": 17,
     "officialVenue": "Hard Rock Stadium, Miami Gardens",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "18": {
     "kickoffAt": "2026-06-24T22:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 50,
+    "officialMatchId": 18,
     "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "19": {
+    "kickoffAt": "2026-06-13T01:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−7",
+    "officialMatchId": 19,
+    "officialVenue": "SoFi Stadium, Inglewood",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "20": {
+    "kickoffAt": "2026-06-14T04:00:00.000Z",
+    "venueLocalTime": "9:00 p.m. UTC−7",
+    "officialMatchId": 20,
+    "officialVenue": "BC Place, Vancouver",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "21": {
     "kickoffAt": "2026-06-20T03:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−7",
-    "officialMatchId": 31,
+    "officialMatchId": 22,
     "officialVenue": "Levi's Stadium, Santa Clara",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "22": {
     "kickoffAt": "2026-06-19T19:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−7",
-    "officialMatchId": 32,
+    "officialMatchId": 21,
     "officialVenue": "Lumen Field, Seattle",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "23": {
     "kickoffAt": "2026-06-26T02:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−7",
-    "officialMatchId": 59,
+    "officialMatchId": 23,
     "officialVenue": "SoFi Stadium, Inglewood",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "24": {
     "kickoffAt": "2026-06-26T02:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−7",
-    "officialMatchId": 60,
+    "officialMatchId": 24,
     "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "25": {
+    "kickoffAt": "2026-06-14T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
+    "officialMatchId": 25,
+    "officialVenue": "NRG Stadium, Houston",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "26": {
+    "kickoffAt": "2026-06-14T23:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−4",
+    "officialMatchId": 26,
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "27": {
     "kickoffAt": "2026-06-21T00:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−5",
-    "officialMatchId": 34,
+    "officialMatchId": 28,
     "officialVenue": "Arrowhead Stadium, Kansas City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "28": {
     "kickoffAt": "2026-06-20T20:00:00.000Z",
     "venueLocalTime": "4:00 p.m. UTC−4",
-    "officialMatchId": 33,
+    "officialMatchId": 27,
     "officialVenue": "BMO Field, Toronto",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "29": {
     "kickoffAt": "2026-06-25T20:00:00.000Z",
     "venueLocalTime": "4:00 p.m. UTC−4",
-    "officialMatchId": 56,
+    "officialMatchId": 30,
     "officialVenue": "MetLife Stadium, East Rutherford",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "30": {
     "kickoffAt": "2026-06-25T20:00:00.000Z",
     "venueLocalTime": "4:00 p.m. UTC−4",
-    "officialMatchId": 55,
+    "officialMatchId": 29,
     "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "31": {
+    "kickoffAt": "2026-06-14T20:00:00.000Z",
+    "venueLocalTime": "3:00 p.m. UTC−5",
+    "officialMatchId": 31,
+    "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "32": {
+    "kickoffAt": "2026-06-15T02:00:00.000Z",
+    "venueLocalTime": "8:00 p.m. UTC−6",
+    "officialMatchId": 32,
+    "officialVenue": "Estadio BBVA, Guadalupe",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "33": {
     "kickoffAt": "2026-06-21T04:00:00.000Z",
     "venueLocalTime": "10:00 p.m. UTC−6",
-    "officialMatchId": 36,
+    "officialMatchId": 34,
     "officialVenue": "Estadio BBVA, Guadalupe",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "34": {
     "kickoffAt": "2026-06-20T17:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−5",
-    "officialMatchId": 35,
+    "officialMatchId": 33,
     "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "35": {
     "kickoffAt": "2026-06-25T23:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−5",
-    "officialMatchId": 58,
+    "officialMatchId": 36,
     "officialVenue": "Arrowhead Stadium, Kansas City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "36": {
     "kickoffAt": "2026-06-25T23:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−5",
-    "officialMatchId": 57,
+    "officialMatchId": 35,
     "officialVenue": "AT&T Stadium, Arlington",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "37": {
+    "kickoffAt": "2026-06-15T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
+    "officialMatchId": 37,
+    "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "38": {
+    "kickoffAt": "2026-06-16T01:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−7",
+    "officialMatchId": 38,
+    "officialVenue": "SoFi Stadium, Inglewood",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "39": {
@@ -632,210 +730,224 @@ const kickoffInfoByMatchId = {
   "41": {
     "kickoffAt": "2026-06-27T03:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−7",
-    "officialMatchId": 64,
+    "officialMatchId": 42,
     "officialVenue": "BC Place, Vancouver",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "42": {
     "kickoffAt": "2026-06-27T03:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−7",
-    "officialMatchId": 63,
+    "officialMatchId": 41,
     "officialVenue": "Lumen Field, Seattle",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "43": {
+    "kickoffAt": "2026-06-15T16:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−4",
+    "officialMatchId": 43,
+    "officialVenue": "Mercedes-Benz Stadium, Atlanta",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "44": {
+    "kickoffAt": "2026-06-15T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 44,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "45": {
     "kickoffAt": "2026-06-21T22:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 37,
+    "officialMatchId": 46,
     "officialVenue": "Hard Rock Stadium, Miami Gardens",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "46": {
     "kickoffAt": "2026-06-21T16:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−4",
-    "officialMatchId": 38,
+    "officialMatchId": 45,
     "officialVenue": "Mercedes-Benz Stadium, Atlanta",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "47": {
     "kickoffAt": "2026-06-27T00:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−6",
-    "officialMatchId": 66,
+    "officialMatchId": 48,
     "officialVenue": "Estadio Akron, Zapopan",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "48": {
     "kickoffAt": "2026-06-27T00:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−5",
-    "officialMatchId": 65,
+    "officialMatchId": 47,
     "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "49": {
     "kickoffAt": "2026-06-16T19:00:00.000Z",
     "venueLocalTime": "3:00 p.m. UTC−4",
-    "officialMatchId": 17,
+    "officialMatchId": 49,
     "officialVenue": "MetLife Stadium, East Rutherford",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "50": {
     "kickoffAt": "2026-06-16T22:00:00.000Z",
     "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 18,
+    "officialMatchId": 50,
     "officialVenue": "Gillette Stadium, Foxborough",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "51": {
     "kickoffAt": "2026-06-23T00:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−4",
-    "officialMatchId": 41,
+    "officialMatchId": 52,
     "officialVenue": "MetLife Stadium, East Rutherford",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "52": {
     "kickoffAt": "2026-06-22T21:00:00.000Z",
     "venueLocalTime": "5:00 p.m. UTC−4",
-    "officialMatchId": 42,
+    "officialMatchId": 51,
     "officialVenue": "Lincoln Financial Field, Philadelphia",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "53": {
     "kickoffAt": "2026-06-26T19:00:00.000Z",
     "venueLocalTime": "3:00 p.m. UTC−4",
-    "officialMatchId": 61,
+    "officialMatchId": 53,
     "officialVenue": "Gillette Stadium, Foxborough",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "54": {
     "kickoffAt": "2026-06-26T19:00:00.000Z",
     "venueLocalTime": "3:00 p.m. UTC−4",
-    "officialMatchId": 62,
+    "officialMatchId": 54,
     "officialVenue": "BMO Field, Toronto",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "55": {
     "kickoffAt": "2026-06-17T01:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−5",
-    "officialMatchId": 19,
+    "officialMatchId": 55,
     "officialVenue": "Arrowhead Stadium, Kansas City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "56": {
     "kickoffAt": "2026-06-17T04:00:00.000Z",
     "venueLocalTime": "9:00 p.m. UTC−7",
-    "officialMatchId": 20,
+    "officialMatchId": 56,
     "officialVenue": "Levi's Stadium, Santa Clara",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "57": {
     "kickoffAt": "2026-06-23T03:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−7",
-    "officialMatchId": 44,
+    "officialMatchId": 58,
     "officialVenue": "Levi's Stadium, Santa Clara",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "58": {
     "kickoffAt": "2026-06-22T17:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−5",
-    "officialMatchId": 43,
+    "officialMatchId": 57,
     "officialVenue": "AT&T Stadium, Arlington",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "59": {
     "kickoffAt": "2026-06-28T02:00:00.000Z",
     "venueLocalTime": "9:00 p.m. UTC−5",
-    "officialMatchId": 70,
+    "officialMatchId": 60,
     "officialVenue": "AT&T Stadium, Arlington",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "60": {
     "kickoffAt": "2026-06-28T02:00:00.000Z",
     "venueLocalTime": "9:00 p.m. UTC−5",
-    "officialMatchId": 69,
+    "officialMatchId": 59,
     "officialVenue": "Arrowhead Stadium, Kansas City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "61": {
     "kickoffAt": "2026-06-17T17:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−5",
-    "officialMatchId": 23,
+    "officialMatchId": 61,
     "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "62": {
     "kickoffAt": "2026-06-18T02:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−6",
-    "officialMatchId": 24,
+    "officialMatchId": 62,
     "officialVenue": "Estadio Azteca, Mexico City",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "63": {
     "kickoffAt": "2026-06-24T02:00:00.000Z",
     "venueLocalTime": "8:00 p.m. UTC−6",
-    "officialMatchId": 48,
+    "officialMatchId": 64,
     "officialVenue": "Estadio Akron, Zapopan",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "64": {
     "kickoffAt": "2026-06-23T17:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−5",
-    "officialMatchId": 47,
+    "officialMatchId": 63,
     "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "65": {
     "kickoffAt": "2026-06-27T23:30:00.000Z",
     "venueLocalTime": "7:30 p.m. UTC−4",
-    "officialMatchId": 71,
+    "officialMatchId": 65,
     "officialVenue": "Hard Rock Stadium, Miami Gardens",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "66": {
     "kickoffAt": "2026-06-27T23:30:00.000Z",
     "venueLocalTime": "7:30 p.m. UTC−4",
-    "officialMatchId": 72,
+    "officialMatchId": 66,
     "officialVenue": "Mercedes-Benz Stadium, Atlanta",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "67": {
     "kickoffAt": "2026-06-17T20:00:00.000Z",
     "venueLocalTime": "3:00 p.m. UTC−5",
-    "officialMatchId": 22,
+    "officialMatchId": 67,
     "officialVenue": "AT&T Stadium, Arlington",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "68": {
     "kickoffAt": "2026-06-17T23:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−4",
-    "officialMatchId": 21,
+    "officialMatchId": 68,
     "officialVenue": "BMO Field, Toronto",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "69": {
     "kickoffAt": "2026-06-23T23:00:00.000Z",
     "venueLocalTime": "7:00 p.m. UTC−4",
-    "officialMatchId": 46,
+    "officialMatchId": 70,
     "officialVenue": "BMO Field, Toronto",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "70": {
     "kickoffAt": "2026-06-23T20:00:00.000Z",
     "venueLocalTime": "4:00 p.m. UTC−4",
-    "officialMatchId": 45,
+    "officialMatchId": 69,
     "officialVenue": "Gillette Stadium, Foxborough",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "71": {
     "kickoffAt": "2026-06-27T21:00:00.000Z",
     "venueLocalTime": "5:00 p.m. UTC−4",
-    "officialMatchId": 67,
+    "officialMatchId": 71,
     "officialVenue": "MetLife Stadium, East Rutherford",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "72": {
     "kickoffAt": "2026-06-27T21:00:00.000Z",
     "venueLocalTime": "5:00 p.m. UTC−4",
-    "officialMatchId": 68,
+    "officialMatchId": 72,
     "officialVenue": "Lincoln Financial Field, Philadelphia",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
@@ -847,38 +959,38 @@ const kickoffInfoByMatchId = {
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "74": {
-    "kickoffAt": "2026-06-29T20:30:00.000Z",
-    "venueLocalTime": "4:30 p.m. UTC−4",
-    "officialMatchId": 74,
-    "officialVenue": "Gillette Stadium, Foxborough",
-    "timeSource": "FIFA/Wikipedia schedule, all times local"
-  },
-  "75": {
-    "kickoffAt": "2026-06-30T01:00:00.000Z",
-    "venueLocalTime": "7:00 p.m. UTC−6",
-    "officialMatchId": 75,
-    "officialVenue": "Estadio BBVA, Guadalupe",
-    "timeSource": "FIFA/Wikipedia schedule, all times local"
-  },
-  "76": {
     "kickoffAt": "2026-06-29T17:00:00.000Z",
     "venueLocalTime": "12:00 p.m. UTC−5",
-    "officialMatchId": 76,
+    "officialMatchId": 74,
     "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
+  "75": {
+    "kickoffAt": "2026-06-29T20:30:00.000Z",
+    "venueLocalTime": "4:30 p.m. UTC−4",
+    "officialMatchId": 75,
+    "officialVenue": "Gillette Stadium, Foxborough",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "76": {
+    "kickoffAt": "2026-06-30T01:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−6",
+    "officialMatchId": 76,
+    "officialVenue": "Estadio BBVA, Guadalupe",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
   "77": {
-    "kickoffAt": "2026-06-30T21:00:00.000Z",
-    "venueLocalTime": "5:00 p.m. UTC−4",
+    "kickoffAt": "2026-06-30T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
     "officialMatchId": 77,
-    "officialVenue": "MetLife Stadium, East Rutherford",
+    "officialVenue": "AT&T Stadium, Arlington",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "78": {
-    "kickoffAt": "2026-06-30T17:00:00.000Z",
-    "venueLocalTime": "12:00 p.m. UTC−5",
+    "kickoffAt": "2026-06-30T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
     "officialMatchId": 78,
-    "officialVenue": "AT&T Stadium, Arlington",
+    "officialVenue": "MetLife Stadium, East Rutherford",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "79": {
@@ -896,31 +1008,31 @@ const kickoffInfoByMatchId = {
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "81": {
-    "kickoffAt": "2026-07-02T00:00:00.000Z",
-    "venueLocalTime": "5:00 p.m. UTC−7",
-    "officialMatchId": 81,
-    "officialVenue": "Levi's Stadium, Santa Clara",
-    "timeSource": "FIFA/Wikipedia schedule, all times local"
-  },
-  "82": {
     "kickoffAt": "2026-07-01T20:00:00.000Z",
     "venueLocalTime": "1:00 p.m. UTC−7",
-    "officialMatchId": 82,
+    "officialMatchId": 81,
     "officialVenue": "Lumen Field, Seattle",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
+  "82": {
+    "kickoffAt": "2026-07-02T00:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−7",
+    "officialMatchId": 82,
+    "officialVenue": "Levi's Stadium, Santa Clara",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
   "83": {
-    "kickoffAt": "2026-07-02T23:00:00.000Z",
-    "venueLocalTime": "7:00 p.m. UTC−4",
+    "kickoffAt": "2026-07-02T19:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−7",
     "officialMatchId": 83,
-    "officialVenue": "BMO Field, Toronto",
+    "officialVenue": "SoFi Stadium, Inglewood",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "84": {
-    "kickoffAt": "2026-07-02T19:00:00.000Z",
-    "venueLocalTime": "12:00 p.m. UTC−7",
+    "kickoffAt": "2026-07-02T23:00:00.000Z",
+    "venueLocalTime": "7:00 p.m. UTC−4",
     "officialMatchId": 84,
-    "officialVenue": "SoFi Stadium, Inglewood",
+    "officialVenue": "BMO Field, Toronto",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "85": {
@@ -931,38 +1043,38 @@ const kickoffInfoByMatchId = {
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "86": {
-    "kickoffAt": "2026-07-03T22:00:00.000Z",
-    "venueLocalTime": "6:00 p.m. UTC−4",
-    "officialMatchId": 86,
-    "officialVenue": "Hard Rock Stadium, Miami Gardens",
-    "timeSource": "FIFA/Wikipedia schedule, all times local"
-  },
-  "87": {
-    "kickoffAt": "2026-07-04T01:30:00.000Z",
-    "venueLocalTime": "8:30 p.m. UTC−5",
-    "officialMatchId": 87,
-    "officialVenue": "Arrowhead Stadium, Kansas City",
-    "timeSource": "FIFA/Wikipedia schedule, all times local"
-  },
-  "88": {
     "kickoffAt": "2026-07-03T18:00:00.000Z",
     "venueLocalTime": "1:00 p.m. UTC−5",
-    "officialMatchId": 88,
+    "officialMatchId": 86,
     "officialVenue": "AT&T Stadium, Arlington",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
+  "87": {
+    "kickoffAt": "2026-07-03T22:00:00.000Z",
+    "venueLocalTime": "6:00 p.m. UTC−4",
+    "officialMatchId": 87,
+    "officialVenue": "Hard Rock Stadium, Miami Gardens",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
+  "88": {
+    "kickoffAt": "2026-07-04T01:30:00.000Z",
+    "venueLocalTime": "8:30 p.m. UTC−5",
+    "officialMatchId": 88,
+    "officialVenue": "Arrowhead Stadium, Kansas City",
+    "timeSource": "FIFA/Wikipedia schedule, all times local"
+  },
   "89": {
-    "kickoffAt": "2026-07-04T21:00:00.000Z",
-    "venueLocalTime": "5:00 p.m. UTC−4",
+    "kickoffAt": "2026-07-04T17:00:00.000Z",
+    "venueLocalTime": "12:00 p.m. UTC−5",
     "officialMatchId": 89,
-    "officialVenue": "Lincoln Financial Field, Philadelphia",
+    "officialVenue": "NRG Stadium, Houston",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "90": {
-    "kickoffAt": "2026-07-04T17:00:00.000Z",
-    "venueLocalTime": "12:00 p.m. UTC−5",
+    "kickoffAt": "2026-07-04T21:00:00.000Z",
+    "venueLocalTime": "5:00 p.m. UTC−4",
     "officialMatchId": 90,
-    "officialVenue": "NRG Stadium, Houston",
+    "officialVenue": "Lincoln Financial Field, Philadelphia",
     "timeSource": "FIFA/Wikipedia schedule, all times local"
   },
   "91": {
