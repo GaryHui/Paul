@@ -137,6 +137,8 @@ function oddsRecord(evidence) {
     openingUpdatedAt: market.openingUpdatedAt || null,
     closingOdds: market.closingOdds || null,
     closingUpdatedAt: market.closingUpdatedAt || null,
+    sideOrder: market.sideOrder || market.intelligence?.sideOrder || null,
+    eventName: market.eventName || null,
     probabilities: normalizeProbabilities(market.probabilities)
   };
 }

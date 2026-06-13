@@ -216,20 +216,32 @@ function oddsMarkup(row) {
   const oddsRecord = market.odds || {};
   const provider = market.provider || "无";
   const updatedAt = market.updatedAt ? dateTime(market.updatedAt) : "时间未知";
+  const homeName = row.teams?.home?.name || "队伍A";
+  const awayName = row.teams?.away?.name || "队伍B";
+  const sideOrder = market.sideOrder || {};
+  const orderNote = sideOrder.confidence === "matched-reversed"
+    ? "赔率源顺序与赛程相反，系统已按赛程队伍 A/B 自动调换。"
+    : sideOrder.confidence === "matched"
+      ? "赔率源队伍顺序已和赛程队伍 A/B 校验一致。"
+      : "未能从赔率源确认主客顺序，当前按赛程队伍 A/B 展示。";
   return `
     <div class="odds-grid">
-      <span>主胜 <b>${odds(oddsRecord.home)}</b></span>
+      <span>${text(homeName)} 胜 <b>${odds(oddsRecord.home)}</b></span>
       <span>平局 <b>${odds(oddsRecord.draw)}</b></span>
-      <span>客胜 <b>${odds(oddsRecord.away)}</b></span>
+      <span>${text(awayName)} 胜 <b>${odds(oddsRecord.away)}</b></span>
       <small class="sub">来源：${text(provider)}${infoButton("市场赔率数据", [
         `provider：${provider}`,
         `更新时间：${updatedAt}`,
         `eventId：${market.eventId || "无"}`,
+        `eventName：${market.eventName || "无"}`,
         `bookmakerCount：${market.bookmakerCount ?? "未知"}`,
         `sampleBookmakers：${Array.isArray(market.sampleBookmakers) ? market.sampleBookmakers.join(", ") : "无"}`,
-        oddsRecord.home ? `主胜隐含概率：1 / ${odds(oddsRecord.home)} = ${pct(100 / oddsRecord.home)}` : "缺少主胜赔率。",
+        "说明：这里的队伍 A/B 来自世界杯赛程排列，不代表真实主场优势。",
+        `顺序校验：${orderNote}`,
+        sideOrder.providerHome || sideOrder.providerAway ? `赔率源原始顺序：${sideOrder.providerHome || "未知"} vs ${sideOrder.providerAway || "未知"}` : "赔率源未返回可识别的原始队名顺序。",
+        oddsRecord.home ? `${homeName} 胜隐含概率：1 / ${odds(oddsRecord.home)} = ${pct(100 / oddsRecord.home)}` : `缺少 ${homeName} 胜赔率。`,
         oddsRecord.draw ? `平局隐含概率：1 / ${odds(oddsRecord.draw)} = ${pct(100 / oddsRecord.draw)}` : "缺少平局赔率。",
-        oddsRecord.away ? `客胜隐含概率：1 / ${odds(oddsRecord.away)} = ${pct(100 / oddsRecord.away)}` : "缺少客胜赔率。"
+        oddsRecord.away ? `${awayName} 胜隐含概率：1 / ${odds(oddsRecord.away)} = ${pct(100 / oddsRecord.away)}` : `缺少 ${awayName} 胜赔率。`
       ])}</small>
     </div>
   `;
