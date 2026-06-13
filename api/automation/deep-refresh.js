@@ -33,6 +33,27 @@ function assertCron(req) {
   }
 }
 
+function numberParam(req, key, fallback, min, max) {
+  try {
+    const url = new URL(req.url || "", "https://paul.local");
+    const value = Number(url.searchParams.get(key));
+    if (Number.isFinite(value)) return Math.max(min, Math.min(max, value));
+  } catch {
+    // Keep the configured fallback.
+  }
+  return fallback;
+}
+
+function booleanParam(req, key) {
+  try {
+    const url = new URL(req.url || "", "https://paul.local");
+    const value = String(url.searchParams.get(key) || "").toLowerCase();
+    return value === "1" || value === "true" || value === "yes";
+  } catch {
+    return false;
+  }
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== "GET" && req.method !== "POST") {
@@ -42,6 +63,9 @@ module.exports = async function handler(req, res) {
     }
     assertCron(req);
     const now = new Date();
+    const force = booleanParam(req, "force");
+    const oddsLimit = numberParam(req, "oddsLimit", deepOddsRefreshMaxMatches, 0, 72);
+    const dailyLimit = numberParam(req, "dailyLimit", deepDailyAnalysisMaxMatches, 0, 72);
     const snapshot = loadSnapshot();
     const results = await getResults();
     const resolvedMatches = resolveMatches(snapshot.matches, results);
@@ -49,18 +73,24 @@ module.exports = async function handler(req, res) {
       ? { checked: 0, eligible: 0, skipped: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
       : await refreshMarketEvidence(resolvedMatches, {
         now,
-        limit: deepOddsRefreshMaxMatches
+        limit: oddsLimit
       });
     const dailyAnalysis = process.env.DAILY_ANALYSIS_DISABLED === "1" || !(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY)
       ? { checked: 0, eligible: 0, skipped: 0, ok: 0, errors: 0, disabled: true, events: [] }
       : await refreshDailyAnalysis(resolvedMatches, {
         now,
-        limit: deepDailyAnalysisMaxMatches
+        limit: dailyLimit,
+        force
       });
 
     res.status(200).json({
       type: "deep-refresh",
       generatedAt: now.toISOString(),
+      force,
+      limits: {
+        oddsLimit,
+        dailyLimit
+      },
       evidenceRefresh,
       dailyAnalysis
     });

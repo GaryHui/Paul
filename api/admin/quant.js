@@ -470,6 +470,88 @@ function qualityDecision({
   };
 }
 
+function fmtPct(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "N/A";
+  return `${number.toFixed(2)}%`;
+}
+
+function fmtOdds(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "N/A";
+  return number.toFixed(2);
+}
+
+function sourceLabelZh(source) {
+  if (source === "Official lock") return "正式锁定";
+  if (source === "Daily read") return "每日判断";
+  if (source === "Market fallback") return "市场参考";
+  return source || "未知来源";
+}
+
+function outcomeTextZh(row) {
+  if (row.pickOutcome === "correct") return row.exactScoreHit ? "胜负方向命中，比分也命中" : "胜负方向命中，比分未中";
+  if (row.pickOutcome === "missed") return "胜负方向未命中";
+  if (row.pickOutcome === "ungraded") return "赛果无法判定";
+  return "等待赛果";
+}
+
+function chineseAnalysisReason({
+  pick,
+  market,
+  result,
+  pickOutcome,
+  exactScoreHit,
+  odds,
+  probability,
+  impliedProbability,
+  dailyAdjustedProbability,
+  kellyProbability,
+  edgePct,
+  rowEdgeTrust,
+  dailyCalibration,
+  decision
+}) {
+  if (!pick) return "暂无 PAUL 判断，实验室不会给出仓位建议。";
+
+  const lines = [];
+  const pickName = pick.name || "未知方向";
+  const score = pick.predictedScore ? `，预测比分 ${pick.predictedScore}` : "";
+  const confidence = pick.confidence ? `，置信度 ${fmtPct(pick.confidence)}` : "";
+  lines.push(`PAUL 当前选择 ${pickName}${score}${confidence}，来源为${sourceLabelZh(pick.source)}。`);
+
+  if (market?.odds && odds) {
+    lines.push(`市场给到该方向赔率 ${fmtOdds(odds)}，对应保本隐含概率 ${fmtPct((impliedProbability || 0) * 100)}。PAUL 原始概率为 ${fmtPct((probability || 0) * 100)}，结合每日更新后为 ${fmtPct((dailyAdjustedProbability || 0) * 100)}，再按信任系数 ${fmtPct((rowEdgeTrust || 0) * 100)} 收缩，得到 Kelly 校准概率 ${fmtPct((kellyProbability || 0) * 100)}。`);
+    if (Number.isFinite(edgePct)) {
+      const edgeText = edgePct >= 0
+        ? `校准后仍有 ${fmtPct(edgePct)} 的正优势。`
+        : `校准后为 ${fmtPct(edgePct)} 的负优势，说明方向可以看好，但当前赔率不够划算。`;
+      lines.push(edgeText);
+    }
+  } else {
+    lines.push("当前缺少可执行赔率或对应方向赔率，实验室只能复盘 PAUL 判断，不能计算有效 Kelly 仓位。");
+  }
+
+  if (dailyCalibration?.count) {
+    lines.push(`每日 PAUL 已累积 ${dailyCalibration.count} 次样本，同向率 ${fmtPct(dailyCalibration.samePickRate * 100)}，趋势变化 ${fmtPct(dailyCalibration.trendPct)}，对本场信任系数调整 ${fmtPct(dailyCalibration.trustAdjustment * 100)}。`);
+  } else {
+    lines.push("每日 PAUL 样本还不够多，仓位会更保守。");
+  }
+
+  if (decision?.reasons?.length) {
+    lines.push(`过滤器结论：${decision.reasons.join(" ")}`);
+  } else if (decision?.action === "BET") {
+    lines.push("过滤器结论：优势、信任系数和平局风险均通过。");
+  }
+
+  if (result?.status === "final") {
+    lines.push(`真实赛果已同步：${result.score || `${result.homeScore}-${result.awayScore}`}，${outcomeTextZh({ pickOutcome, exactScoreHit })}。完赛后只用于复盘，不再给入场仓位。`);
+  }
+
+  if (pick.upsetRisk) lines.push(`风险提示：${pick.upsetRisk}`);
+  return lines.join(" ");
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.setHeader("Allow", "GET");
@@ -577,6 +659,29 @@ module.exports = async function handler(req, res) {
               rawStake: 0
             };
         const clv = clvSnapshot(market, pick?.side, odds, isFinal);
+        const analysisReasonZh = chineseAnalysisReason({
+          pick,
+          market,
+          result: result
+            ? {
+                status: result.status || null,
+                homeScore: result.homeScore ?? null,
+                awayScore: result.awayScore ?? null,
+                score: resultScore
+              }
+            : null,
+          pickOutcome,
+          exactScoreHit,
+          odds,
+          probability,
+          impliedProbability,
+          dailyAdjustedProbability,
+          kellyProbability,
+          edgePct: preliminaryStake.edgePct,
+          rowEdgeTrust,
+          dailyCalibration,
+          decision
+        });
 
         return {
           id: match.id,
@@ -621,6 +726,7 @@ module.exports = async function handler(req, res) {
           finalFraction: stake.cappedFraction,
           recommendedStake: stake.rawStake,
           decision,
+          analysisReasonZh,
           clv,
           skipReason,
           risk: ""

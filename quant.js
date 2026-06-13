@@ -278,7 +278,7 @@ function reasonMarkup(row) {
         row.decision?.reasons?.length ? `过滤器：${row.decision.reasons.join(" ")}` : "过滤器：已通过主要过滤器。",
         `skipReason：${row.skipReason || "无"}。`
       ])}</strong>
-      <p>${text(pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
+      <p>${text(row.analysisReasonZh || pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
       ${daily}
       ${decisionReasons}
       ${risk}
