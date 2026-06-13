@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex,nofollow" />
     <title>PAUL Universal Lab</title>
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
     <style>
       :root {
         color-scheme: dark;
@@ -813,7 +817,7 @@
             </article>
             ${auditTable("按赛季留出", stabilityAudit.bySeason || [], "每个赛季单独看，判断优势是否只集中在某一年。")}
             ${auditTable("按联赛", stabilityAudit.byLeague || [], "看哪个联赛更适合 PAUL，后续校准层可以降低弱联赛权重。")}
-            ${auditTable("按 PAUL 选择赔率区间", stabilityAudit.byOddsBand || [], "强热门、均势盘、冷门盘的稳定性不同，仓位和是否出手应分开处理。")}
+            ${auditTable("按 PAUL 选择赔率区间", stabilityAudit.byOddsBand || [], "强热门、均势盘、冷门盘的稳定性不同，仓位和是���出手应分开处理。")}
             ${auditTable("按盘口移动类型", stabilityAudit.byMomentum || [], "检查真正带来优势的是确认市场、改变选择，还是失误引擎回退。")}
           ` : ""}
           <div class="table-wrap">
