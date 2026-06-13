@@ -467,6 +467,13 @@
           <input id="bankrollInput" type="number" min="1" step="100" value="1000" />
         </label>
         <label>
+          模拟模式
+          <select id="strategyInput">
+            <option value="paul-follow" selected>PAUL 小仓模拟</option>
+            <option value="value">严格价值下注</option>
+          </select>
+        </label>
+        <label>
           凯利比例
           <select id="kellyInput">
             <option value="0.25" selected>1/4 凯利</option>
@@ -522,6 +529,6 @@
         <div id="emptyState" class="empty">输入管理员 Token 后载入面板。</div>
       </section>
     </main>
-    <script src="quant.js?v=9"></script>
+    <script src="quant.js?v=10"></script>
   </body>
 </html>

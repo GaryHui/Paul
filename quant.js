@@ -1,6 +1,7 @@
 const tokenInput = document.getElementById("tokenInput");
 const bankrollInput = document.getElementById("bankrollInput");
 const kellyInput = document.getElementById("kellyInput");
+const strategyInput = document.getElementById("strategyInput");
 const maxStakeInput = document.getElementById("maxStakeInput");
 const portfolioCapInput = document.getElementById("portfolioCapInput");
 const minEdgeInput = document.getElementById("minEdgeInput");
@@ -41,6 +42,7 @@ const outcomeLabels = {
 
 const decisionLabels = {
   BET: "可下注",
+  SIMULATE: "小仓模拟",
   WATCH: "观察机会",
   NO_BET: "不下注",
   SETTLED: "已完赛"
@@ -148,7 +150,8 @@ function renderSummary(data) {
   summary.innerHTML = [
     metric("可下注", data.summary.bettable, [
       "来源：本页所有未开赛比赛的逐行过滤结果。",
-      "计算：decision.action === BET 的比赛数量。",
+      "计算：严格价值下注 + PAUL 小仓模拟的比赛数量。",
+      `严格价值下注：${data.summary.valueBets || 0} 场；小仓模拟：${data.summary.simulated || 0} 场。`,
       `门槛：最小优势 ${pct(controls.minEdgePct)}，信任系数 ${pct(controls.minTrustPct)}，平局风险阈值 ${pct(controls.drawDangerPct)}。`
     ]),
     metric("观察名单", data.summary.watch || 0, [
@@ -160,6 +163,12 @@ function renderSummary(data) {
       "来源：每场通过过滤器后的凯利建议仓位。",
       "计算：所有 recommendedStake 相加。",
       `组合风险上限：${money(data.summary.portfolioCap)}；若超限会按比例缩放。`
+    ]),
+    metric("模拟余额", money(data.summary.simulatedBalance ?? controls.bankroll), [
+      "来源：PAUL 小仓模拟账本。",
+      `已结算模拟盈亏：${money(data.summary.settledSimulationProfit || 0)}；已结算投入：${money(data.summary.settledSimulationStake || 0)}。`,
+      `未开赛模拟占用：${money(data.summary.pendingSimulationStake || 0)}。`,
+      "计算：按比赛时间顺序，用真实赛果结算已完赛场次；未完赛只显示赢/输两种余额情景。"
     ]),
     metric("CLV 正/负", `${data.summary.positiveClv || 0}/${data.summary.negativeClv || 0}`, [
       "来源：开盘/执行赔率与收盘赔率对比。",
@@ -253,6 +262,7 @@ function riskClass(risk) {
 
 function decisionClass(decision) {
   if (decision?.action === "BET") return "pill";
+  if (decision?.action === "SIMULATE") return "pill warn";
   if (decision?.action === "WATCH") return "pill warn";
   if (decision?.action === "SETTLED") return "pill";
   return "pill bad";
@@ -297,6 +307,26 @@ function resultMarkup(row) {
     ? (row.exactScoreHit ? " · 比分全中" : " · 比分未中")
     : "";
   return `<span class="sub ${cls}">真实赛果：${text(result.score || "-")} · ${text(outcomeLabels[row.pickOutcome] || "已完赛")}${scorePart}</span>`;
+}
+
+function simulationMarkup(row) {
+  const simulation = row.simulation || {};
+  if (!simulation.eligible || !simulation.stake) {
+    return `<span class="sub">模拟：缺少 PAUL 方向或赔率，暂不纳入账本。</span>`;
+  }
+  if (row.result?.status === "final") {
+    const profitClass = Number(simulation.settledProfit || 0) >= 0 ? "result-correct" : "result-missed";
+    return `
+      <span class="sub ${profitClass}">模拟投入：${money(simulation.stake)} · 实际盈亏：${money(simulation.settledProfit)}</span>
+      <span class="sub">赛前余额：${money(simulation.balanceBefore)} · 赛后余额：${money(simulation.balanceAfter)}</span>
+      <span class="sub">${text(simulation.scoreFocus || "")}</span>
+    `;
+  }
+  return `
+    <span class="sub">模拟投入：${money(simulation.stake)} · 命中可赚：${money(simulation.profitIfWin)} · 未中亏：${money(Math.abs(simulation.lossIfLose))}</span>
+    <span class="sub">若命中余额：${money(simulation.balanceIfWin)} · 若未中余额：${money(simulation.balanceIfLose)}</span>
+    <span class="sub">${text(simulation.scoreFocus || "")}</span>
+  `;
 }
 
 function rowMarkup(row) {
@@ -344,6 +374,7 @@ function rowMarkup(row) {
           `当前原因：${noStakeReason}。`
         ])}</strong>
         <span class="sub">${stake > 0 ? `执行赔率 ${odds(row.selectedOdds)}` : text(noStakeReason)}</span>
+        ${simulationMarkup(row)}
       </td>
       <td>${reasonMarkup(row)}</td>
     </tr>
@@ -359,6 +390,7 @@ function renderRows(data) {
 function controlsQuery() {
   const params = new URLSearchParams({
     bankroll: String(Number(bankrollInput.value || 1000)),
+    strategy: strategyInput?.value || "paul-follow",
     kelly: String(Number(kellyInput.value || 0.25)),
     maxStakePct: String(Number(maxStakeInput.value || 3) / 100),
     portfolioCapPct: String(Number(portfolioCapInput.value || 12) / 100),

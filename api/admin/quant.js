@@ -470,6 +470,35 @@ function qualityDecision({
   };
 }
 
+function simulationStake({
+  odds,
+  probability,
+  impliedProbability,
+  rowEdgeTrust,
+  edgePct,
+  pick,
+  bankroll,
+  maxStakePct,
+  isBettable
+}) {
+  if (!isBettable || !odds || !probability || pick?.source === "Market fallback") {
+    return { fraction: 0, rawStake: 0 };
+  }
+  const confidence = Number(pick?.confidence || 0) / 100;
+  const base = 0.004;
+  const trustBonus = Math.max(0, Number(rowEdgeTrust || 0) - 0.55) * 0.025;
+  const confidenceBonus = Math.max(0, confidence - 0.55) * 0.012;
+  const edgeBonus = clamp(Number(edgePct || 0) / 100, -0.05, 0.08) * 0.08;
+  const marketPenalty = impliedProbability && probability < impliedProbability ? 0.004 : 0;
+  const rawFraction = base + trustBonus + confidenceBonus + edgeBonus - marketPenalty;
+  const cap = Math.min(Number(maxStakePct || 0.03), 0.015);
+  const fraction = clamp(rawFraction, 0.0015, cap);
+  return {
+    fraction,
+    rawStake: bankroll * fraction
+  };
+}
+
 function fmtPct(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return "N/A";
@@ -572,6 +601,7 @@ module.exports = async function handler(req, res) {
     const minTrustPct = numberParam(url, "minTrustPct", 60, 0, 100);
     const drawDangerPct = numberParam(url, "drawDangerPct", 28, 0, 60);
     const includeMarketFallback = url.searchParams.get("fallback") !== "0";
+    const strategy = url.searchParams.get("strategy") === "value" ? "value" : "paul-follow";
 
     const snapshot = loadSnapshot();
     const [predictions, results, dailyAnalysis, evidenceCache] = await Promise.all([
@@ -637,7 +667,7 @@ module.exports = async function handler(req, res) {
           minEdgePct,
           isBettable
         });
-        const decision = qualityDecision({
+        let decision = qualityDecision({
           isFinal,
           isPast,
           pick,
@@ -650,14 +680,42 @@ module.exports = async function handler(req, res) {
           rowEdgeTrust
         });
         if (isBettable && preliminaryStake.edgePct !== null && preliminaryStake.edgePct < Math.max(strictEdgePct, minEdgePct)) skipReason = "Edge below threshold";
-        const stake = decision.action === "BET"
+        const simulated = simulationStake({
+          odds,
+          probability: kellyProbability || dailyAdjustedProbability || probability,
+          impliedProbability,
+          rowEdgeTrust,
+          edgePct: preliminaryStake.edgePct,
+          pick,
+          bankroll,
+          maxStakePct,
+          isBettable
+        });
+        let stake = decision.action === "BET"
           ? preliminaryStake
           : {
-              ...preliminaryStake,
-              fractionalKelly: 0,
-              cappedFraction: 0,
-              rawStake: 0
-            };
+            ...preliminaryStake,
+            fractionalKelly: 0,
+            cappedFraction: 0,
+            rawStake: 0
+          };
+        if (strategy === "paul-follow" && decision.action !== "BET" && simulated.rawStake > 0) {
+          decision = {
+            action: "SIMULATE",
+            label: "小仓模拟",
+            level: "watch",
+            reasons: [
+              `严格价值下注未通过，但 PAUL 有明确方向；按保守跟投模拟给 ${fmtPct(simulated.fraction * 100)} 仓位。`,
+              "该模式用于测试 1000 单位资金曲线，不代表数学正期望下注。"
+            ]
+          };
+          stake = {
+            ...preliminaryStake,
+            fractionalKelly: simulated.fraction,
+            cappedFraction: simulated.fraction,
+            rawStake: simulated.rawStake
+          };
+        }
         const clv = clvSnapshot(market, pick?.side, odds, isFinal);
         const analysisReasonZh = chineseAnalysisReason({
           pick,
@@ -682,6 +740,26 @@ module.exports = async function handler(req, res) {
           dailyCalibration,
           decision
         });
+        const ledgerEligible = Boolean(pick && pick.source !== "Market fallback" && odds && probability);
+        const simulationBase = strategy === "paul-follow"
+          ? simulationStake({
+            odds,
+            probability: kellyProbability || dailyAdjustedProbability || probability,
+            impliedProbability,
+            rowEdgeTrust,
+            edgePct: preliminaryStake.edgePct,
+            pick,
+            bankroll,
+            maxStakePct,
+            isBettable: ledgerEligible
+          })
+          : {
+            fraction: stake.cappedFraction || 0,
+            rawStake: stake.rawStake || 0
+          };
+        const simulationStakeAmount = Number(simulationBase.rawStake || 0);
+        const simulationProfitIfWin = odds ? simulationStakeAmount * (odds - 1) : 0;
+        const simulationLossIfLose = -simulationStakeAmount;
 
         return {
           id: match.id,
@@ -727,6 +805,27 @@ module.exports = async function handler(req, res) {
           recommendedStake: stake.rawStake,
           decision,
           analysisReasonZh,
+          simulation: {
+            strategy,
+            eligible: ledgerEligible,
+            stake: simulationStakeAmount,
+            fraction: Number(simulationBase.fraction || 0),
+            odds,
+            profitIfWin: simulationProfitIfWin,
+            lossIfLose: simulationLossIfLose,
+            settledProfit: null,
+            balanceBefore: null,
+            balanceAfter: null,
+            balanceIfWin: null,
+            balanceIfLose: null,
+            scoreFocus: exactScoreHit
+              ? "比分完全命中。"
+              : pickOutcome === "correct"
+                ? "胜负方向命中，但比分未中；后续应重点复盘进球数、盘口强弱差、阵型节奏和临场效率。"
+                : pickOutcome === "missed"
+                  ? "胜负方向未中，比分判断同步失效。"
+                  : "等待赛果验证比分。"
+          },
           clv,
           skipReason,
           risk: ""
@@ -740,6 +839,36 @@ module.exports = async function handler(req, res) {
     rows.forEach((row) => {
       row.recommendedStake = Number((row.rawStake * scale).toFixed(2));
       row.finalFraction = bankroll ? row.recommendedStake / bankroll : 0;
+      if (row.simulation && row.result?.status !== "final" && row.rawStake > 0) {
+        row.simulation.stake = row.recommendedStake;
+        row.simulation.fraction = bankroll ? row.recommendedStake / bankroll : 0;
+        row.simulation.profitIfWin = row.selectedOdds ? row.recommendedStake * (row.selectedOdds - 1) : 0;
+        row.simulation.lossIfLose = -row.recommendedStake;
+      }
+    });
+    let simulationBalance = bankroll;
+    let settledSimulationProfit = 0;
+    let settledSimulationStake = 0;
+    let pendingSimulationStake = 0;
+    rows.forEach((row) => {
+      if (!row.simulation || !row.simulation.eligible || !row.simulation.stake) return;
+      row.simulation.balanceBefore = simulationBalance;
+      if (row.result?.status === "final") {
+        const settledProfit = row.pickOutcome === "correct"
+          ? row.simulation.profitIfWin
+          : row.simulation.lossIfLose;
+        row.simulation.settledProfit = settledProfit;
+        row.simulation.balanceAfter = simulationBalance + settledProfit;
+        settledSimulationProfit += settledProfit;
+        settledSimulationStake += row.simulation.stake;
+        simulationBalance = row.simulation.balanceAfter;
+      } else {
+        pendingSimulationStake += row.simulation.stake;
+        row.simulation.balanceIfWin = simulationBalance + row.simulation.profitIfWin;
+        row.simulation.balanceIfLose = simulationBalance + row.simulation.lossIfLose;
+      }
+    });
+    rows.forEach((row) => {
       row.risk = riskLabel(row, maxStakePct);
       row.edgePct = row.edgePct === null ? null : Number(row.edgePct.toFixed(2));
       row.fullKelly = Number((row.fullKelly * 100).toFixed(2));
@@ -768,6 +897,20 @@ module.exports = async function handler(req, res) {
           clvPct: row.clv.clvPct === null ? null : Number(row.clv.clvPct.toFixed(2))
         };
       }
+      if (row.simulation) {
+        row.simulation = {
+          ...row.simulation,
+          stake: Number(row.simulation.stake.toFixed(2)),
+          fraction: Number((row.simulation.fraction * 100).toFixed(2)),
+          profitIfWin: Number(row.simulation.profitIfWin.toFixed(2)),
+          lossIfLose: Number(row.simulation.lossIfLose.toFixed(2)),
+          settledProfit: row.simulation.settledProfit === null ? null : Number(row.simulation.settledProfit.toFixed(2)),
+          balanceBefore: row.simulation.balanceBefore === null ? null : Number(row.simulation.balanceBefore.toFixed(2)),
+          balanceAfter: row.simulation.balanceAfter === null ? null : Number(row.simulation.balanceAfter.toFixed(2)),
+          balanceIfWin: row.simulation.balanceIfWin === null ? null : Number(row.simulation.balanceIfWin.toFixed(2)),
+          balanceIfLose: row.simulation.balanceIfLose === null ? null : Number(row.simulation.balanceIfLose.toFixed(2))
+        };
+      }
       row.impliedProbability = row.impliedProbability === null ? null : Number((row.impliedProbability * 100).toFixed(2));
     });
 
@@ -791,6 +934,7 @@ module.exports = async function handler(req, res) {
         strictEdgePct,
         minTrustPct,
         drawDangerPct,
+        strategy,
         formula: "dailyAdjustedProbability blends PAUL's locked/current probability with that match's daily PAUL read. edgeTrust comes from the 55% prior, verified real results, exact-score hits, and daily trend stability. kellyProbability = impliedProbability + (dailyAdjustedProbability - impliedProbability) * edgeTrust; only rows that pass strict edge, trust, draw-risk, and market-data gates can receive a stake. fullKelly = (decimalOdds * kellyProbability - 1) / (decimalOdds - 1); stake = bankroll * min(maxStakePct, kellyFraction * max(0, fullKelly)), then portfolio-cap scaled."
       },
       reliability: {
@@ -807,12 +951,18 @@ module.exports = async function handler(req, res) {
       summary: {
         matches: rows.length,
         bettable: finalBetRows.length,
+        valueBets: rows.filter((row) => row.decision?.action === "BET").length,
+        simulated: rows.filter((row) => row.decision?.action === "SIMULATE").length,
         watch: rows.filter((row) => row.decision?.action === "WATCH").length,
         noBet: rows.filter((row) => row.decision?.action === "NO_BET").length,
         settled: rows.filter((row) => row.decision?.action === "SETTLED").length,
         positiveClv: rows.filter((row) => row.clv?.status === "positive").length,
         negativeClv: rows.filter((row) => row.clv?.status === "negative").length,
         totalRecommendedStake: Number(finalBetRows.reduce((sum, row) => sum + row.recommendedStake, 0).toFixed(2)),
+        simulatedBalance: Number(simulationBalance.toFixed(2)),
+        settledSimulationProfit: Number(settledSimulationProfit.toFixed(2)),
+        settledSimulationStake: Number(settledSimulationStake.toFixed(2)),
+        pendingSimulationStake: Number(pendingSimulationStake.toFixed(2)),
         portfolioCap: Number(portfolioCap.toFixed(2)),
         portfolioScale: Number(scale.toFixed(3)),
         maxSingleStake: Number(finalBetRows.reduce((max, row) => Math.max(max, row.recommendedStake), 0).toFixed(2)),
