@@ -635,6 +635,52 @@
         return `${metric.correct || 0}/${metric.graded || 0} · ${metricPct(metric)} · Brier ${metric.brier ?? "N/A"}`;
       }
 
+      function roi(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return "N/A";
+        const number = Number(value);
+        return `${number >= 0 ? "+" : ""}${number.toFixed(2)}%`;
+      }
+
+      function auditTable(title, rows = [], copy = "") {
+        if (!rows.length) return "";
+        return `
+          <article class="module strategy-note">
+            <span>${text(title)}</span>
+            ${copy ? `<p>${text(copy)}</p>` : ""}
+          </article>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>切片</th>
+                  <th>样本</th>
+                  <th>PAUL 命中</th>
+                  <th>市场命中</th>
+                  <th>Edge</th>
+                  <th>Brier 改善</th>
+                  <th>ROI 差</th>
+                  <th>覆盖样本</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row) => `
+                  <tr>
+                    <td><strong>${text(row.label || row.id)}</strong></td>
+                    <td>${text(row.matches || 0)}</td>
+                    <td>${text(row.universalCorrect || 0)}/${text(row.matches || 0)} · ${pct(row.universalAccuracy)}</td>
+                    <td>${text(row.marketCorrect || 0)}/${text(row.matches || 0)} · ${pct(row.marketAccuracy)}</td>
+                    <td class="${Number(row.edge || 0) >= 0 ? "good" : "bad"}">${signed(row.edge)}</td>
+                    <td class="${Number(row.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(row.brierDelta)}</td>
+                    <td class="${Number(row.roiDelta || 0) >= 0 ? "good" : "bad"}">${roi(row.roiDelta)}</td>
+                    <td>${text(row.overrides || 0)} 次 · ${pct(row.overrideAccuracy)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `;
+      }
+
       function renderNotConfigured(data) {
         report.innerHTML = `
           <div class="report-status">${text(data.message || "该领域暂未配置真实数据源。")}</div>
@@ -666,6 +712,7 @@
         const isOddsMomentum = selected?.strategy?.id === "odds-momentum";
         const isMistakeMomentum = selected?.strategy?.id === "odds-momentum-mistake";
         const mistakeEngine = aggregate.mistakeEngine || null;
+        const stabilityAudit = aggregate.stabilityAudit || {};
         const universalCopy = isMarketAnchor
           ? "当前回退市场锚定：这一列等于市场热门基准，不代表独立优势。"
           : isOddsMomentum || isMistakeMomentum
@@ -756,6 +803,18 @@
                 </tbody>
               </table>
             </div>
+          ` : ""}
+          ${stabilityAudit.overall ? `
+            <article class="module strategy-note">
+              <span>稳定性审计</span>
+              <h3>不是只看总命中率，而是拆开看优势是否稳定。</h3>
+              <p>整体：PAUL ${text(stabilityAudit.overall.universalCorrect)}/${text(stabilityAudit.overall.matches)}，市场 ${text(stabilityAudit.overall.marketCorrect)}/${text(stabilityAudit.overall.matches)}，Edge <strong class="${Number(stabilityAudit.overall.edge || 0) >= 0 ? "good" : "bad"}">${signed(stabilityAudit.overall.edge)}</strong>，Brier 改善 <strong class="${Number(stabilityAudit.overall.brierDelta || 0) >= 0 ? "good" : "bad"}">${brierDelta(stabilityAudit.overall.brierDelta)}</strong>，ROI 差 <strong class="${Number(stabilityAudit.overall.roiDelta || 0) >= 0 ? "good" : "bad"}">${roi(stabilityAudit.overall.roiDelta)}</strong>。</p>
+              <p class="small">ROI 只是 1 单位等额模拟，用于检测赔率价值，不代表真实收益承诺。Universal 的盘口移动回测用临场/收盘赔率作为“每日赔率持续更新”的历史代理；正式预测只能使用锁定前已经抓到的数据。</p>
+            </article>
+            ${auditTable("按赛季留出", stabilityAudit.bySeason || [], "每个赛季单独看，判断优势是否只集中在某一年。")}
+            ${auditTable("按联赛", stabilityAudit.byLeague || [], "看哪个联赛更适合 PAUL，后续校准层可以降低弱联赛权重。")}
+            ${auditTable("按 PAUL 选择赔率区间", stabilityAudit.byOddsBand || [], "强热门、均势盘、冷门盘的稳定性不同，仓位和是否出手应分开处理。")}
+            ${auditTable("按盘口移动类型", stabilityAudit.byMomentum || [], "检查真正带来优势的是确认市场、改变选择，还是失误引擎回退。")}
           ` : ""}
           <div class="table-wrap">
             <table>

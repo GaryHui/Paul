@@ -69,6 +69,102 @@ function finalize(metric) {
   };
 }
 
+function emptyAuditBucket(label, id = label) {
+  return {
+    id,
+    label,
+    matches: 0,
+    universalCorrect: 0,
+    marketCorrect: 0,
+    universalBrier: 0,
+    marketBrier: 0,
+    universalProfit: 0,
+    marketProfit: 0,
+    overrides: 0,
+    overrideHits: 0
+  };
+}
+
+function settleProfit(odds, pick, actual) {
+  const price = Number(odds?.[pick]);
+  if (!Number.isFinite(price) || price <= 1) return 0;
+  return pick === actual ? price - 1 : -1;
+}
+
+function oddsBand(price) {
+  const value = Number(price);
+  if (!Number.isFinite(value)) return { id: "unknown", label: "Unknown odds" };
+  if (value < 1.4) return { id: "odds-1", label: "Below 1.40" };
+  if (value < 1.8) return { id: "odds-2", label: "1.40 to 1.79" };
+  if (value < 2.5) return { id: "odds-3", label: "1.80 to 2.49" };
+  if (value < 4) return { id: "odds-4", label: "2.50 to 3.99" };
+  return { id: "odds-5", label: "4.00+" };
+}
+
+function mergeAuditBucket(target, source = {}) {
+  target.matches += Number(source.matches || 0);
+  target.universalCorrect += Number(source.universalCorrect || 0);
+  target.marketCorrect += Number(source.marketCorrect || 0);
+  target.universalBrier += Number(source.universalBrier || 0);
+  target.marketBrier += Number(source.marketBrier || 0);
+  target.universalProfit += Number(source.universalProfit || 0);
+  target.marketProfit += Number(source.marketProfit || 0);
+  target.overrides += Number(source.overrides || 0);
+  target.overrideHits += Number(source.overrideHits || 0);
+  return target;
+}
+
+function addAudit(bucket, details) {
+  bucket.matches += 1;
+  if (details.universalPick === details.actual) bucket.universalCorrect += 1;
+  if (details.marketPick === details.actual) bucket.marketCorrect += 1;
+  bucket.universalBrier += brier(details.universalProbs, details.actual);
+  bucket.marketBrier += brier(details.marketProbs, details.actual);
+  bucket.universalProfit += settleProfit(details.universalOdds, details.universalPick, details.actual);
+  bucket.marketProfit += settleProfit(details.marketOdds, details.marketPick, details.actual);
+  if (details.override) {
+    bucket.overrides += 1;
+    if (details.universalPick === details.actual) bucket.overrideHits += 1;
+  }
+}
+
+function finalizeAuditBucket(bucket = {}) {
+  const matches = Number(bucket.matches || 0);
+  const universalAccuracy = matches ? Number(((bucket.universalCorrect / matches) * 100).toFixed(1)) : 0;
+  const marketAccuracy = matches ? Number(((bucket.marketCorrect / matches) * 100).toFixed(1)) : 0;
+  const universalBrier = matches ? Number((bucket.universalBrier / matches).toFixed(3)) : 0;
+  const marketBrier = matches ? Number((bucket.marketBrier / matches).toFixed(3)) : 0;
+  const universalRoi = matches ? Number(((bucket.universalProfit / matches) * 100).toFixed(2)) : 0;
+  const marketRoi = matches ? Number(((bucket.marketProfit / matches) * 100).toFixed(2)) : 0;
+  return {
+    id: bucket.id,
+    label: bucket.label,
+    matches,
+    universalCorrect: bucket.universalCorrect || 0,
+    marketCorrect: bucket.marketCorrect || 0,
+    universalAccuracy,
+    marketAccuracy,
+    edge: (bucket.universalCorrect || 0) - (bucket.marketCorrect || 0),
+    universalBrier,
+    marketBrier,
+    brierDelta: Number((marketBrier - universalBrier).toFixed(3)),
+    universalRoi,
+    marketRoi,
+    roiDelta: Number((universalRoi - marketRoi).toFixed(2)),
+    overrides: bucket.overrides || 0,
+    overrideHits: bucket.overrideHits || 0,
+    overrideAccuracy: bucket.overrides ? Number(((bucket.overrideHits / bucket.overrides) * 100).toFixed(1)) : 0
+  };
+}
+
+function finalizeAuditMap(map, order = null) {
+  const entries = Object.entries(map || {});
+  const ordered = order
+    ? order.map((id) => entries.find(([key]) => key === id)).filter(Boolean)
+    : entries.sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+  return ordered.map(([, bucket]) => finalizeAuditBucket(bucket));
+}
+
 function parseCsvLine(line) {
   const cells = [];
   let cell = "";
@@ -325,6 +421,11 @@ function actualSide(match) {
 function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
   const records = {};
   const rollingMistakes = emptyRollingMistakes();
+  const audit = {
+    total: emptyAuditBucket(`${source.name} ${source.seasonLabel}`, source.id),
+    oddsBands: {},
+    momentum: {}
+  };
   const metrics = {
     universal: emptyMetric(),
     market: emptyMetric(),
@@ -349,6 +450,31 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
       rating: favorite(models.rating),
       form: favorite(models.form)
     };
+    const universalOdds = strategy.useClosingMarket && match.closingOdds ? match.closingOdds : match.odds;
+    const marketOdds = match.odds;
+    const auditDetails = {
+      actual,
+      universalPick: picks.universal,
+      marketPick: picks.market,
+      universalProbs: candidate.probabilities,
+      marketProbs: models.market,
+      universalOdds,
+      marketOdds,
+      override: picks.universal !== picks.market
+    };
+    const band = oddsBand(universalOdds[picks.universal]);
+    const momentumKey = candidate.suppressedByMistakeEngine ? "suppressed" : candidate.momentumMove ? "moved" : strategy.useClosingMarket ? "confirmed" : "model";
+    const momentumLabel = {
+      confirmed: "Odds move confirmed opening market",
+      moved: "Odds move changed the pick",
+      suppressed: "Mistake engine suppressed the move",
+      model: "Model blend without closing odds"
+    }[momentumKey] || momentumKey;
+    audit.oddsBands[band.id] ||= emptyAuditBucket(band.label, band.id);
+    audit.momentum[momentumKey] ||= emptyAuditBucket(momentumLabel, momentumKey);
+    addAudit(audit.total, auditDetails);
+    addAudit(audit.oddsBands[band.id], auditDetails);
+    addAudit(audit.momentum[momentumKey], auditDetails);
     score(metrics.universal, candidate.probabilities, picks.universal, actual);
     score(metrics.market, models.market, picks.market, actual);
     score(metrics.rating, models.rating, picks.rating, actual);
@@ -388,6 +514,7 @@ function runFootballDataset(source, matches, strategy = strategyCandidates[1]) {
     matches: matches.length,
     metrics,
     strategy: { id: strategy.id, label: strategy.label },
+    audit,
     mistakeEngine: strategy.useRollingMistakes ? summarizeRollingMistakes(rollingMistakes) : null,
     edge: {
       universalMinusMarket: metrics.universal.correct - metrics.market.correct,
@@ -408,6 +535,13 @@ function combineFootballRuns(runs) {
   };
   const edge = { overrides: 0, overrideHits: 0 };
   const mistakeEngine = emptyRollingMistakes();
+  const audit = {
+    overall: emptyAuditBucket("All matches", "overall"),
+    bySeason: {},
+    byLeague: {},
+    byOddsBand: {},
+    byMomentum: {}
+  };
   runs.forEach((run) => {
     Object.keys(metrics).forEach((key) => {
       metrics[key].graded += run.metrics[key].graded;
@@ -416,6 +550,21 @@ function combineFootballRuns(runs) {
     });
     edge.overrides += run.edge.overrides;
     edge.overrideHits += run.edge.overrideHits;
+    if (run.audit) {
+      mergeAuditBucket(audit.overall, run.audit.total);
+      audit.bySeason[run.season] ||= emptyAuditBucket(run.season, run.season);
+      audit.byLeague[run.competition] ||= emptyAuditBucket(run.competition, run.competition);
+      mergeAuditBucket(audit.bySeason[run.season], run.audit.total);
+      mergeAuditBucket(audit.byLeague[run.competition], run.audit.total);
+      Object.entries(run.audit.oddsBands || {}).forEach(([id, bucket]) => {
+        audit.byOddsBand[id] ||= emptyAuditBucket(bucket.label || id, id);
+        mergeAuditBucket(audit.byOddsBand[id], bucket);
+      });
+      Object.entries(run.audit.momentum || {}).forEach(([id, bucket]) => {
+        audit.byMomentum[id] ||= emptyAuditBucket(bucket.label || id, id);
+        mergeAuditBucket(audit.byMomentum[id], bucket);
+      });
+    }
     if (run.mistakeEngine) {
       mistakeEngine.moves += Number(run.mistakeEngine.moves || 0);
       mistakeEngine.closingHits += Number(run.mistakeEngine.closingHits || 0);
@@ -445,6 +594,13 @@ function combineFootballRuns(runs) {
     edge,
     mistakeEngine: mistakeEngine.moves ? summarizeRollingMistakes(mistakeEngine) : null,
     trace: runs.flatMap((run) => run.trace).slice(0, 40),
+    stabilityAudit: {
+      overall: finalizeAuditBucket(audit.overall),
+      bySeason: finalizeAuditMap(audit.bySeason, footballSeasons.map((season) => seasonLabels[season])),
+      byLeague: finalizeAuditMap(audit.byLeague),
+      byOddsBand: finalizeAuditMap(audit.byOddsBand, ["odds-1", "odds-2", "odds-3", "odds-4", "odds-5", "unknown"]),
+      byMomentum: finalizeAuditMap(audit.byMomentum, ["confirmed", "moved", "suppressed", "model"])
+    },
     stability: runs.map((run) => ({
       id: run.id,
       competition: run.competition,
