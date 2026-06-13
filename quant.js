@@ -392,6 +392,27 @@ function simulationMarkup(row) {
   `;
 }
 
+function driftMarkup(row) {
+  const drift = row.liveDrift;
+  if (!drift) return "";
+  const cls = drift.drifted ? "drift-warn" : "drift-ok";
+  const title = drift.drifted ? "锁定后漂移" : "实时一致";
+  const copy = drift.drifted
+    ? "Proof 不改；实时数据已偏向另一边，实验室会降低原方向信任。"
+    : "实时判断仍与正式锁定一致，只用于概率和仓位校准。";
+  return `
+    <span class="sub ${cls}">
+      ${title}：锁定 ${text(drift.official?.name || "-")}，实时 ${text(drift.live?.name || "-")}${drift.live?.confidence ? ` ${pct(drift.live.confidence)}` : ""}
+      ${infoButton("锁定后实时估计", [
+        copy,
+        `正式锁定：${drift.official?.name || "-"}，概率 ${pct(drift.official?.probability ? drift.official.probability * 100 : null)}，信心 ${pct(drift.official?.confidence)}。`,
+        `实时估计：${drift.live?.name || "-"}，概率 ${pct(drift.live?.probability ? drift.live.probability * 100 : null)}，信心 ${pct(drift.live?.confidence)}。`,
+        drift.noteZh || ""
+      ])}
+    </span>
+  `;
+}
+
 function rowMarkup(row) {
   const pick = row.pick || {};
   const stake = Number(row.recommendedStake || 0);
@@ -415,6 +436,7 @@ function rowMarkup(row) {
         ])}</strong>
         <span class="sub">${text(pick.code || "-")} · ${text(labelSource(pick.source))}</span>
         ${pick.predictedScore ? `<span class="sub">预测比分：${text(pick.predictedScore)}</span>` : ""}
+        ${driftMarkup(row)}
         <span class="${decisionClass(row.decision)}">${text(decisionLabels[row.decision?.action] || row.decision?.label || labelRisk(row.risk))}</span>
       </td>
       <td>${oddsMarkup(row)}</td>

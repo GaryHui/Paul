@@ -242,6 +242,33 @@ function pickFromDaily(match, dailyRead) {
   };
 }
 
+function liveDriftFromPicks(officialPick, dailyPick) {
+  if (!officialPick || !dailyPick) return null;
+  const officialCode = String(officialPick.code || "").toUpperCase();
+  const liveCode = String(dailyPick.code || "").toUpperCase();
+  if (!officialCode || !liveCode) return null;
+  return {
+    drifted: officialCode !== liveCode,
+    official: {
+      code: officialPick.code,
+      name: officialPick.name,
+      confidence: officialPick.confidence,
+      probability: officialPick.probabilities?.[officialPick.side] || null
+    },
+    live: {
+      code: dailyPick.code,
+      name: dailyPick.name,
+      confidence: dailyPick.confidence,
+      probability: dailyPick.probabilities?.[dailyPick.side] || null,
+      predictedScore: dailyPick.predictedScore || null,
+      updatedBy: "Daily read + latest evidence + mistake memory calibration"
+    },
+    noteZh: officialCode !== liveCode
+      ? "正式 Proof 不变，但实时 PAUL 已被新数据推向另一方向；实验室应降低原锁定方向信任或进入观察。"
+      : "实时 PAUL 与正式锁定方向一致；实验室仍只把新数据用于概率和仓位校准。"
+  };
+}
+
 function bestSide(match, probabilities) {
   if (!probabilities) return null;
   const candidates = [
@@ -778,6 +805,7 @@ module.exports = async function handler(req, res) {
         const market = oddsRecord(evidence);
         const officialPick = pickFromPrediction(match, prediction);
         const dailyPick = pickFromDaily(match, dailyRead);
+        const liveDrift = liveDriftFromPicks(officialPick, dailyPick);
         const pick = officialPick || dailyPick || (includeMarketFallback ? fallbackPickFromMarket(match, market) : null);
         const result = results[match.id] || results[String(match.id)] || null;
         const matchTime = parseMatchTime(match);
@@ -933,6 +961,7 @@ module.exports = async function handler(req, res) {
             away: { code: match.teamB.code, name: match.teamB.name }
           },
           pick,
+          liveDrift,
           market,
           result: result
             ? {

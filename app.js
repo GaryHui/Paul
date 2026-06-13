@@ -122,7 +122,7 @@ Object.assign(languageCopy.en, {
   totalProofs: "Total proofs", allRounds: "All rounds", groupStage: "Group stage", knockout: "Knockout", otsReceipts: "OTS receipts", noLockedProofs: "No locked proofs yet", proofsAppear: "Proof records will appear here as soon as PAUL locks an official prediction.", proofSearchPlaceholder: "Match, team, hash, round...", showAllProofs: "Show all proofs",
   groupsEyebrow: "48-Team Field", groupsTitle: "Groups A-L", groupsCopy: "Each team card includes its flag, group, and local-language line for the PK page.",
   primaryLanguages: "Primary languages", localLanguage: "Local language", bracketStatus: "Bracket status", slotFilled: "This slot will be filled automatically after earlier results are synced.",
-  fanVote: "Fan Vote", bracketSlotPending: "Bracket slot pending", votes: "votes", dailyRead: "Daily PAUL Read", waitingTeams: "Waiting for teams", nextRefreshPending: "Next refresh pending", dailyRefreshCopy: "PAUL will refresh this matchup automatically when it enters the daily analysis window.", currentLean: "Current lean", confidence: "confidence", draw: "Draw",
+  fanVote: "Fan Vote", bracketSlotPending: "Bracket slot pending", votes: "votes", dailyRead: "Daily PAUL Read", waitingTeams: "Waiting for teams", nextRefreshPending: "Next refresh pending", dailyRefreshCopy: "PAUL will refresh this matchup automatically when it enters the daily analysis window.", currentLean: "Current lean", confidence: "confidence", draw: "Draw", liveEstimate: "Live estimate", officialLock: "Official lock", postLockDrift: "Post-lock drift", postLockDriftCopy: "The proof stays unchanged, but new pre-match data now points another way. This affects lab calibration only.", lockAlignedCopy: "Live PAUL still agrees with the official lock. New data is being used only for calibration.",
   correct: "Correct", missed: "Missed", final: "Final", locked: "Locked", proofLocked: "Proof locked", notLocked: "Not locked", lockedAt: "Locked", kickoff: "Kickoff", generatedAt: "Generated at", updated: "Updated", officialConfidence: "Official confidence", officialPredictionPending: "Official prediction pending", officialPredictionNotLocked: "Official PAUL prediction is not locked yet.", bracketNotResolved: "This bracket slot is not resolved yet.", kickoffCountdown: "Kickoff countdown", finalScorePending: "Final score has not synced yet. Accuracy will update after full time.", predictedScore: "Predicted score", officialPaulPick: "Official PAUL Pick", whyLocked: "Why PAUL locked this pick", evidenceUsed: "Evidence used", upsetWatch: "Upset Watch", proofStatus: "Proof Status", upsetRisk: "Upset Risk", proofLockedPublicRecord: "After full time, this pick is added to PAUL's public record.", finalScoresVerify: "Final scores will verify this pick after the match.", officialPredictionFallback: "PAUL has returned an official prediction.", lockedWithoutDetails: "PAUL has locked this pick without a detailed explanation.", awaitingGroups: "Awaiting groups", awaitingGroupPick: "Awaiting Group-stage PAUL Pick", awaitingKnockoutPick: "Awaiting Knockout Oracle Pick", waitingBracketResults: "Waiting for bracket results", pendingGroupPickCopy: "This group-stage pick will be proof-locked before kickoff and counted in PAUL's public baseline record.", pendingKnockoutPickCopy: "Knockout Oracle Mode will lock this win-or-go-home pick before kickoff, with upset risk and bracket-path reasoning.", unresolvedSlotCopy: "This knockout slot will become predictable after earlier real results fill the official bracket.", pendingModelCopy: "The proof-locked official pick is still pending. Daily PAUL probabilities can update above before the lock window.", unresolvedModelCopy: "This match will become predictable after the earlier winners are known.", knockoutFixturesPending: "Knockout fixtures will appear only after real group-stage results and the official bracket are available.", groupStageRecord: "Group-stage record", knockoutOracleMode: "Knockout Oracle Mode", noMatchingProofs: "No matching proofs", noProofsMatchCopy: "Change the round filter or search term. The official proof ledger still keeps every locked prediction.", proofServiceUnavailable: "Proof service unavailable", copy: "Copy", copied: "Copied", copyBlockedLoaded: "Copy was blocked. JSON was loaded below for manual copy.", loadInVerifier: "Load in verifier", downloadCanonical: "Download canonical", downloadOts: "Download .ots", copiedProofJson: "Proof JSON copied.", copiedProofForMatch: "Copied proof for match", proofJsonLoaded: "Proof JSON loaded. Click Verify Proof.", demoProofLoaded: "Fixed demo proof with bundled .ots loaded. Click Verify Proof.", proofVerificationComplete: "Proof verification completed locally in this browser.", proofInputPlaceholder: "Paste proof JSON here...", proofVerifierEyebrow: "Public Proof Verifier", proofVerifierTitle: "Verify a PAUL proof yourself.", proofVerifierCopy: "Paste proof JSON from any card. The browser recalculates SHA-256 locally, checks canonical consistency, and shows GitHub/OpenTimestamps evidence.", loadDemoProof: "Load Demo Proof", verifyProof: "Verify Proof", clear: "Clear", noProofLoaded: "No proof loaded.", showLatest: "Show latest", showAll: "Show all", retainedProofs: "retained official proofs", matchingProofs: "matching proofs", showing: "Showing", latest: "latest", of: "of", hashVerified: "Hash verified", hashMismatch: "Hash mismatch", beforeKickoff: "Before kickoff", checkTime: "Check time", otsReceipt: "OTS receipt", unknown: "Unknown", pick: "Pick", githubProof: "GitHub proof", noGithubTimestamp: "No GitHub timestamp", githubPending: "GitHub pending", noOtsProof: "No OpenTimestamps proof", otsPending: "OpenTimestamps pending", openOtsVerifier: "Open OTS verifier"
   , all: "All"
 });
@@ -139,7 +139,7 @@ Object.assign(languageCopy.zh, {
   totalProofs: "总证明数", allRounds: "全部轮次", groupStage: "小组赛", knockout: "淘汰赛", otsReceipts: "OTS 收据", noLockedProofs: "还没有锁定证明", proofsAppear: "PAUL 锁定正式预测后，证明记录会显示在这里。", proofSearchPlaceholder: "比赛、球队、哈希、轮次...", showAllProofs: "显示全部证明",
   groupsEyebrow: "48 支球队", groupsTitle: "A-L 小组", groupsCopy: "每张球队卡包含国旗、小组，以及 PK 页使用的本国语言文本。",
   primaryLanguages: "主要语言", localLanguage: "本国语言", bracketStatus: "签表状态", slotFilled: "前序比赛结果同步后，这个席位会自动填充。",
-  fanVote: "观众投票", bracketSlotPending: "签表席位待定", votes: "票", dailyRead: "PAUL 每日判断", waitingTeams: "等待球队确定", nextRefreshPending: "等待下次刷新", dailyRefreshCopy: "当这场比赛进入每日分析窗口后，PAUL 会自动刷新这一场对阵。", currentLean: "当前倾向", confidence: "信心", draw: "平局",
+  fanVote: "观众投票", bracketSlotPending: "签表席位待定", votes: "票", dailyRead: "PAUL 每日判断", waitingTeams: "等待球队确定", nextRefreshPending: "等待下次刷新", dailyRefreshCopy: "当这场比赛进入每日分析窗口后，PAUL 会自动刷新这一场对阵。", currentLean: "当前倾向", confidence: "信心", draw: "平局", liveEstimate: "实时估计", officialLock: "正式锁定", postLockDrift: "锁定后漂移", postLockDriftCopy: "Proof 保持不变，但新的赛前数据已经指向另一边。这个变化只影响实验室校准。", lockAlignedCopy: "实时 PAUL 仍与正式锁定一致。新数据只用于校准层。",
   correct: "命中", missed: "未命中", final: "已完赛", locked: "已锁定", proofLocked: "证明已锁定", notLocked: "未锁定", lockedAt: "锁定时间", kickoff: "开赛时间", generatedAt: "生成时间", updated: "已更新", officialConfidence: "正式信心", officialPredictionPending: "正式预测待定", officialPredictionNotLocked: "PAUL 正式预测还未锁定。", bracketNotResolved: "这个签表席位还没有确定。", kickoffCountdown: "开赛倒计时", finalScorePending: "最终比分还未同步。完赛后会更新命中率。", predictedScore: "预测比分", officialPaulPick: "PAUL 正式选择", upsetWatch: "冷门观察", proofStatus: "证明状态", upsetRisk: "冷门风险", proofLockedPublicRecord: "完赛后，这个预测会计入 PAUL 公开战绩。", finalScoresVerify: "赛后比分会验证这个预测。", officialPredictionFallback: "PAUL 已返回正式预测。", lockedWithoutDetails: "PAUL 已锁定本场预测，但没有提供详细说明。", awaitingGroups: "等待小组赛", awaitingGroupPick: "等待小组赛 PAUL 预测", awaitingKnockoutPick: "等待淘汰赛 PAUL 神谕", waitingBracketResults: "等待签表结果", pendingGroupPickCopy: "这场小组赛预测会在开赛前生成证明并锁定，并计入 PAUL 公开基础战绩。", pendingKnockoutPickCopy: "淘汰赛神谕模式会在开赛前锁定这场定生死预测，并考虑冷门风险和签表路径。", unresolvedSlotCopy: "前序真实赛果填充正式签表后，这个淘汰赛席位才会进入可预测状态。", pendingModelCopy: "正式证明预测仍在等待锁定。锁定窗口前，上方每日概率仍可更新。", unresolvedModelCopy: "前序胜者确定后，这场比赛才会进入可预测状态。", knockoutFixturesPending: "真实小组赛结果和正式签表可用后，淘汰赛列表才会显示。", groupStageRecord: "小组赛战绩", knockoutOracleMode: "淘汰赛神谕模式", noMatchingProofs: "没有匹配的证明", noProofsMatchCopy: "请更换轮次筛选或搜索词。正式证明账本仍会保留每一个锁定预测。", proofServiceUnavailable: "证明服务暂时不可用", copy: "复制", loadInVerifier: "载入验证器", downloadCanonical: "下载标准 JSON", downloadOts: "下载 .ots", copiedProofJson: "证明 JSON 已复制。", copiedProofForMatch: "已复制比赛证明", proofJsonLoaded: "证明 JSON 已载入。点击验证证明。", demoProofLoaded: "固定演示证明和内置 .ots 已载入。点击验证证明。", proofVerificationComplete: "证明已在本浏览器本地验证完成。", proofInputPlaceholder: "在这里粘贴证明 JSON...", proofVerifierEyebrow: "公开证明验证器", proofVerifierTitle: "自己验证 PAUL 证明。", proofVerifierCopy: "粘贴任意卡片中的证明 JSON。浏览器会在本地重新计算 SHA-256，检查标准内容一致性，并显示 GitHub/OpenTimestamps 证据。", loadDemoProof: "载入演示证明", verifyProof: "验证证明", clear: "清空", noProofLoaded: "还没有载入证明。", showLatest: "显示最新", showAll: "显示全部", retainedProofs: "条已保留正式证明", matchingProofs: "条匹配证明", showing: "显示", latest: "最新", of: "/", hashVerified: "哈希已验证", hashMismatch: "哈希不匹配", beforeKickoff: "早于开赛", checkTime: "检查时间", otsReceipt: "OTS 收据", unknown: "未知", pick: "选择", githubProof: "GitHub 证明", noGithubTimestamp: "暂无 GitHub 时间戳", githubPending: "GitHub 待处理", noOtsProof: "暂无 OpenTimestamps 证明", otsPending: "OpenTimestamps 待处理", openOtsVerifier: "打开 OTS 验证器"
   , all: "全部"
 });
@@ -2059,6 +2059,23 @@ function dailyReadPercent(value) {
   return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
 }
 
+function liveDriftFor(match, read) {
+  const official = officialPrediction(match);
+  const officialCode = official ? officialPickCode(official) : null;
+  const liveCode = read?.pick?.winnerCode ? String(read.pick.winnerCode).toUpperCase() : null;
+  if (!officialCode || !liveCode) return null;
+  const normalizedOfficial = String(officialCode).toUpperCase();
+  const drifted = normalizedOfficial !== liveCode;
+  return {
+    drifted,
+    officialCode: normalizedOfficial,
+    officialName: teamNameForCode(normalizedOfficial, match),
+    liveCode,
+    liveName: teamNameForCode(liveCode, match),
+    liveConfidence: read.pick?.confidence || null
+  };
+}
+
 function renderDailyRead(match) {
   const panel = document.getElementById("dailyRead");
   if (!panel) return;
@@ -2089,6 +2106,7 @@ function renderDailyRead(match) {
   const pickCode = read.pick?.winnerCode;
   const pickName = read.pick?.winnerName || teams[pickCode]?.name || tr("pending");
   const updatedAt = read.generatedAt ? formatProofTime(read.generatedAt) : tr("unknown");
+  const drift = liveDriftFor(match, read);
   const rows = [
     { side: "home", label: teams[resolved.aCode]?.name || slotLabel(match, "a"), value: probabilities.home },
     { side: "draw", label: tr("draw"), value: probabilities.draw },
@@ -2104,6 +2122,13 @@ function renderDailyRead(match) {
       <span>${tr("currentLean")}</span>
       <strong>${escapeHtml(pickName)}${read.pick?.confidence ? ` · ${dailyReadPercent(read.pick.confidence)} ${tr("confidence")}` : ""}</strong>
     </div>
+    ${drift ? `
+      <div class="daily-read__drift ${drift.drifted ? "is-drifted" : "is-aligned"}">
+        <span>${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")}</span>
+        <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
+        <p>${drift.drifted ? tr("postLockDriftCopy") : tr("lockAlignedCopy")}</p>
+      </div>
+    ` : ""}
     <div class="daily-read__bars">
       ${rows.map((row) => {
         const pct = Number.isFinite(Number(row.value)) ? Math.max(0, Math.min(100, Math.round(Number(row.value)))) : 0;
