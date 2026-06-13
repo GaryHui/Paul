@@ -5,8 +5,18 @@ const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults } = requi
 const HISTORICAL_BACKTEST = {
   correct: 972,
   graded: 1708,
+  accuracy: 972 / 1708,
+  type: "direction",
+  label: "胜平负/晋级方向命中",
+  marketCorrect: 972,
+  marketGraded: 1708,
+  marketAccuracy: 972 / 1708,
+  exactScoreCorrect: null,
+  exactScoreGraded: 0,
+  exactScoreAccuracy: null,
+  exactScoreNote: "历史回测只记录 PAUL Edge 的胜平负/晋级方向和概率，没有保存逐场精确比分预测；市场 1X2 赔率也不提供精确比分基准。",
   source: "World Cup 2022/2018/2014/2010/2006 + Premier League 2021-22 through 2024-25 holdout",
-  note: "Stored audit baseline from data/README.md. PAUL Edge 972/1708, rounded public accuracy 57%."
+  note: "Stored audit baseline from data/README.md. PAUL Edge 972/1708 direction calls, market favorite 972/1708, rounded public accuracy 57%."
 };
 
 function requestToken(req) {
@@ -318,8 +328,18 @@ function liveModelStats(predictions, results) {
     if (pick === winner) stats.correct += 1;
     const score = predictionScore(prediction).replace(/\s/g, "");
     if (score && score === `${result.homeScore}-${result.awayScore}`) stats.exactScore += 1;
+    if (score) stats.exactScoreGraded += 1;
+    const marketPick = String(
+      prediction?.evidence?.baselines?.marketFavorite?.winnerCode ||
+      prediction?.proof?.payload?.evidence?.baselines?.marketFavorite?.winnerCode ||
+      ""
+    ).toUpperCase();
+    if (marketPick) {
+      stats.marketGraded += 1;
+      if (marketPick === winner) stats.marketCorrect += 1;
+    }
     return stats;
-  }, { graded: 0, correct: 0, exactScore: 0 });
+  }, { graded: 0, correct: 0, exactScore: 0, exactScoreGraded: 0, marketGraded: 0, marketCorrect: 0 });
 }
 
 function postMatchCalibrationDelta(results) {
@@ -346,10 +366,40 @@ function reliabilityProfile({ predictions, results, modelAccuracy, priorWeight }
     modelAccuracy: combinedAccuracy,
     priorWeight: combinedGraded || priorWeight,
     historical: HISTORICAL_BACKTEST,
+    historicalComparison: {
+      type: HISTORICAL_BACKTEST.type,
+      label: HISTORICAL_BACKTEST.label,
+      paul: {
+        correct: HISTORICAL_BACKTEST.correct,
+        graded: HISTORICAL_BACKTEST.graded,
+        accuracy: HISTORICAL_BACKTEST.accuracy
+      },
+      market: {
+        correct: HISTORICAL_BACKTEST.marketCorrect,
+        graded: HISTORICAL_BACKTEST.marketGraded,
+        accuracy: HISTORICAL_BACKTEST.marketAccuracy
+      },
+      exactScore: {
+        correct: HISTORICAL_BACKTEST.exactScoreCorrect,
+        graded: HISTORICAL_BACKTEST.exactScoreGraded,
+        accuracy: HISTORICAL_BACKTEST.exactScoreAccuracy,
+        note: HISTORICAL_BACKTEST.exactScoreNote
+      }
+    },
     combined: {
       correct: combinedCorrect,
       graded: combinedGraded,
       accuracy: combinedAccuracy
+    },
+    liveComparison: {
+      direction: {
+        paul: { correct: live.correct, graded: live.graded, accuracy: live.graded ? live.correct / live.graded : null },
+        market: { correct: live.marketCorrect, graded: live.marketGraded, accuracy: live.marketGraded ? live.marketCorrect / live.marketGraded : null }
+      },
+      exactScore: {
+        paul: { correct: live.exactScore, graded: live.exactScoreGraded, accuracy: live.exactScoreGraded ? live.exactScore / live.exactScoreGraded : null },
+        market: { correct: null, graded: 0, accuracy: null, note: "市场 1X2 赔率没有精确比分预测，不能和 PAUL 比分全中率直接比较。" }
+      }
     },
     live,
     posteriorHitRate,
@@ -1028,6 +1078,36 @@ module.exports = async function handler(req, res) {
         exactScoreBonus: Number((reliability.exactScoreBonus * 100).toFixed(2)),
         postMatchCalibrationDelta: Number((reliability.postMatchCalibrationDelta * 100).toFixed(2)),
         modelAccuracy: Number((reliability.modelAccuracy * 100).toFixed(2)),
+        historicalComparison: {
+          ...reliability.historicalComparison,
+          paul: {
+            ...reliability.historicalComparison.paul,
+            accuracy: Number((reliability.historicalComparison.paul.accuracy * 100).toFixed(2))
+          },
+          market: {
+            ...reliability.historicalComparison.market,
+            accuracy: Number((reliability.historicalComparison.market.accuracy * 100).toFixed(2))
+          }
+        },
+        liveComparison: {
+          direction: {
+            paul: {
+              ...reliability.liveComparison.direction.paul,
+              accuracy: reliability.liveComparison.direction.paul.accuracy === null ? null : Number((reliability.liveComparison.direction.paul.accuracy * 100).toFixed(2))
+            },
+            market: {
+              ...reliability.liveComparison.direction.market,
+              accuracy: reliability.liveComparison.direction.market.accuracy === null ? null : Number((reliability.liveComparison.direction.market.accuracy * 100).toFixed(2))
+            }
+          },
+          exactScore: {
+            paul: {
+              ...reliability.liveComparison.exactScore.paul,
+              accuracy: reliability.liveComparison.exactScore.paul.accuracy === null ? null : Number((reliability.liveComparison.exactScore.paul.accuracy * 100).toFixed(2))
+            },
+            market: reliability.liveComparison.exactScore.market
+          }
+        },
         combined: {
           ...reliability.combined,
           accuracy: Number((reliability.combined.accuracy * 100).toFixed(2))

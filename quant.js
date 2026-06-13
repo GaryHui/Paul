@@ -146,8 +146,34 @@ function metric(label, value, lines) {
 function renderSummary(data) {
   const reliability = data.reliability || {};
   const controls = data.controls || {};
+  const historical = reliability.historicalComparison || {};
+  const liveComparison = reliability.liveComparison || {};
+  const historicalPaul = historical.paul || {};
+  const historicalMarket = historical.market || {};
+  const historicalExact = historical.exactScore || {};
+  const liveDirectionPaul = liveComparison.direction?.paul || {};
+  const liveDirectionMarket = liveComparison.direction?.market || {};
+  const liveExactPaul = liveComparison.exactScore?.paul || {};
   summary.hidden = false;
   summary.innerHTML = [
+    metric("历史回测方向", `${pct(historicalPaul.accuracy)} · ${historicalPaul.correct || 0}/${historicalPaul.graded || 0}`, [
+      "这是 PAUL 之前一千多场回测的胜平负/晋级方向命中率，不是比分命中率。",
+      `PAUL：${historicalPaul.correct || 0}/${historicalPaul.graded || 0} = ${pct(historicalPaul.accuracy)}。`,
+      `市场热门：${historicalMarket.correct || 0}/${historicalMarket.graded || 0} = ${pct(historicalMarket.accuracy)}。`,
+      `样本：${reliability.historical?.source || "World Cup + Premier League holdout"}。`
+    ]),
+    metric("历史比分命中", historicalExact.accuracy === null || historicalExact.accuracy === undefined ? "未记录" : `${pct(historicalExact.accuracy)}`, [
+      historicalExact.note || "历史回测没有保存逐场比分预测，所以不能计算历史比分全中率。",
+      "市场 1X2 赔率也没有精确比分预测，不能做市场比分命中对比。",
+      "比分命中从正式 PAUL 锁定预测开始统计。"
+    ]),
+    metric("正式比分命中", `${liveExactPaul.correct || 0}/${liveExactPaul.graded || 0}`, [
+      "来源：已经锁定并完成的正式 PAUL 预测。",
+      `PAUL 方向：${liveDirectionPaul.correct || 0}/${liveDirectionPaul.graded || 0} = ${pct(liveDirectionPaul.accuracy)}。`,
+      `市场方向：${liveDirectionMarket.correct || 0}/${liveDirectionMarket.graded || 0} = ${pct(liveDirectionMarket.accuracy)}。`,
+      `PAUL 比分全中：${liveExactPaul.correct || 0}/${liveExactPaul.graded || 0} = ${pct(liveExactPaul.accuracy)}。`,
+      "比分不中但胜负方向中，会继续计入方向命中；比分层单独复盘。"
+    ]),
     metric("可下注", data.summary.bettable, [
       "来源：本页所有未开赛比赛的逐行过滤结果。",
       "计算：严格价值下注 + PAUL 小仓模拟的比赛数量。",
@@ -431,7 +457,7 @@ async function loadQuantBoard() {
     renderSummary(data);
     renderRows(data);
     const reliability = data.reliability || {};
-    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。凯利先验使用历史回测 + 正式赛果合并准确率 ${reliability.combined?.accuracy ?? reliability.modelAccuracy ?? "N/A"}%（${reliability.combined?.correct || 0}/${reliability.combined?.graded || 0}），正式赛果 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0} 场；实验室会过滤低优势、低信任和平局风险，并等待 CLV 复盘，不改 PAUL 预测模型。`;
+    statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。历史回测 ${reliability.historicalComparison?.paul?.correct || 0}/${reliability.historicalComparison?.paul?.graded || 0} 是胜平负/晋级方向命中，不是比分命中；正式赛果方向 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0}/${reliability.live?.exactScoreGraded || 0}。实验室只调整校准和仓位，不改 PAUL 预测模型。`;
   } catch (error) {
     statusBox.textContent = error.message;
     table.hidden = true;
