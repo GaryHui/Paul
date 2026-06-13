@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>PAUL Universal Lab</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #071015;
+        --panel: #0d2029;
+        --panel-2: #122b37;
+        --line: rgba(255, 255, 255, 0.14);
+        --text: #f3f9fd;
+        --muted: #a8bac7;
+        --green: #36efaa;
+        --gold: #ffd35b;
+        --blue: #54c4ff;
+        --red: #ff6b8a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at 18% 0%, rgba(54, 239, 170, 0.12), transparent 30rem),
+          radial-gradient(circle at 86% 10%, rgba(84, 196, 255, 0.1), transparent 28rem),
+          var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      main {
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 64px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        font-weight: 900;
+        letter-spacing: 0;
+      }
+
+      .backlink {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 800;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(13, 32, 41, 0.82);
+      }
+
+      .hero__copy {
+        padding: clamp(24px, 5vw, 48px);
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 780px;
+        margin-bottom: 18px;
+        font-size: clamp(40px, 7vw, 76px);
+        line-height: 0.94;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        font-size: clamp(28px, 4vw, 48px);
+        line-height: 1;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+
+      .lede {
+        max-width: 780px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.62;
+      }
+
+      .status-card {
+        display: grid;
+        gap: 12px;
+        padding: 24px;
+      }
+
+      .status-card strong {
+        color: var(--gold);
+        font-size: 42px;
+        line-height: 1;
+      }
+
+      .status-card span,
+      .metric span,
+      .module span {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .grid--four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .grid--three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      section {
+        margin-top: 18px;
+      }
+
+      .section-head {
+        padding: 28px 0 10px;
+      }
+
+      .metric,
+      .module {
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(18, 43, 55, 0.72);
+      }
+
+      .metric strong {
+        display: block;
+        margin: 8px 0 4px;
+        color: var(--gold);
+        font-size: 32px;
+      }
+
+      .module p {
+        color: var(--muted);
+        line-height: 1.56;
+      }
+
+      .module ul {
+        margin: 12px 0 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        background: rgba(54, 239, 170, 0.14);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .pill--warn {
+        background: rgba(255, 211, 91, 0.14);
+        color: var(--gold);
+      }
+
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .tab {
+        min-height: 42px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #0b1c25;
+        color: var(--text);
+        padding: 0 14px;
+        font: inherit;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .tab.is-active {
+        border-color: rgba(54, 239, 170, 0.75);
+        background: rgba(54, 239, 170, 0.14);
+        color: var(--green);
+      }
+
+      .roadmap {
+        display: grid;
+        gap: 10px;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr) auto;
+        gap: 16px;
+        align-items: center;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(13, 32, 41, 0.7);
+      }
+
+      .step b {
+        color: var(--gold);
+      }
+
+      .small {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      @media (max-width: 860px) {
+        main {
+          width: min(100% - 20px, 680px);
+        }
+
+        .hero,
+        .grid--four,
+        .grid--three {
+          grid-template-columns: 1fr;
+        }
+
+        .step {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav class="topbar" aria-label="Page navigation">
+        <div class="brand">PAUL Universal Lab</div>
+        <a class="backlink" href="/">返回世界杯站</a>
+      </nav>
+
+      <header class="hero">
+        <div class="hero__copy panel">
+          <p class="eyebrow">Private expansion draft</p>
+          <h1>让 PAUL 未来预测更多比赛和事件。</h1>
+          <p class="lede">
+            这个页面是独立实验区，不影响 2026 世界杯预测、Proof、赛果同步和公开准确率。
+            目标是把 PAUL 慢慢扩展成长期运行的预测系统：足球先扩展，篮球、棒球和公开事件后续单独建模型池。
+          </p>
+        </div>
+        <aside class="status-card panel">
+          <span>当前原则</span>
+          <strong>隔离</strong>
+          <p class="small">世界杯功能冻结稳定，新实验页只做架构、数据源、回测和未来产品形态。</p>
+          <span class="pill">不改 PAUL 世界杯核心模型</span>
+        </aside>
+      </header>
+
+      <section aria-label="Core guardrails">
+        <div class="grid grid--four">
+          <article class="metric">
+            <span>世界杯功能</span>
+            <strong>不动</strong>
+            <p class="small">已锁定预测、Proof、赛果和准确率继续按原流程运行。</p>
+          </article>
+          <article class="metric">
+            <span>新业务入口</span>
+            <strong>独立</strong>
+            <p class="small">新赛事和事件先在独立页面、独立数据表、独立校准层中验证。</p>
+          </article>
+          <article class="metric">
+            <span>模型策略</span>
+            <strong>分池</strong>
+            <p class="small">足球、篮球、棒球、事件不混用准确率，每个领域单独校准。</p>
+          </article>
+          <article class="metric">
+            <span>整合时机</span>
+            <strong>赛后</strong>
+            <p class="small">世界杯结束后再考虑统一品牌、导航和通用预测 API。</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-label="Prediction domains">
+        <div class="section-head">
+          <p class="eyebrow">Prediction domains</p>
+          <h2>每种比赛要用不同规则。</h2>
+        </div>
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" data-domain="football" type="button">足球</button>
+          <button class="tab" data-domain="basketball" type="button">篮球</button>
+          <button class="tab" data-domain="baseball" type="button">棒球</button>
+          <button class="tab" data-domain="events" type="button">事件</button>
+        </div>
+        <div class="grid grid--three" id="domainGrid"></div>
+      </section>
+
+      <section aria-label="System modules">
+        <div class="section-head">
+          <p class="eyebrow">Universal PAUL OS</p>
+          <h2>未来统一系统，但现在先拆开做。</h2>
+        </div>
+        <div class="grid grid--three">
+          <article class="module">
+            <span>1. Event Registry</span>
+            <h3>赛事与事件注册表</h3>
+            <p>统一记录比赛、队伍、时间、市场、状态和公开页面，但每个领域有自己的 schema。</p>
+          </article>
+          <article class="module">
+            <span>2. Evidence Layer</span>
+            <h3>证据层</h3>
+            <p>抓赔率、伤停、新闻、赛程、历史战绩和结果。证据可以变，已锁定 Proof 不能变。</p>
+          </article>
+          <article class="module">
+            <span>3. Domain Model</span>
+            <h3>分领域模型</h3>
+            <p>足球可以有平局，篮球和棒球通常没有平局，事件可能是二元或多选，不能硬套同一套模型。</p>
+          </article>
+          <article class="module">
+            <span>4. Calibration</span>
+            <h3>校准层</h3>
+            <p>只在校准层微调信任系数、凯利仓位、市场收缩和复盘权重，目标长期跑赢市场。</p>
+          </article>
+          <article class="module">
+            <span>5. Proof Layer</span>
+            <h3>证明层</h3>
+            <p>正式预测生成 canonical JSON、hash 和时间戳，证明预测在结果前已经锁定。</p>
+          </article>
+          <article class="module">
+            <span>6. Public Record</span>
+            <h3>公开战绩</h3>
+            <p>每个领域单独显示准确率、市场对照、爆冷命中、比分或分差命中，不互相污染。</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-label="Roadmap">
+        <div class="section-head">
+          <p class="eyebrow">Roadmap</p>
+          <h2>建议分阶段做。</h2>
+        </div>
+        <div class="roadmap">
+          <article class="step">
+            <b>Phase 1</b>
+            <div>
+              <h3>扩展足球回测</h3>
+              <p class="small">加入五大联赛、欧冠、MLS 等公开赔率与赛果数据，验证 PAUL 是否长期稳定接近或跑赢市场。</p>
+            </div>
+            <span class="pill">可立即做</span>
+          </article>
+          <article class="step">
+            <b>Phase 2</b>
+            <div>
+              <h3>建立通用事件 schema</h3>
+              <p class="small">把 matchId、market、outcome、proof、result、calibration 拆成跨领域通用字段。</p>
+            </div>
+            <span class="pill">独立开发</span>
+          </article>
+          <article class="step">
+            <b>Phase 3</b>
+            <div>
+              <h3>篮球与棒球实验池</h3>
+              <p class="small">先用 moneyline、spread、total 建回测，不与足球准确率合并，只输出各自表现。</p>
+            </div>
+            <span class="pill pill--warn">需新数据源</span>
+          </article>
+          <article class="step">
+            <b>Phase 4</b>
+            <div>
+              <h3>世界杯结束后整合</h3>
+              <p class="small">等 2026 世界杯流程结束，再把成熟模块整合到主站导航和统一 PAUL 品牌。</p>
+            </div>
+            <span class="pill pill--warn">赛后进行</span>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const domains = {
+        football: [
+          ["市场类型", "1X2、让球、大小球。小组赛有平局，淘汰赛要区分常规时间和晋级。"],
+          ["可先接入", "世界杯现有逻辑之外，独立回测五大联赛、欧冠、MLS。"],
+          ["校准重点", "平局风险、冷门阈值、赛程密度、主客场优势、临场阵容。"]
+        ],
+        basketball: [
+          ["市场类型", "Moneyline、让分、总分。通常没有平局，节奏和伤停影响更大。"],
+          ["可先接入", "NBA、NCAA、欧洲篮球。需要球队效率、伤病、背靠背、主客场。"],
+          ["校准重点", "分差模型、垃圾时间、核心球员出勤、盘口移动。"]
+        ],
+        baseball: [
+          ["市场类型", "Moneyline、Run Line、总分。投手信息比普通球队强弱更关键。"],
+          ["可先接入", "MLB 历史赛果、先发投手、牛棚消耗、天气和球场因素。"],
+          ["校准重点", "先发投手、牛棚疲劳、左右手对位、低比分随机性。"]
+        ],
+        events: [
+          ["市场类型", "二元事件、多选事件、排名事件。需要明确截止时间和结果源。"],
+          ["可先接入", "颁奖、选举、电竞、公开市场事件，但要单独做合规和结果验证。"],
+          ["校准重点", "信息时效、市场流动性、结果定义、证明锁定时间。"]
+        ]
+      };
+
+      const grid = document.getElementById("domainGrid");
+      function renderDomain(key) {
+        grid.innerHTML = domains[key].map(([title, copy]) => `
+          <article class="module">
+            <span>${title}</span>
+            <h3>${copy.split("。")[0]}。</h3>
+            <p>${copy}</p>
+          </article>
+        `).join("");
+      }
+
+      document.querySelectorAll(".tab").forEach((button) => {
+        button.addEventListener("click", () => {
+          document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("is-active", item === button));
+          renderDomain(button.dataset.domain);
+        });
+      });
+
+      renderDomain("football");
+    </script>
+  </body>
+</html>
