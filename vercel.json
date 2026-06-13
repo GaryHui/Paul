@@ -33,10 +33,6 @@
       "use": "@vercel/node"
     },
     {
-      "src": "api/universal/*.js",
-      "use": "@vercel/node"
-    },
-    {
       "src": "**/*",
       "use": "@vercel/static"
     }

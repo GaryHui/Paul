@@ -3,6 +3,7 @@ const { runBacktest } = require("../_lib/backtest");
 const { accuracySnapshot, nextPredictionDue, parseMatchTime, resolveMatches, resultWinnerCode } = require("../_lib/bracket");
 const { loadSnapshot } = require("../_lib/paul");
 const { configuredProviders, fetchMatchResult, hasResultsProvider, providerName } = require("../_lib/results");
+const { runUniversalBacktest } = require("../_lib/universal-backtest");
 
 const roundOrder = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
 
@@ -25,6 +26,15 @@ function requestMode(req) {
   } catch {
     return "";
   }
+}
+
+function universalParams(req) {
+  const url = new URL(req.url || "/", "https://paul.local");
+  return {
+    sport: url.searchParams.get("sport") || "football",
+    seasons: url.searchParams.get("seasons") ? url.searchParams.get("seasons").split(",").map((item) => item.trim()).filter(Boolean) : null,
+    leagues: url.searchParams.get("leagues") ? url.searchParams.get("leagues").split(",").map((item) => item.trim()).filter(Boolean) : null
+  };
 }
 
 function verifyAccess(req) {
@@ -270,6 +280,10 @@ async function resultsHealth(snapshot) {
 module.exports = async function handler(req, res) {
   try {
     verifyAccess(req);
+    if (requestMode(req) === "universal-backtest") {
+      res.status(200).json(await runUniversalBacktest(universalParams(req)));
+      return;
+    }
     const snapshot = loadSnapshot();
     if (requestMode(req) === "results-health") {
       res.status(200).json(await resultsHealth(snapshot));
