@@ -107,7 +107,7 @@ module.exports = async function handler(req, res) {
       latestDailyReadAt,
       dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8),
       dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
-      dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 72),
+      dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36),
       firstMatchEvidence: first
     },
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),

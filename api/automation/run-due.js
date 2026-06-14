@@ -7,7 +7,7 @@ const { recordMistakeReview } = require("../_lib/mistake-engine");
 const { fetchMatchResult } = require("../_lib/results");
 const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
-const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 72);
+const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2);
 const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 0);
 const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 0);

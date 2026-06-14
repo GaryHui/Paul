@@ -180,6 +180,11 @@ function renderSummary(data) {
       `严格价值下注：${data.summary.valueBets || 0} 场；小仓模拟：${data.summary.simulated || 0} 场。`,
       `门槛：最小优势 ${pct(controls.minEdgePct)}，信任系数 ${pct(controls.minTrustPct)}，平局风险阈值 ${pct(controls.drawDangerPct)}。`
     ]),
+    metric("高胜算候选", `${data.summary.highWinCandidates || 0} / ${data.summary.mediumWinCandidates || 0}`, [
+      "左边是高胜算候选，右边是中高胜算候选。",
+      "计算：结合 PAUL/Kelly 校准概率、市场隐含胜率、校准信任系数、每日判断同向率和概率优势。",
+      "用途：当 PAUL 总胜负命中率只有五成多时，不应平均看待所有比赛；应优先观察胜算等级更高的场。"
+    ]),
     metric("观察名单", data.summary.watch || 0, [
       "来源：本页所有逐行过滤结果。",
       "计算：decision.action === WATCH 的比赛数量。",
@@ -413,6 +418,29 @@ function driftMarkup(row) {
   `;
 }
 
+function winConfidenceMarkup(row) {
+  const profile = row.winConfidence;
+  if (!profile || profile.tier === "NONE") return "";
+  const cls = profile.tier === "HIGH"
+    ? "tier-high"
+    : profile.tier === "MEDIUM"
+      ? "tier-medium"
+      : profile.tier === "WATCH"
+        ? "tier-watch"
+        : "tier-low";
+  return `
+    <span class="sub ${cls}">
+      ${text(profile.label)} · ${text(profile.score)}分
+      ${infoButton("胜算等级来源", [
+        "这不是新的官方预测，也不会改 Proof；只是实验室用来排序观察优先级。",
+        `综合概率：${pct(profile.probability)}。`,
+        `相对市场优势：${pct(profile.marketEdge)}。`,
+        profile.reason || "暂无来源说明。"
+      ])}
+    </span>
+  `;
+}
+
 function rowMarkup(row) {
   const pick = row.pick || {};
   const stake = Number(row.recommendedStake || 0);
@@ -436,6 +464,7 @@ function rowMarkup(row) {
         ])}</strong>
         <span class="sub">${text(pick.code || "-")} · ${text(labelSource(pick.source))}</span>
         ${pick.predictedScore ? `<span class="sub">预测比分：${text(pick.predictedScore)}</span>` : ""}
+        ${winConfidenceMarkup(row)}
         ${driftMarkup(row)}
         <span class="${decisionClass(row.decision)}">${text(decisionLabels[row.decision?.action] || row.decision?.label || labelRisk(row.risk))}</span>
       </td>

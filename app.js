@@ -2885,7 +2885,7 @@ async function loadAutomationStatus() {
     if (!response.ok) throw new Error(status.error || "Failed to load automation status.");
 
     const mergedPredictions = status.predictions || {};
-    const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 72) || status.nextPrediction;
+    const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 36) || status.nextPrediction;
 
     const stageAccuracy = status.stageAccuracy || automationState.stageAccuracy;
     setText("autoPredicted", Object.keys(mergedPredictions).length);

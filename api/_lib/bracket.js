@@ -1,4 +1,4 @@
-const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 72);
+const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
 
 function parseMatchTime(match) {
   const date = match?.kickoffAt ? new Date(match.kickoffAt) : new Date(`${match.date} 20:00:00 GMT+0000`);

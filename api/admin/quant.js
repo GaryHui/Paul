@@ -452,6 +452,88 @@ function calibratedKellyProbability(paulProbability, impliedProbability, edgeTru
   return clamp(impliedProbability + (paulProbability - impliedProbability) * edgeTrust, 0.01, 0.99);
 }
 
+function winConfidenceProfile({
+  pick,
+  probability,
+  dailyAdjustedProbability,
+  kellyProbability,
+  impliedProbability,
+  rowEdgeTrust,
+  dailyCalibration,
+  edgePct,
+  isFinal,
+  isPast
+}) {
+  if (!pick || pick.source === "Market fallback") {
+    return {
+      tier: "NONE",
+      label: "暂无 PAUL 胜算",
+      score: 0,
+      candidate: false,
+      reason: "没有 PAUL 锁定或每日判断，只能作为市场参考。"
+    };
+  }
+  const selectedProbability = Number(kellyProbability ?? dailyAdjustedProbability ?? probability);
+  const rawProbability = Number(probability);
+  const implied = Number(impliedProbability);
+  const trust = Number(rowEdgeTrust || 0);
+  const confidence = Number(pick.confidence || 0) / 100;
+  const samePickRate = Number(dailyCalibration?.samePickRate ?? 1);
+  const sampleCount = Number(dailyCalibration?.count || 0);
+  const marketEdge = Number.isFinite(selectedProbability) && Number.isFinite(implied) ? selectedProbability - implied : 0;
+  const displayProbability = Number.isFinite(selectedProbability) ? selectedProbability : rawProbability;
+
+  let score = 0;
+  if (displayProbability >= 0.7) score += 34;
+  else if (displayProbability >= 0.62) score += 28;
+  else if (displayProbability >= 0.56) score += 18;
+  else if (displayProbability >= 0.51) score += 10;
+
+  if (confidence >= 0.7) score += 18;
+  else if (confidence >= 0.62) score += 12;
+  else if (confidence >= 0.55) score += 6;
+
+  if (trust >= 0.75) score += 18;
+  else if (trust >= 0.65) score += 13;
+  else if (trust >= 0.58) score += 8;
+
+  if (marketEdge >= 0.06) score += 18;
+  else if (marketEdge >= 0.03) score += 12;
+  else if (marketEdge >= 0) score += 5;
+  else score -= 8;
+
+  if (sampleCount >= 3 && samePickRate >= 0.75) score += 8;
+  else if (sampleCount >= 2 && samePickRate >= 0.6) score += 4;
+
+  if (Number(edgePct) < -2) score -= 10;
+  if (isFinal || isPast) score -= 8;
+
+  score = Math.round(clamp(score, 0, 100));
+  const tier = score >= 72 ? "HIGH" : score >= 56 ? "MEDIUM" : score >= 40 ? "WATCH" : "LOW";
+  const label = tier === "HIGH"
+    ? "高胜算候选"
+    : tier === "MEDIUM"
+      ? "中高胜算"
+      : tier === "WATCH"
+        ? "观察胜算"
+        : "胜算不足";
+  const reasons = [
+    `PAUL/Kelly 校准胜率 ${Number.isFinite(displayProbability) ? `${(displayProbability * 100).toFixed(2)}%` : "N/A"}`,
+    `市场隐含胜率 ${Number.isFinite(implied) ? `${(implied * 100).toFixed(2)}%` : "N/A"}`,
+    `校准信任系数 ${(trust * 100).toFixed(2)}%`,
+    sampleCount ? `每日判断样本 ${sampleCount} 次，同向率 ${(samePickRate * 100).toFixed(2)}%` : "暂无每日趋势样本"
+  ];
+  return {
+    tier,
+    label,
+    score,
+    candidate: !isFinal && !isPast && (tier === "HIGH" || tier === "MEDIUM"),
+    probability: Number.isFinite(displayProbability) ? displayProbability : null,
+    marketEdge,
+    reason: reasons.join("；")
+  };
+}
+
 function dailyProbabilityForSide(record, side) {
   const probabilities = normalizeProbabilities(record?.probabilities || record?.pick?.probabilities);
   const value = Number(probabilities?.[side]);
@@ -904,6 +986,18 @@ module.exports = async function handler(req, res) {
           };
         }
         const clv = clvSnapshot(market, pick?.side, odds, isFinal);
+        const winConfidence = winConfidenceProfile({
+          pick,
+          probability,
+          dailyAdjustedProbability,
+          kellyProbability,
+          impliedProbability,
+          rowEdgeTrust,
+          dailyCalibration,
+          edgePct: preliminaryStake.edgePct,
+          isFinal,
+          isPast
+        });
         const analysisReasonZh = chineseAnalysisReason({
           pick,
           market,
@@ -962,6 +1056,7 @@ module.exports = async function handler(req, res) {
           },
           pick,
           liveDrift,
+          winConfidence,
           market,
           result: result
             ? {
@@ -1103,6 +1198,13 @@ module.exports = async function handler(req, res) {
           balanceIfLose: row.simulation.balanceIfLose === null ? null : Number(row.simulation.balanceIfLose.toFixed(2))
         };
       }
+      if (row.winConfidence) {
+        row.winConfidence = {
+          ...row.winConfidence,
+          probability: row.winConfidence.probability === null ? null : Number((row.winConfidence.probability * 100).toFixed(2)),
+          marketEdge: Number((Number(row.winConfidence.marketEdge || 0) * 100).toFixed(2))
+        };
+      }
       row.impliedProbability = row.impliedProbability === null ? null : Number((row.impliedProbability * 100).toFixed(2));
     });
 
@@ -1199,6 +1301,8 @@ module.exports = async function handler(req, res) {
         portfolioCap: Number(portfolioCap.toFixed(2)),
         portfolioScale: Number(scale.toFixed(3)),
         maxSingleStake: Number(finalBetRows.reduce((max, row) => Math.max(max, row.recommendedStake), 0).toFixed(2)),
+        highWinCandidates: rows.filter((row) => row.winConfidence?.candidate && row.winConfidence?.tier === "HIGH").length,
+        mediumWinCandidates: rows.filter((row) => row.winConfidence?.candidate && row.winConfidence?.tier === "MEDIUM").length,
         averageEdgePct: Number(averageEdge.toFixed(2))
       },
       rows

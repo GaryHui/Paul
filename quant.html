@@ -252,7 +252,11 @@
       }
 
       .drift-warn,
-      .drift-ok {
+      .drift-ok,
+      .tier-high,
+      .tier-medium,
+      .tier-watch,
+      .tier-low {
         margin-top: 8px;
         padding: 7px 9px;
         border-radius: 8px;
@@ -268,6 +272,25 @@
         border: 1px solid rgba(53, 240, 174, 0.3);
         background: rgba(53, 240, 174, 0.08);
         color: var(--accent);
+      }
+
+      .tier-high {
+        border: 1px solid rgba(53, 240, 174, 0.38);
+        background: rgba(53, 240, 174, 0.12);
+        color: var(--accent);
+      }
+
+      .tier-medium,
+      .tier-watch {
+        border: 1px solid rgba(255, 211, 91, 0.35);
+        background: rgba(255, 211, 91, 0.09);
+        color: var(--warn);
+      }
+
+      .tier-low {
+        border: 1px solid rgba(180, 197, 214, 0.22);
+        background: rgba(180, 197, 214, 0.06);
+        color: var(--muted);
       }
 
       .pill {
@@ -548,6 +571,6 @@
         <div id="emptyState" class="empty">输入管理员 Token 后载入面板。</div>
       </section>
     </main>
-    <script src="quant.js?v=10"></script>
+    <script src="quant.js?v=11"></script>
   </body>
 </html>
