@@ -3039,7 +3039,13 @@ async function loadAutomationStatus() {
   const statusText = document.getElementById("automationStatus");
   try {
     const response = await fetch("/api/automation/status");
-    const status = await response.json();
+    const rawStatus = await response.text();
+    let status;
+    try {
+      status = JSON.parse(rawStatus);
+    } catch {
+      throw new Error(`Automation status returned non-JSON (${response.status}): ${rawStatus.slice(0, 160)}`);
+    }
     if (!response.ok) throw new Error(status.error || "Failed to load automation status.");
 
     const mergedPredictions = status.predictions || {};

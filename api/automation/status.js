@@ -211,7 +211,32 @@ function liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mis
   };
 }
 
+function json(res, status, payload) {
+  res.statusCode = status;
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(payload));
+}
+
+function safeLiveCorrection(match, prediction, dailyRead, evidenceCache, mistakeMemory) {
+  try {
+    return liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mistakeMemory);
+  } catch {
+    return null;
+  }
+}
+
+async function safeFirstEvidence(firstResolved) {
+  if (!firstResolved) return null;
+  try {
+    return await collectPredictionEvidence(firstResolved, { liveOdds: false, cache: true });
+  } catch (error) {
+    return { error: error.message || "first evidence unavailable" };
+  }
+}
+
 module.exports = async function handler(req, res) {
+  try {
   const snapshot = loadSnapshot();
   const predictions = await getPredictions();
   const results = await getResults();
@@ -246,14 +271,14 @@ module.exports = async function handler(req, res) {
     .map((match) => {
       const prediction = predictions[match.id] || predictions[String(match.id)] || null;
       const dailyRead = dailyAnalysis[match.id] || dailyAnalysis[String(match.id)] || null;
-      const correction = liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mistakeMemory);
+      const correction = safeLiveCorrection(match, prediction, dailyRead, evidenceCache, mistakeMemory);
       return correction ? [String(match.id), correction] : null;
     })
     .filter(Boolean));
   const auditEntries = await auditSnapshot();
   const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
-  const first = firstResolved ? await collectPredictionEvidence(firstResolved, { liveOdds: false }) : null;
-  res.status(200).json({
+  const first = await safeFirstEvidence(firstResolved);
+  return json(res, 200, {
     totalMatches: snapshot.matches.length,
     predictionCount: Object.keys(predictions).length,
     auditCount: auditEntries.length,
@@ -308,4 +333,11 @@ module.exports = async function handler(req, res) {
     hasSharedStore: isSharedStoreConfigured(),
     cronProtected: Boolean(process.env.CRON_SECRET)
   });
+  } catch (error) {
+    return json(res, error.status || 500, {
+      error: error.message || "Automation status failed.",
+      status: "error",
+      generatedAt: new Date().toISOString()
+    });
+  }
 };
