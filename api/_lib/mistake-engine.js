@@ -147,7 +147,7 @@ function calibrationHints(classification) {
     adjustOnlyCalibration: true,
     edgeTrustDelta: classification.directionHit ? (classification.scoreHit ? 0.012 : 0.004) : -0.022,
     scoreModelDelta: classification.scoreHit ? 0.018 : misses.includes("minor_score_variance") ? -0.004 : -0.012,
-    marketShrinkDelta: misses.includes("market_anchor_underweighted") ? 0.035 : misses.includes("market_missed_too") ? -0.005 : 0,
+    marketShrinkDelta: misses.includes("market_anchor_underweighted") ? 0.035 : misses.includes("market_missed_too") ? -0.025 : 0,
     drawRiskDelta: misses.includes("draw_underestimated") ? 0.025 : misses.includes("false_draw_squeeze") ? -0.018 : 0,
     upsetSensitivityDelta: misses.includes("upset_underestimated") ? 0.02 : misses.includes("false_upset_override") ? -0.025 : 0,
     goalVolatilityDelta: misses.includes("pace_or_finishing_underestimated") ? 0.018 : misses.includes("low_event_game_underestimated") ? -0.012 : 0
@@ -447,6 +447,58 @@ function mistakeAdjustmentFromMemory(summary = {}) {
   };
 }
 
+function modelWeightsFromAdjustment(adjustment = {}, maturity = "seed") {
+  let market = 55;
+  let elo = 25;
+  let poisson = 20;
+  const marketShrink = Number(adjustment.marketShrinkDelta || 0);
+  const edgeTrust = Number(adjustment.edgeTrustDelta || 0);
+  const upsetSensitivity = Number(adjustment.upsetSensitivityDelta || 0);
+  const scoreConfidence = Number(adjustment.scoreConfidenceDelta || 0);
+  const goalVolatility = Number(adjustment.goalVolatilityDelta || 0);
+  market += marketShrink * 220 + Math.max(0, -edgeTrust) * 180 - Math.max(0, upsetSensitivity) * 80;
+  elo += edgeTrust * 110 + upsetSensitivity * 45;
+  poisson += scoreConfidence * 140 + goalVolatility * 70 + upsetSensitivity * 35;
+  market = clamp(market, 45, 65);
+  elo = clamp(elo, 18, 34);
+  poisson = clamp(poisson, 14, 30);
+  const sum = market + elo + poisson;
+  return {
+    market: Number(((market / sum) * 100).toFixed(1)),
+    elo: Number(((elo / sum) * 100).toFixed(1)),
+    poisson: Number(((poisson / sum) * 100).toFixed(1)),
+    maturity
+  };
+}
+
+function learningProfileFromMemory(summary = {}, adjustment = null) {
+  const total = Number(summary.totalReviewed || 0);
+  const directionMissRate = total ? Number((Number(summary.directionMisses || 0) / total).toFixed(3)) : 0;
+  const scoreMissRate = total ? Number((Number(summary.scoreMisses || 0) / total).toFixed(3)) : 0;
+  const exactHitRate = total ? Number((Number(summary.exactHits || 0) / total).toFixed(3)) : 0;
+  const topCauses = Array.isArray(summary.topGlobalCauses) ? summary.topGlobalCauses.slice(0, 4).map((item) => item.cause) : [];
+  const maturity = total >= 40 ? "stable" : total >= 16 ? "learning" : total >= 4 ? "warming-up" : "seed";
+  const currentBias = [];
+  if (topCauses.includes("market_anchor_underweighted")) currentBias.push("increase market anchor after PAUL-only misses");
+  if (topCauses.includes("market_missed_too")) currentBias.push("allow more non-market edge when market misses too");
+  if (topCauses.includes("draw_underestimated")) currentBias.push("raise draw-risk sensitivity in compressed group matches");
+  if (topCauses.includes("upset_underestimated")) currentBias.push("raise upset sensitivity when underdog evidence is confirmed");
+  if (topCauses.includes("pace_or_finishing_underestimated")) currentBias.push("lift high-event score paths");
+  if (topCauses.includes("low_event_game_underestimated")) currentBias.push("prefer lower-event score paths");
+  return {
+    version: "paul-learning-profile-v1",
+    sampleSize: total,
+    maturity,
+    directionMissRate,
+    scoreMissRate,
+    exactHitRate,
+    currentBias,
+    calibrationAdjustment: adjustment,
+    modelWeights: modelWeightsFromAdjustment(adjustment || {}, maturity),
+    policy: "Every post-match review updates KV memory; future PAUL reads use this profile as a bounded calibration layer, not as a rewrite of locked proofs."
+  };
+}
+
 function buildMistakeContext(match, memory = {}) {
   const summary = summarizeRelevantMistakes(match, memory);
   const calibrationAdjustment = mistakeAdjustmentFromMemory(summary);
@@ -456,7 +508,8 @@ function buildMistakeContext(match, memory = {}) {
     updatedAt: summary.updatedAt,
     usable: Boolean(calibrationAdjustment),
     summary,
-    calibrationAdjustment
+    calibrationAdjustment,
+    learningProfile: learningProfileFromMemory(summary, calibrationAdjustment)
   };
 }
 

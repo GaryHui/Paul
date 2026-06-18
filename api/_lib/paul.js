@@ -96,6 +96,45 @@ function blendModels(models) {
   });
 }
 
+function learnedModelWeights(mistakeContext) {
+  if (mistakeContext?.learningProfile?.modelWeights) {
+    return {
+      ...mistakeContext.learningProfile.modelWeights,
+      source: mistakeContext.learningProfile.version || "paul-learning-profile-v1",
+      sampleSize: Number(mistakeContext.calibrationAdjustment?.sampleSize || 0)
+    };
+  }
+  const adjustment = mistakeContext?.calibrationAdjustment || {};
+  let market = 55;
+  let elo = 25;
+  let poissonWeight = 20;
+  const marketShrink = Number(adjustment.marketShrinkDelta || 0);
+  const edgeTrust = Number(adjustment.edgeTrustDelta || 0);
+  const upsetSensitivity = Number(adjustment.upsetSensitivityDelta || 0);
+  const scoreConfidence = Number(adjustment.scoreConfidenceDelta || 0);
+  const goalVolatility = Number(adjustment.goalVolatilityDelta || 0);
+
+  market += marketShrink * 220 + Math.max(0, -edgeTrust) * 180 - Math.max(0, upsetSensitivity) * 80;
+  elo += edgeTrust * 110 + upsetSensitivity * 45;
+  poissonWeight += scoreConfidence * 140 + goalVolatility * 70 + upsetSensitivity * 35;
+
+  market = clamp(market, 45, 65);
+  elo = clamp(elo, 18, 34);
+  poissonWeight = clamp(poissonWeight, 14, 30);
+  const sum = market + elo + poissonWeight;
+  const normalized = {
+    market: Number(((market / sum) * 100).toFixed(1)),
+    elo: Number(((elo / sum) * 100).toFixed(1)),
+    poisson: Number(((poissonWeight / sum) * 100).toFixed(1))
+  };
+  return {
+    ...normalized,
+    source: mistakeContext?.learningProfile?.version || "static-baseline",
+    sampleSize: Number(adjustment.sampleSize || 0),
+    maturity: mistakeContext?.learningProfile?.maturity || "seed"
+  };
+}
+
 function favoriteFromProbabilities(match, probabilities) {
   if (!probabilities) return null;
   const candidates = [
@@ -544,13 +583,14 @@ async function collectPredictionEvidence(match, options = {}) {
     const bLambda = clamp(base * Number(ratingB.attack) / Math.max(0.1, Number(ratingA.defense)), 0.25, 3.5);
     poisson = poissonProbabilities(aLambda, bLambda, allowDraw);
   }
+  const mistakeContext = buildMistakeContext(match, mistakeMemory);
+  const modelWeights = learnedModelWeights(mistakeContext);
   const modelBlend = blendModels([
-    { name: "market", probabilities: marketProb, weight: 55 },
-    { name: "elo", probabilities: eloProb, weight: 25 },
-    { name: "poisson", probabilities: poisson?.probabilities, weight: 20 }
+    { name: "market", probabilities: marketProb, weight: modelWeights.market },
+    { name: "elo", probabilities: eloProb, weight: modelWeights.elo },
+    { name: "poisson", probabilities: poisson?.probabilities, weight: modelWeights.poisson }
   ]);
   const hasPrimaryEvidence = Boolean(marketProb || eloProb || poisson || providerIntelligence);
-  const mistakeContext = buildMistakeContext(match, mistakeMemory);
   const missing = [];
   if (!marketProb) missing.push("market odds");
   if (!(ratingA?.elo && ratingB?.elo)) missing.push("real Elo or team ratings");
@@ -588,6 +628,12 @@ async function collectPredictionEvidence(match, options = {}) {
     form: formA && formB ? { teamA: formA, teamB: formB } : null,
     intelligence: providerIntelligence,
     mistakeEngine: mistakeContext.usable ? mistakeContext : null,
+    learning: {
+      modelWeights,
+      profile: mistakeContext.learningProfile || null,
+      applied: Boolean(mistakeContext.usable),
+      note: "Learning weights are recalculated from post-match KV memory before every PAUL read."
+    },
     poisson,
     modelBlend,
     baselines: {
@@ -616,10 +662,11 @@ function buildPrompt(payload, evidence) {
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
     "Use evidence.universal as PAUL's cross-model overlay. It may override the market anchor only when universal.override is true; otherwise mention it as reviewed but not decisive.",
+    "Use evidence.learning as PAUL's adaptive learning layer. It turns post-match KV corrections into bounded model-weight changes before each prediction, so explain when learning weights materially affect the read.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
     "When evidence.preLockRehearsal.upsetPreview.recommendation says the upset probability is live enough, spend extra effort on underdog news, lineup absences, set pieces, pressing/transition routes, xG/xGA, and market movement before deciding whether to slightly lift the upset/draw probability.",
     "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
-    "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, and score volatility before your wording. Explain it when relevant, but do not invent facts.",
+    "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, score volatility, and adaptive model weights before your wording. Explain it when relevant, but do not invent facts.",
     knockout
       ? "This is a knockout match. The final PAUL pick must be the advancing/winning team, never DRAW. If regulation time may be level, explain that as risk but still choose one team to advance."
       : "Only treat DRAW as a serious PAUL pick when evidence.paulEdge.drawSqueeze is true; do not force a draw from a merely narrow market.",
@@ -882,6 +929,7 @@ function defaultEvidenceUsed(evidence) {
   if (evidence.form?.teamA && evidence.form?.teamB) used.push("recent form");
   if (evidence.intelligence || evidence.market?.intelligence) used.push("team news and availability");
   if (evidence.mistakeEngine?.usable) used.push("mistake engine calibration memory");
+  if (evidence.learning?.applied) used.push("adaptive learning weights from post-match memory");
   if (evidence.universal) used.push("universal cross-model overlay");
   if (evidence.searchFallback) used.push("fresh public news/search validation");
   return used;

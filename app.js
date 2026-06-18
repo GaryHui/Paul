@@ -2176,10 +2176,16 @@ function currentKvMemoryMarkup() {
   const total = Number(memory.totalReviewed || 0);
   if (!total) return "";
   const updated = memory.updatedAt ? formatProofTime(memory.updatedAt) : tr("unknown");
+  const profile = memory.learningProfile || {};
+  const adjustment = profile.calibrationAdjustment || memory.calibrationAdjustment || {};
+  const weights = profile.modelWeights || null;
   return `
     <div class="daily-read__meta daily-read__meta--calibration">
       <strong>Current KV memory</strong>
       <p>${total} post-match reviews · direction misses ${escapeHtml(String(memory.directionMisses || 0))} · score misses ${escapeHtml(String(memory.scoreMisses || 0))}</p>
+      ${profile.maturity ? `<p>Learning stage: ${escapeHtml(profile.maturity)} · direction miss rate ${escapeHtml(String(profile.directionMissRate ?? "n/a"))} · score miss rate ${escapeHtml(String(profile.scoreMissRate ?? "n/a"))}</p>` : ""}
+      ${weights ? `<p>Adaptive weights: market ${escapeHtml(String(weights.market))} · Elo ${escapeHtml(String(weights.elo))} · score ${escapeHtml(String(weights.poisson))}</p>` : ""}
+      ${adjustment.sampleSize ? `<p>Next-read calibration: market ${escapeHtml(String(adjustment.marketShrinkDelta ?? 0))} · draw ${escapeHtml(String(adjustment.drawRiskDelta ?? 0))} · upset ${escapeHtml(String(adjustment.upsetSensitivityDelta ?? 0))}</p>` : ""}
       <p>${memory.usable ? "Available for new Daily PAUL reads and future locks." : "Stored, but not enough calibration signal yet."} Updated ${escapeHtml(updated)}.</p>
     </div>
   `;

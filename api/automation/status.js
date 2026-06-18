@@ -344,7 +344,8 @@ module.exports = async function handler(req, res) {
       directionMisses: globalMistakeContext.summary?.directionMisses || 0,
       scoreMisses: globalMistakeContext.summary?.scoreMisses || 0,
       exactHits: globalMistakeContext.summary?.exactHits || 0,
-      calibrationAdjustment: globalMistakeContext.calibrationAdjustment || null
+      calibrationAdjustment: globalMistakeContext.calibrationAdjustment || null,
+      learningProfile: globalMistakeContext.learningProfile || null
     },
     marketTrace,
     resolvedMatches: resolvedMatches.map((match) => ({
