@@ -1970,6 +1970,23 @@ function officialPrediction(match) {
   return automationState.predictions?.[match.id] || null;
 }
 
+function proofPredictionRecord(match) {
+  const entry = proofEntryForMatch(match.id);
+  const prediction = entry?.payload?.prediction;
+  if (!prediction) return null;
+  return {
+    matchId: match.id,
+    generatedAt: entry.lockedAt || entry.payload?.lockedAt || null,
+    proof: { hash: entry.hash || null },
+    analysis: prediction,
+    evidence: entry.payload?.evidence || null
+  };
+}
+
+function officialPredictionRecord(match) {
+  return officialPrediction(match) || proofPredictionRecord(match);
+}
+
 function officialResult(match) {
   return automationState.results?.[match.id] || null;
 }
@@ -2241,7 +2258,7 @@ function driftReasonText(drift, read) {
 }
 
 function liveDriftFor(match, read) {
-  const official = officialPrediction(match);
+  const official = officialPredictionRecord(match);
   const officialCode = official ? officialPickCode(official) : null;
   const liveCode = read?.pick?.winnerCode ? String(read.pick.winnerCode).toUpperCase() : null;
   if (!officialCode || !liveCode) return null;
@@ -2499,7 +2516,7 @@ function renderPublicTraceUnsafe() {
       return resolved.aCode && resolved.bCode;
     })
     .map((match) => {
-      const official = officialPrediction(match);
+      const official = officialPredictionRecord(match);
       const daily = dailyReadFor(match);
       const market = marketTraceFor(match) || officialMarketTrace(match, official);
       const paul = tracePaulPick(match, official, daily);
@@ -2600,7 +2617,7 @@ function proofEntryForMatch(matchId) {
 function correctMatchRows() {
   return tournament.matches
     .map((match) => {
-      const official = officialPrediction(match);
+      const official = officialPredictionRecord(match);
       const result = officialResult(match);
       if (result?.status !== "final" || !official) return null;
       const pick = String(officialPickCode(official) || "").toUpperCase();
@@ -2691,7 +2708,7 @@ async function submitPollVote(matchId, side) {
 }
 
 function predictionStatus(match) {
-  const record = officialPrediction(match);
+  const record = officialPredictionRecord(match);
   const result = officialResult(match);
   if (result?.status === "final" && record) {
     return predictionOutcomeText(record, result) || tr("final");
@@ -2708,7 +2725,7 @@ function resultLabel(match) {
     const winnerName = winner === "DRAW" ? tr("draw") : teams[winner]?.name || tr("final");
     return `${winnerName} ${result.homeScore}-${result.awayScore}`;
   }
-  const record = officialPrediction(match);
+  const record = officialPredictionRecord(match);
   if (!record) return tr("pending");
   const pick = officialPickCode(record);
   if (!pick || pick === "DRAW") return tr("draw");
@@ -2802,7 +2819,7 @@ function recentMatchRank(match, now = new Date()) {
     return { bucket: 9, distance: Number.MAX_SAFE_INTEGER };
   }
   const result = officialResult(match);
-  const locked = Boolean(officialPrediction(match));
+  const locked = Boolean(officialPredictionRecord(match));
   const distance = Math.abs(kickoff.getTime() - now.getTime());
   if (locked && result?.status !== "final") return { bucket: 0, distance };
   if (result?.status === "final") return { bucket: 1, distance };
@@ -2891,7 +2908,7 @@ function renderMatchList() {
 function renderPK() {
   const match = tournament.matches.find((item) => item.id === activeMatchId);
   const resolved = resolvedTeams(match);
-  const official = officialPrediction(match);
+  const official = officialPredictionRecord(match);
   const officialPick = officialPickCode(official);
   const finalResult = officialResult(match);
   const leftWon = Boolean(official && resolved.aCode && officialPick === resolved.aCode);

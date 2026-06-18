@@ -256,6 +256,33 @@ function safeLiveCorrection(match, prediction, dailyRead, evidenceCache, mistake
   }
 }
 
+function predictionFromAuditEntry(entry) {
+  const prediction = entry?.payload?.prediction;
+  if (!prediction) return null;
+  return {
+    matchId: entry.matchId,
+    generatedAt: entry.lockedAt || entry.payload?.lockedAt || null,
+    model: entry.payload?.model || "PAUL",
+    analysis: prediction,
+    evidence: entry.payload?.evidence || null,
+    proof: {
+      hash: entry.hash || null,
+      payload: entry.payload || null
+    }
+  };
+}
+
+function mergePredictionsWithAudit(predictions = {}, auditEntries = []) {
+  const merged = { ...predictions };
+  auditEntries.forEach((entry) => {
+    const key = String(entry.matchId);
+    if (merged[key] || merged[entry.matchId]) return;
+    const prediction = predictionFromAuditEntry(entry);
+    if (prediction) merged[key] = prediction;
+  });
+  return merged;
+}
+
 async function safeFirstEvidence(firstResolved) {
   if (!firstResolved) return null;
   try {
@@ -323,6 +350,7 @@ module.exports = async function handler(req, res) {
     })
     .filter(Boolean));
   const auditEntries = await auditSnapshot();
+  const predictionsForScoring = mergePredictionsWithAudit(predictions, auditEntries);
   const firstResolved = resolvedMatches.find((match) => match.teamA?.code && match.teamB?.code);
   const first = await safeFirstEvidence(firstResolved);
   return json(res, 200, {
@@ -330,10 +358,10 @@ module.exports = async function handler(req, res) {
     predictionCount: Object.keys(predictions).length,
     auditCount: auditEntries.length,
     resultCount: Object.keys(results).length,
-    nextPrediction: nextPredictionDue(snapshot.matches, predictions, results),
-    accuracy: accuracySnapshot(predictions, results),
-    stageAccuracy: stageAccuracySnapshot(predictions, results, resolvedMatches),
-    predictions,
+    nextPrediction: nextPredictionDue(snapshot.matches, predictionsForScoring, results),
+    accuracy: accuracySnapshot(predictionsForScoring, results),
+    stageAccuracy: stageAccuracySnapshot(predictionsForScoring, results, resolvedMatches),
+    predictions: predictionsForScoring,
     results,
     dailyAnalysis,
     liveCorrections,
