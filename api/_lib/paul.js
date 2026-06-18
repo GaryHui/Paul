@@ -54,9 +54,11 @@ function poissonProbabilities(aLambda, bLambda, allowDraw) {
   let away = 0;
   let bestScore = "0-0";
   let best = 0;
+  const scorelines = [];
   for (let a = 0; a <= 7; a += 1) {
     for (let b = 0; b <= 7; b += 1) {
       const p = poisson(a, aLambda) * poisson(b, bLambda);
+      scorelines.push({ score: `${a}-${b}`, probability: Number(p.toFixed(6)) });
       if (p > best) {
         best = p;
         bestScore = `${a}-${b}`;
@@ -75,6 +77,7 @@ function poissonProbabilities(aLambda, bLambda, allowDraw) {
   return {
     probabilities: normalize3Way({ home, draw, away }),
     predictedScore: bestScore,
+    topScorelines: scorelines.sort((a, b) => b.probability - a.probability).slice(0, 5),
     expectedGoals: {
       home: Number(aLambda.toFixed(2)),
       away: Number(bLambda.toFixed(2))
@@ -126,7 +129,7 @@ function sideProbability(probabilities, side) {
 }
 
 function formValue(record = {}) {
-  const direct = Number(record.form || record.rating || record.power || record.score);
+  const direct = Number(record.form || record.rating || record.power || record.score || record.formScore || record.form_score);
   if (Number.isFinite(direct) && direct) return direct;
   const wins = Number(record.wins || 0);
   const draws = Number(record.draws || 0);
@@ -134,6 +137,35 @@ function formValue(record = {}) {
   const played = wins + draws + losses;
   if (played) return (wins * 3 + draws) / played;
   return null;
+}
+
+function hoursToKickoff(match, now = new Date()) {
+  const kickoff = parseMatchTime(match);
+  if (!kickoff) return null;
+  return (kickoff.getTime() - now.getTime()) / (60 * 60 * 1000);
+}
+
+function sumUnavailablePlayers(entry = {}) {
+  return ["home", "away"].reduce((sum, side) => sum + (Array.isArray(entry?.[side]) ? entry[side].length : 0), 0);
+}
+
+function compactAdvancedMetrics(record = {}) {
+  const metrics = {
+    avgXg: Number(record.avgXg ?? record.avg_xg),
+    avgXgConceded: Number(record.avgXgConceded ?? record.avg_xg_conceded),
+    avgShots: Number(record.avgShots ?? record.avg_shots),
+    avgTeamRating: Number(record.avgTeamRating ?? record.avg_team_rating ?? record.rating ?? record.formScore ?? record.form_score),
+    pointsLastN: Number(record.pointsLastN ?? record.points_last_n ?? record.points)
+  };
+  return Object.fromEntries(
+    Object.entries(metrics)
+      .filter(([, value]) => Number.isFinite(value))
+      .map(([key, value]) => [key, Number(value.toFixed(3))])
+  );
+}
+
+function advancedMetricsAvailable(metrics = {}) {
+  return Object.keys(metrics).length > 0;
 }
 
 function buildPaulEdge(match, evidence) {
@@ -235,6 +267,105 @@ function buildPaulEdge(match, evidence) {
       : conservativeOverride && upsetScore >= 55
         ? "PAUL may override the market favorite, but only if current news confirms the model edge."
         : "PAUL should stay close to the market/blended consensus unless live news materially changes the setup."
+  };
+}
+
+function buildPreLockRehearsal(match, evidence) {
+  const now = new Date();
+  const hours = hoursToKickoff(match, now);
+  const intelligence = evidence.intelligence || evidence.market?.intelligence || {};
+  const unavailable = intelligence.unavailablePlayers || {};
+  const teamNewsCount = sumUnavailablePlayers(unavailable);
+  const hasTeamNews = teamNewsCount > 0;
+  const hasLineupContext = Boolean(
+    intelligence.formations?.home ||
+    intelligence.formations?.away ||
+    intelligence.coaches?.home?.name ||
+    intelligence.coaches?.away?.name ||
+    intelligence.managers?.home ||
+    intelligence.managers?.away
+  );
+  const teamAMetrics = compactAdvancedMetrics(evidence.form?.teamA || {});
+  const teamBMetrics = compactAdvancedMetrics(evidence.form?.teamB || {});
+  const localAdvancedData = advancedMetricsAvailable(teamAMetrics) || advancedMetricsAvailable(teamBMetrics);
+  const marketFavorite = evidence.baselines?.marketFavorite || null;
+  const blendedFavorite = evidence.baselines?.blendedFavorite || null;
+  const upsetEdge = evidence.paulEdge || null;
+  const rehearsalWindowHours = Number(process.env.PAUL_PRELOCK_NEWS_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36);
+  const nearLockWindow = hours !== null && hours >= 0 && hours <= rehearsalWindowHours;
+  const optaThin = !localAdvancedData;
+  const upsetSensitive = Boolean(upsetEdge && (upsetEdge.upsetScore >= 35 || upsetEdge.drawSqueeze || upsetEdge.conservativeOverride));
+  const searchReasons = [];
+  if (nearLockWindow) searchReasons.push("kickoff is inside the pre-lock rehearsal window");
+  if (!hasTeamNews) searchReasons.push("latest team-news/injury detail is still thin");
+  if (!hasLineupContext) searchReasons.push("lineup/tactical context is still thin");
+  if (optaThin) searchReasons.push("advanced metrics need public Opta-style confirmation");
+  if (upsetSensitive) searchReasons.push("upset/watchlist signals need stress-testing");
+  const focus = [];
+  if (!hasTeamNews) focus.push("team news");
+  if (!hasLineupContext) focus.push("likely lineups");
+  if (optaThin) focus.push("Opta-style preview metrics");
+  if (upsetSensitive) focus.push("upset path validation");
+  if (!focus.length) focus.push("late-breaking availability");
+  return {
+    status: searchReasons.length ? "needs-fresh-rehearsal" : "locally-covered",
+    hoursToKickoff: hours === null ? null : Number(hours.toFixed(2)),
+    teamNews: {
+      available: hasTeamNews,
+      unavailablePlayerCount: teamNewsCount,
+      lineupContextAvailable: hasLineupContext,
+      source: intelligence.source || evidence.market?.provider || null
+    },
+    optaReference: {
+      requested: true,
+      localAdvancedData,
+      source: intelligence.source || "local-form-and-models",
+      note: localAdvancedData
+        ? "Local advanced metrics are available. Use them as a baseline and verify whether public Opta-style previews agree."
+        : "Local advanced metrics are thin. Search public Opta-style previews before final lock if available.",
+      teamA: teamAMetrics,
+      teamB: teamBMetrics
+    },
+    upsetPreview: {
+      tier: upsetEdge?.upsetTier || null,
+      upsetScore: upsetEdge?.upsetScore ?? null,
+      underdogCode: upsetEdge?.underdogCode || null,
+      underdogName: upsetEdge?.underdogName || null,
+      marketFavorite: marketFavorite
+        ? {
+            code: marketFavorite.winnerCode,
+            name: marketFavorite.winnerName,
+            probability: marketFavorite.probability
+          }
+        : null,
+      blendedFavorite: blendedFavorite
+        ? {
+            code: blendedFavorite.winnerCode,
+            name: blendedFavorite.winnerName,
+            probability: blendedFavorite.probability
+          }
+        : null,
+      signals: Array.isArray(upsetEdge?.signals) ? upsetEdge.signals.slice(0, 6) : [],
+      recommendation: upsetEdge?.recommendation || null
+    },
+    mistakeMemory: evidence.mistakeEngine?.usable
+      ? {
+          totalReviewed: evidence.mistakeEngine.summary?.totalReviewed || 0,
+          edgeTrustDelta: evidence.mistakeEngine.calibrationAdjustment?.edgeTrustDelta || 0,
+          drawRiskDelta: evidence.mistakeEngine.calibrationAdjustment?.drawRiskDelta || 0,
+          upsetSensitivityDelta: evidence.mistakeEngine.calibrationAdjustment?.upsetSensitivityDelta || 0
+        }
+      : null,
+    searchPlan: {
+      required: Boolean(searchReasons.length && (nearLockWindow || upsetSensitive || optaThin || !hasTeamNews || !hasLineupContext)),
+      reasons: searchReasons,
+      focus,
+      suggestedQueries: [
+        `${match.teamA.name} vs ${match.teamB.name} team news injuries suspension likely lineup preview`,
+        `${match.teamA.name} vs ${match.teamB.name} Opta prediction xG xGA shots preview`,
+        `${match.teamA.name} vs ${match.teamB.name} upset preview tactical analysis underdog news`
+      ]
+    }
   };
 }
 
@@ -371,6 +502,7 @@ async function collectPredictionEvidence(match, options = {}) {
     }
   };
   evidence.paulEdge = buildPaulEdge(match, evidence);
+  evidence.preLockRehearsal = buildPreLockRehearsal(match, evidence);
   return evidence;
 }
 
@@ -386,6 +518,9 @@ function buildPrompt(payload, evidence) {
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
+    "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
+    "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
+    "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, and score volatility before your wording. Explain it when relevant, but do not invent facts.",
     knockout
       ? "This is a knockout match. The final PAUL pick must be the advancing/winning team, never DRAW. If regulation time may be level, explain that as risk but still choose one team to advance."
       : "Only treat DRAW as a serious PAUL pick when evidence.paulEdge.drawSqueeze is true; do not force a draw from a merely narrow market.",
@@ -418,7 +553,271 @@ function preventKnockoutDraw(payload, analysis = {}) {
   };
 }
 
-async function callPaul(payload) {
+function probabilitiesFromAny(raw, fallback = null) {
+  const input = raw && typeof raw === "object" ? raw : null;
+  const parse = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 0;
+  };
+  const home = parse(input?.home);
+  const draw = parse(input?.draw);
+  const away = parse(input?.away);
+  const sum = home + draw + away;
+  if (sum > 0) {
+    const asRatio = sum > 1.5
+      ? normalize3Way({ home: home / 100, draw: draw / 100, away: away / 100 })
+      : normalize3Way({ home, draw, away });
+    if (asRatio) return asRatio;
+  }
+  return fallback;
+}
+
+function probabilitiesToPercentages(probabilities) {
+  if (!probabilities) return null;
+  return {
+    home: Math.round(Number(probabilities.home || 0) * 100),
+    draw: Math.round(Number(probabilities.draw || 0) * 100),
+    away: Math.round(Number(probabilities.away || 0) * 100)
+  };
+}
+
+function sideFromCode(payload, code) {
+  const value = String(code || "").toUpperCase();
+  if (value === String(payload.teamA?.code || "").toUpperCase()) return "home";
+  if (value === String(payload.teamB?.code || "").toUpperCase()) return "away";
+  if (value === "DRAW") return "draw";
+  return null;
+}
+
+function blendToward(anchor, target, factor) {
+  const use = clamp(Number(factor || 0), 0, 0.35);
+  if (!anchor || !target || use <= 0) return anchor;
+  return normalize3Way({
+    home: Number(anchor.home || 0) * (1 - use) + Number(target.home || 0) * use,
+    draw: Number(anchor.draw || 0) * (1 - use) + Number(target.draw || 0) * use,
+    away: Number(anchor.away || 0) * (1 - use) + Number(target.away || 0) * use
+  });
+}
+
+function shiftProbability(probabilities, fromSide, toSide, delta) {
+  const next = { ...probabilities };
+  if (!fromSide || !toSide || fromSide === toSide) return next;
+  const shift = clamp(Number(delta || 0), 0, Number(next[fromSide] || 0));
+  if (shift <= 0) return next;
+  next[fromSide] = Number(next[fromSide] || 0) - shift;
+  next[toSide] = Number(next[toSide] || 0) + shift;
+  return normalize3Way(next);
+}
+
+function rebalanceDraw(probabilities, delta, allowDraw) {
+  if (!allowDraw || !Number.isFinite(Number(delta))) return probabilities;
+  const next = {
+    home: Number(probabilities.home || 0),
+    draw: Number(probabilities.draw || 0),
+    away: Number(probabilities.away || 0)
+  };
+  const targetDraw = clamp(next.draw + Number(delta || 0), 0.08, 0.38);
+  const diff = targetDraw - next.draw;
+  if (Math.abs(diff) < 0.0005) return probabilities;
+  const homeAwayTotal = Math.max(0.0001, next.home + next.away);
+  next.home = clamp(next.home - diff * (next.home / homeAwayTotal), 0.01, 0.9);
+  next.away = clamp(next.away - diff * (next.away / homeAwayTotal), 0.01, 0.9);
+  next.draw = targetDraw;
+  return normalize3Way(next);
+}
+
+function scoreParts(score) {
+  const match = String(score || "").match(/(\d+)\s*-\s*(\d+)/);
+  if (!match) return null;
+  return { home: Number(match[1]), away: Number(match[2]) };
+}
+
+function calibratedPredictedScore(evidence, adjustment = {}) {
+  const base = evidence.poisson?.predictedScore || null;
+  const scenarios = Array.isArray(evidence.poisson?.topScorelines) ? evidence.poisson.topScorelines : [];
+  if (!base || !scenarios.length) return base;
+  const baseParts = scoreParts(base);
+  if (!baseParts) return base;
+  const baseTotal = baseParts.home + baseParts.away;
+  const goalDelta = Number(adjustment.goalVolatilityDelta || 0);
+  if (goalDelta >= 0.008) {
+    return scenarios.find((item) => {
+      const parts = scoreParts(item.score);
+      return parts && (parts.home + parts.away) >= baseTotal + 1;
+    })?.score || base;
+  }
+  if (goalDelta <= -0.008) {
+    return scenarios.find((item) => {
+      const parts = scoreParts(item.score);
+      return parts && (parts.home + parts.away) <= Math.max(0, baseTotal - 1);
+    })?.score || base;
+  }
+  return base;
+}
+
+function applyMistakeCalibration(payload, evidence, baseProbabilities) {
+  const adjustment = evidence.mistakeEngine?.calibrationAdjustment || null;
+  if (!evidence.mistakeEngine?.usable || !adjustment) {
+    return {
+      probabilities: baseProbabilities,
+      calibrationLayer: {
+        version: "kv-calibration-v1",
+        applied: false,
+        source: evidence.mistakeEngine?.source || "paul:mistake-memory:v1",
+        sampleSize: evidence.mistakeEngine?.calibrationAdjustment?.sampleSize || 0
+      }
+    };
+  }
+  const allowDraw = payload.round === "Group Stage";
+  let probabilities = { ...baseProbabilities };
+  const notes = [];
+  const marketFactor = clamp(
+    Math.max(0, Number(adjustment.marketShrinkDelta || 0)) +
+      Math.max(0, -Number(adjustment.edgeTrustDelta || 0)) * 0.8,
+    0,
+    0.08
+  );
+  if (marketFactor > 0 && evidence.market?.probabilities) {
+    probabilities = blendToward(probabilities, evidence.market.probabilities, marketFactor * 3.5);
+    notes.push(`market shrink ${marketFactor.toFixed(3)}`);
+  }
+  if (allowDraw && Number(adjustment.drawRiskDelta || 0) !== 0) {
+    probabilities = rebalanceDraw(probabilities, Number(adjustment.drawRiskDelta || 0), allowDraw);
+    notes.push(`draw risk ${Number(adjustment.drawRiskDelta || 0).toFixed(3)}`);
+  }
+  const marketFavoriteSide = evidence.baselines?.marketFavorite?.side || null;
+  const underdogSide = sideFromCode(payload, evidence.paulEdge?.underdogCode || null);
+  const upsetShift = Number(adjustment.upsetSensitivityDelta || 0);
+  if (underdogSide && marketFavoriteSide && underdogSide !== marketFavoriteSide && upsetShift !== 0) {
+    if (upsetShift > 0) {
+      probabilities = shiftProbability(probabilities, marketFavoriteSide, underdogSide, clamp(upsetShift, 0, 0.03));
+      notes.push(`upset sensitivity +${upsetShift.toFixed(3)}`);
+    } else {
+      probabilities = shiftProbability(probabilities, underdogSide, marketFavoriteSide, clamp(Math.abs(upsetShift), 0, 0.03));
+      notes.push(`upset sensitivity ${upsetShift.toFixed(3)}`);
+    }
+  }
+  return {
+    probabilities: normalize3Way(probabilities),
+    calibrationLayer: {
+      version: "kv-calibration-v1",
+      applied: true,
+      source: evidence.mistakeEngine.source || "paul:mistake-memory:v1",
+      sampleSize: Number(adjustment.sampleSize || 0),
+      adjustments: {
+        edgeTrustDelta: Number(adjustment.edgeTrustDelta || 0),
+        marketShrinkDelta: Number(adjustment.marketShrinkDelta || 0),
+        drawRiskDelta: Number(adjustment.drawRiskDelta || 0),
+        upsetSensitivityDelta: Number(adjustment.upsetSensitivityDelta || 0),
+        scoreConfidenceDelta: Number(adjustment.scoreConfidenceDelta || 0),
+        goalVolatilityDelta: Number(adjustment.goalVolatilityDelta || 0)
+      },
+      before: probabilitiesToPercentages(baseProbabilities),
+      after: probabilitiesToPercentages(normalize3Way(probabilities)),
+      notes
+    }
+  };
+}
+
+function defaultEvidenceUsed(evidence) {
+  const used = [];
+  if (evidence.market?.probabilities) used.push("market consensus odds");
+  if (evidence.ratings?.probabilities) used.push("team ratings / Elo baseline");
+  if (evidence.poisson?.probabilities) used.push("attack-defense score model");
+  if (evidence.form?.teamA && evidence.form?.teamB) used.push("recent form");
+  if (evidence.intelligence || evidence.market?.intelligence) used.push("team news and availability");
+  if (evidence.mistakeEngine?.usable) used.push("mistake engine calibration memory");
+  if (evidence.searchFallback) used.push("fresh public news/search validation");
+  return used;
+}
+
+function deterministicAnalysis(payload, evidence) {
+  const allowDraw = payload.round === "Group Stage";
+  const uncalibratedProbabilities = probabilitiesFromAny(
+    evidence.modelBlend,
+    evidence.market?.probabilities ||
+      evidence.ratings?.probabilities ||
+      evidence.poisson?.probabilities ||
+      normalize3Way({ home: 0.5, draw: allowDraw ? 0.2 : 0, away: 0.5 })
+  );
+  const calibration = applyMistakeCalibration(payload, evidence, uncalibratedProbabilities);
+  const baseProbabilities = calibration.probabilities || uncalibratedProbabilities;
+  let side = favoriteFromProbabilities(payload, baseProbabilities)?.side ||
+    evidence.baselines?.marketFavorite?.side ||
+    evidence.baselines?.blendedFavorite?.side ||
+    evidence.baselines?.ratingFavorite?.side ||
+    evidence.baselines?.poissonFavorite?.side ||
+    "home";
+  if (allowDraw && evidence.paulEdge?.drawSqueeze) {
+    side = "draw";
+  } else if (evidence.paulEdge?.conservativeOverride && Number(evidence.paulEdge?.upsetScore || 0) >= 55) {
+    side = evidence.baselines?.blendedFavorite?.side || side;
+  }
+  if (!allowDraw && side === "draw") {
+    side = favoriteFromProbabilities(
+      payload,
+      normalize3Way({ home: Number(baseProbabilities.home || 0), draw: 0, away: Number(baseProbabilities.away || 0) })
+    )?.side || "home";
+  }
+  const pick = side === "home"
+    ? payload.teamA
+    : side === "away"
+      ? payload.teamB
+      : { code: "DRAW", name: "Draw" };
+  const pickProbability = Number(sideProbability(baseProbabilities, side) || 0);
+  const marketPickProbability = Number(sideProbability(evidence.market?.probabilities, side) || 0);
+  const confidenceAdjustment = Number(evidence.mistakeEngine?.calibrationAdjustment?.scoreConfidenceDelta || 0) * 100;
+  const confidence = clamp(Math.round(Math.max(pickProbability, marketPickProbability) * 100 + confidenceAdjustment), 50, 88);
+  return {
+    winnerCode: pick.code,
+    winnerName: pick.name,
+    confidence,
+    predictedScore: calibratedPredictedScore(evidence, evidence.mistakeEngine?.calibrationAdjustment) || null,
+    probabilities: probabilitiesToPercentages(baseProbabilities),
+    evidenceUsed: defaultEvidenceUsed(evidence),
+    marketBaseline: evidence.baselines?.marketFavorite
+      ? `${evidence.baselines.marketFavorite.winnerName} ${Math.round(Number(evidence.baselines.marketFavorite.probability || 0) * 100)}%`
+      : null,
+    ratingBaseline: evidence.baselines?.ratingFavorite
+      ? `${evidence.baselines.ratingFavorite.winnerName} ${Math.round(Number(evidence.baselines.ratingFavorite.probability || 0) * 100)}%`
+      : null,
+    calibrationLayer: calibration.calibrationLayer,
+    calibrationNote: calibration.calibrationLayer?.applied
+      ? `Mistake-engine KV calibration is auto-applied before the final pick. ${calibration.calibrationLayer.notes?.join("; ") || "No extra note."}`
+      : evidence.paulEdge?.conservativeOverride
+        ? "Pick is anchored to the protected PAUL evidence layer, with the upset path allowed only through the conservative override gate."
+        : "Pick stays close to the protected market/blended evidence layer unless the draw/upset gates are explicitly open."
+  };
+}
+
+function mergeAnalysisWithEvidence(payload, evidence, analysis = {}) {
+  const anchored = deterministicAnalysis(payload, evidence);
+  const aiProbabilities = probabilitiesFromAny(analysis.probabilities, null);
+  const finalProbabilities = probabilitiesToPercentages(aiProbabilities || probabilitiesFromAny(anchored.probabilities, null));
+  const finalEvidenceUsed = Array.from(new Set([
+    ...defaultEvidenceUsed(evidence),
+    ...(Array.isArray(analysis.evidenceUsed) ? analysis.evidenceUsed : [])
+  ])).filter(Boolean);
+  const aiWinnerCode = String(analysis.winnerCode || analysis.winner || "").toUpperCase();
+  const winnerOverridden = Boolean(aiWinnerCode && aiWinnerCode !== String(anchored.winnerCode).toUpperCase());
+  return {
+    ...analysis,
+    winnerCode: anchored.winnerCode,
+    winnerName: anchored.winnerName,
+    confidence: anchored.confidence,
+    predictedScore: analysis.predictedScore || anchored.predictedScore,
+    probabilities: finalProbabilities,
+    evidenceUsed: finalEvidenceUsed,
+    marketBaseline: analysis.marketBaseline || anchored.marketBaseline,
+    ratingBaseline: analysis.ratingBaseline || anchored.ratingBaseline,
+    calibrationLayer: anchored.calibrationLayer,
+    calibrationNote: winnerOverridden
+      ? `${anchored.calibrationNote} LLM wording was normalized back to the evidence-layer pick.`
+      : (analysis.calibrationNote || anchored.calibrationNote)
+  };
+}
+
+async function callPaul(payload, options = {}) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
     const error = new Error("PAUL AI is not connected: missing DASHSCOPE_API_KEY.");
@@ -426,8 +825,15 @@ async function callPaul(payload) {
     throw error;
   }
   const evidence = await collectPredictionEvidence(payload);
-  const useSearchFallback = !evidence.market || !evidence.hasPrimaryEvidence || process.env.QWEN_FORCE_SEARCH === "1";
+  const useSearchFallback = (
+    !evidence.market ||
+    !evidence.hasPrimaryEvidence ||
+    options.forceSearch ||
+    evidence.preLockRehearsal?.searchPlan?.required ||
+    process.env.QWEN_FORCE_SEARCH === "1"
+  );
   evidence.searchFallback = useSearchFallback;
+  evidence.searchMode = options.forceSearch ? "forced-live-news-refresh" : (useSearchFallback ? "conditional-search" : "local-evidence-first");
   const requestBody = {
     model: qwenModel,
     messages: [
@@ -461,8 +867,10 @@ async function callPaul(payload) {
   } catch {
     analysis = { reasoning: content };
   }
+  analysis = mergeAnalysisWithEvidence(payload, evidence, analysis);
   analysis = preventKnockoutDraw(payload, analysis);
-  return { model: "PAUL", evidence, analysis };
+  evidence.calibrationLayer = analysis.calibrationLayer || null;
+  return { model: "PAUL Edge Engine v4.1 + KV Calibration", evidence, analysis };
 }
 
 function loadSnapshot() {
