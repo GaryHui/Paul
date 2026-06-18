@@ -164,6 +164,7 @@ Object.assign(languageCopy.en, {
   afterFinal: "After final",
   noComparison: "No comparison",
   marketPending: "Market pending",
+  driftReason: "Drift reason",
   ratingsLoaded: "team ratings loaded",
   ratingsMissingStatus: "team ratings missing"
 });
@@ -188,6 +189,7 @@ Object.assign(languageCopy.zh, {
   afterFinal: "赛后计算",
   noComparison: "暂无对比",
   marketPending: "等待市场数据",
+  driftReason: "漂移原因",
   ratingsLoaded: "球队评级已加载",
   ratingsMissingStatus: "球队评级缺失"
 });
@@ -2197,12 +2199,38 @@ function liveCorrectionMarkup(match) {
     <div class="daily-read__drift ${correction.drifted ? "is-drifted" : "is-aligned"}">
       <span>KV live correction</span>
       <strong>${escapeHtml(official.winnerName || tr("pending"))} -> ${escapeHtml(live.winnerName || tr("pending"))}${live.probability ? ` · ${dailyReadPercent(live.probability)}` : ""}</strong>
-      ${correction.scoreChanged ? `<p>${tr("predictedScore")}: ${escapeHtml(official.predictedScore || "N/A")} -> ${escapeHtml(live.predictedScore || "N/A")}</p>` : `<p>${tr("predictedScore")}: ${escapeHtml(live.predictedScore || official.predictedScore || "N/A")}</p>`}
+      <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(official.predictedScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(live.predictedScore || official.predictedScore || "N/A")}</p>
       ${live.probabilities ? `<p>${escapeHtml(homeName)}: ${dailyReadPercent(live.probabilities.home)} · ${tr("draw")}: ${dailyReadPercent(live.probabilities.draw)} · ${escapeHtml(awayName)}: ${dailyReadPercent(live.probabilities.away)}</p>` : ""}
-      <p>${escapeHtml(correction.reason || "KV memory and latest cached evidence are adjusting the live lab estimate.")}</p>
+      <p>${tr("driftReason")}: ${escapeHtml(correction.reason || "KV memory and latest cached evidence are adjusting the live lab estimate.")}</p>
       <p>Updated ${escapeHtml(updated)} · evidence ${escapeHtml(freshness)}. News refresh will replace this when Daily PAUL Read completes.</p>
     </div>
   `;
+}
+
+function scoreFromScenarios(scenarios = []) {
+  return scenarios.find((item) => item?.score)?.score || null;
+}
+
+function driftReasonText(drift, read) {
+  const reasons = [];
+  if (drift?.winnerVolatility) {
+    reasons.push(`winner gap ${percentText(drift.winnerVolatility.gap)} (${drift.winnerVolatility.label || "watch"})`);
+  }
+  if (drift?.scoreScenarios?.length) {
+    reasons.push(`top score paths ${scoreScenarioText(drift.scoreScenarios)}`);
+  }
+  if (drift?.rehearsal?.searchRequired) {
+    reasons.push(`fresh news/lineup/Opta review: ${listText(drift.rehearsal.focus || []) || "required"}`);
+  } else if (drift?.rehearsal?.focus?.length) {
+    reasons.push(`replay focus ${listText(drift.rehearsal.focus)}`);
+  }
+  if (read?.pick?.calibrationLayer?.applied) {
+    reasons.push("KV calibration applied");
+  }
+  if (read?.summary) {
+    reasons.push(String(read.summary).slice(0, 180));
+  }
+  return reasons.filter(Boolean).join("; ") || (drift?.drifted ? tr("postLockDriftCopy") : tr("lockAlignedCopy"));
 }
 
 function liveDriftFor(match, read) {
@@ -2213,7 +2241,8 @@ function liveDriftFor(match, read) {
   const normalizedOfficial = String(officialCode).toUpperCase();
   const drifted = normalizedOfficial !== liveCode;
   const officialScore = official?.analysis?.predictedScore || official?.analysis?.score || null;
-  const liveScore = read?.pick?.predictedScore || null;
+  const scoreScenarios = Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 3) : [];
+  const liveScore = read?.pick?.predictedScore || scoreFromScenarios(scoreScenarios) || null;
   const scoreChanged = Boolean(officialScore && liveScore && String(officialScore).trim() !== String(liveScore).trim());
   return {
     drifted,
@@ -2226,7 +2255,7 @@ function liveDriftFor(match, read) {
     officialScore,
     liveScore,
     winnerVolatility: read?.lab?.winnerVolatility || null,
-    scoreScenarios: Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 3) : [],
+    scoreScenarios,
     rehearsal: read?.lab?.rehearsal || null
   };
 }
@@ -2283,11 +2312,11 @@ function renderDailyRead(match) {
       <div class="daily-read__drift ${drift.drifted ? "is-drifted" : "is-aligned"}">
         <span>${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")}</span>
         <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
-        ${drift.scoreChanged ? `<p>${tr("predictedScore")}: ${escapeHtml(drift.officialScore || "N/A")} -> ${escapeHtml(drift.liveScore || "N/A")}</p>` : ""}
+        <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(drift.officialScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(drift.liveScore || "N/A")}</p>
         ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
         ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
         ${drift.rehearsal ? `<p>Replay room: ${drift.rehearsal.searchRequired ? "refreshing news / lineups / Opta-style preview" : "local pre-lock rehearsal covered"}${drift.rehearsal.focus?.length ? ` · ${escapeHtml(listText(drift.rehearsal.focus))}` : ""}</p>` : ""}
-        <p>${drift.drifted ? tr("postLockDriftCopy") : tr("lockAlignedCopy")}</p>
+        <p>${tr("driftReason")}: ${escapeHtml(driftReasonText(drift, read))}</p>
       </div>
     ` : ""}
     ${read.lab?.rehearsal ? `
@@ -2511,7 +2540,7 @@ function renderPublicTraceUnsafe() {
         const winnerVolatility = daily?.lab?.winnerVolatility ? ` · win drift ${escapeHtml(daily.lab.winnerVolatility.label)} ${percentText(daily.lab.winnerVolatility.gap)}` : "";
         const scorePath = daily?.lab?.scoreScenarios?.length ? ` · score ${escapeHtml(scoreScenarioText(daily.lab.scoreScenarios))}` : "";
         const driftLine = drift
-          ? `${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")} · ${escapeHtml(drift.officialName)} -> ${escapeHtml(drift.liveName)}${drift.scoreChanged ? ` · ${escapeHtml(drift.officialScore || "-")} -> ${escapeHtml(drift.liveScore || "-")}` : ""}`
+          ? `${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")} · ${escapeHtml(drift.officialName)} -> ${escapeHtml(drift.liveName)} · score ${escapeHtml(drift.officialScore || "-")} -> ${escapeHtml(drift.liveScore || "-")}`
           : "";
         return `
           <div class="trace-row ${settledClass}" role="row">
