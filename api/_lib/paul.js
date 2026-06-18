@@ -270,6 +270,78 @@ function buildPaulEdge(match, evidence) {
   };
 }
 
+function buildUniversalOverlay(match, evidence) {
+  const marketProbabilities = evidence.market?.probabilities || null;
+  const blendedProbabilities = evidence.modelBlend || null;
+  const marketFavorite = evidence.baselines?.marketFavorite || null;
+  const blendedFavorite = evidence.baselines?.blendedFavorite || favoriteFromProbabilities(match, blendedProbabilities);
+  if (!blendedProbabilities || !blendedFavorite) return null;
+  const marketSorted = marketProbabilities
+    ? ["home", "draw", "away"].sort((a, b) => sideProbability(marketProbabilities, b) - sideProbability(marketProbabilities, a))
+    : [];
+  const marketSide = marketFavorite?.side || marketSorted[0] || null;
+  const marketTopProbability = marketSide ? sideProbability(marketProbabilities, marketSide) : 0;
+  const marketMargin = marketSorted.length >= 2
+    ? sideProbability(marketProbabilities, marketSorted[0]) - sideProbability(marketProbabilities, marketSorted[1])
+    : null;
+  const candidateSide = blendedFavorite.side;
+  const candidateProbability = sideProbability(blendedProbabilities, candidateSide);
+  const marketCandidateProbability = sideProbability(marketProbabilities, candidateSide);
+  const candidateEdge = Number((candidateProbability - marketCandidateProbability).toFixed(3));
+  const ratingSide = evidence.baselines?.ratingFavorite?.side || null;
+  const poissonSide = evidence.baselines?.poissonFavorite?.side || null;
+  const support = [ratingSide, poissonSide, candidateSide].filter((side) => side && side === candidateSide).length;
+  const candidateOdds = candidateSide === "home"
+    ? Number(evidence.market?.odds?.home)
+    : candidateSide === "away"
+      ? Number(evidence.market?.odds?.away)
+      : Number(evidence.market?.odds?.draw);
+  const signals = [];
+  if (support >= 2) signals.push("rating/score/blend support");
+  if (marketMargin !== null && marketMargin <= 0.12) signals.push("market margin narrow");
+  if (candidateEdge >= 0.035) signals.push("model probability above market");
+  if (Number.isFinite(candidateOdds) && candidateOdds >= 2.7) signals.push("market price leaves upset value");
+
+  let override = false;
+  if (marketTopProbability >= 0.62) {
+    signals.push("market favorite too strong for overlay");
+  } else if (candidateSide === "draw" && match.round === "Group Stage") {
+    override = Boolean(
+      marketMargin !== null &&
+      marketMargin <= 0.075 &&
+      marketCandidateProbability >= 0.285 &&
+      candidateEdge >= 0.015 &&
+      support >= 2
+    );
+  } else if (marketSide && candidateSide && candidateSide !== marketSide) {
+    override = Boolean(
+      marketMargin !== null &&
+      marketMargin <= 0.14 &&
+      candidateEdge >= 0.035 &&
+      support >= 2 &&
+      (!Number.isFinite(candidateOdds) || candidateOdds >= 2.7)
+    );
+  }
+
+  return {
+    strategyId: "paul-universal-overlay-v1",
+    pickSide: candidateSide,
+    pickCode: sideCode(match, candidateSide),
+    pickName: sideName(match, candidateSide),
+    override,
+    probability: Number(candidateProbability.toFixed(3)),
+    marketProbability: Number((marketCandidateProbability || 0).toFixed(3)),
+    edge: candidateEdge,
+    marketPickSide: marketSide,
+    marketMargin: marketMargin === null ? null : Number(marketMargin.toFixed(3)),
+    support,
+    signals,
+    note: override
+      ? "Universal overlay is allowed to move PAUL away from the market anchor because model support and price edge are both present."
+      : "Universal overlay reviewed, but PAUL remains anchored unless the model edge clears the override gate."
+  };
+}
+
 function buildPreLockRehearsal(match, evidence) {
   const now = new Date();
   const hours = hoursToKickoff(match, now);
@@ -502,6 +574,7 @@ async function collectPredictionEvidence(match, options = {}) {
     }
   };
   evidence.paulEdge = buildPaulEdge(match, evidence);
+  evidence.universal = buildUniversalOverlay(match, evidence);
   evidence.preLockRehearsal = buildPreLockRehearsal(match, evidence);
   return evidence;
 }
@@ -514,10 +587,11 @@ function buildPrompt(payload, evidence) {
     needsSearch
       ? "Local market odds or model evidence is missing. Use web search to find recent public information, team news, likely lineups, injuries, form, and expert previews before making the prediction."
       : "Base the prediction on the real evidence object first, and use web search only to supplement the latest context.",
-    "Use this decision order: 1) market-implied probability as the anchor, 2) Elo/SPI-style rating strength, 3) attack/defense score model, 4) recent form and availability, 5) tactical upset path.",
+    "Use this decision order: 1) market-implied probability as the anchor, 2) Elo/SPI-style rating strength, 3) attack/defense score model, 4) universal overlay gate, 5) recent form and availability, 6) tactical upset path.",
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
+    "Use evidence.universal as PAUL's cross-model overlay. It may override the market anchor only when universal.override is true; otherwise mention it as reviewed but not decisive.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
     "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
     "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, and score volatility before your wording. Explain it when relevant, but do not invent facts.",
@@ -727,6 +801,7 @@ function defaultEvidenceUsed(evidence) {
   if (evidence.form?.teamA && evidence.form?.teamB) used.push("recent form");
   if (evidence.intelligence || evidence.market?.intelligence) used.push("team news and availability");
   if (evidence.mistakeEngine?.usable) used.push("mistake engine calibration memory");
+  if (evidence.universal) used.push("universal cross-model overlay");
   if (evidence.searchFallback) used.push("fresh public news/search validation");
   return used;
 }
@@ -750,6 +825,8 @@ function deterministicAnalysis(payload, evidence) {
     "home";
   if (allowDraw && evidence.paulEdge?.drawSqueeze) {
     side = "draw";
+  } else if (evidence.universal?.override && evidence.universal?.pickSide) {
+    side = evidence.universal.pickSide;
   } else if (evidence.paulEdge?.conservativeOverride && Number(evidence.paulEdge?.upsetScore || 0) >= 55) {
     side = evidence.baselines?.blendedFavorite?.side || side;
   }
@@ -784,6 +861,8 @@ function deterministicAnalysis(payload, evidence) {
     calibrationLayer: calibration.calibrationLayer,
     calibrationNote: calibration.calibrationLayer?.applied
       ? `Mistake-engine KV calibration is auto-applied before the final pick. ${calibration.calibrationLayer.notes?.join("; ") || "No extra note."}`
+      : evidence.universal?.override
+        ? `Universal overlay moved PAUL toward ${evidence.universal.pickName} because ${evidence.universal.signals?.join("; ") || "cross-model support cleared the gate"}.`
       : evidence.paulEdge?.conservativeOverride
         ? "Pick is anchored to the protected PAUL evidence layer, with the upset path allowed only through the conservative override gate."
         : "Pick stays close to the protected market/blended evidence layer unless the draw/upset gates are explicitly open."

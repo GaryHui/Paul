@@ -2193,12 +2193,13 @@ function liveCorrectionMarkup(match) {
   const awayName = teams[resolved.bCode]?.name || slotLabel(match, "b");
   const live = correction.live || {};
   const official = correction.official || {};
+  const officialProbability = official.probability || official.confidence || null;
   const updated = correction.generatedAt ? formatProofTime(correction.generatedAt) : tr("unknown");
   const freshness = correction.freshness?.evidenceUpdatedAt ? formatProofTime(correction.freshness.evidenceUpdatedAt) : tr("pending");
   return `
     <div class="daily-read__drift ${correction.drifted ? "is-drifted" : "is-aligned"}">
       <span>KV live correction</span>
-      <strong>${escapeHtml(official.winnerName || tr("pending"))} -> ${escapeHtml(live.winnerName || tr("pending"))}${live.probability ? ` · ${dailyReadPercent(live.probability)}` : ""}</strong>
+      <strong>${tr("officialLock")}: ${escapeHtml(official.winnerName || tr("pending"))}${officialProbability ? ` ${dailyReadPercent(officialProbability)}` : ""} -> ${tr("liveEstimate")}: ${escapeHtml(live.winnerName || tr("pending"))}${live.probability ? ` ${dailyReadPercent(live.probability)}` : ""}</strong>
       <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(official.predictedScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(live.predictedScore || official.predictedScore || "N/A")}</p>
       ${live.probabilities ? `<p>${escapeHtml(homeName)}: ${dailyReadPercent(live.probabilities.home)} · ${tr("draw")}: ${dailyReadPercent(live.probabilities.draw)} · ${escapeHtml(awayName)}: ${dailyReadPercent(live.probabilities.away)}</p>` : ""}
       <p>${tr("driftReason")}: ${escapeHtml(correction.reason || "KV memory and latest cached evidence are adjusting the live lab estimate.")}</p>
@@ -2227,9 +2228,9 @@ function driftReasonText(drift, read) {
   if (read?.pick?.calibrationLayer?.applied) {
     reasons.push("KV calibration applied");
   }
-  if (read?.summary) {
-    reasons.push(String(read.summary).slice(0, 180));
-  }
+  if (read?.summary) reasons.push(String(read.summary).trim());
+  if (read?.evidenceUsed?.length) reasons.push(`evidence ${listText(read.evidenceUsed.slice(0, 6))}`);
+  if (drift?.rehearsal?.suggestedQueries?.length) reasons.push(`news checks ${listText(drift.rehearsal.suggestedQueries.slice(0, 2))}`);
   return reasons.filter(Boolean).join("; ") || (drift?.drifted ? tr("postLockDriftCopy") : tr("lockAlignedCopy"));
 }
 
@@ -2241,6 +2242,7 @@ function liveDriftFor(match, read) {
   const normalizedOfficial = String(officialCode).toUpperCase();
   const drifted = normalizedOfficial !== liveCode;
   const officialScore = official?.analysis?.predictedScore || official?.analysis?.score || null;
+  const officialConfidence = official?.analysis?.confidence || null;
   const scoreScenarios = Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 3) : [];
   const liveScore = read?.pick?.predictedScore || scoreFromScenarios(scoreScenarios) || null;
   const scoreChanged = Boolean(officialScore && liveScore && String(officialScore).trim() !== String(liveScore).trim());
@@ -2249,6 +2251,7 @@ function liveDriftFor(match, read) {
     scoreChanged,
     officialCode: normalizedOfficial,
     officialName: teamNameForCode(normalizedOfficial, match),
+    officialConfidence,
     liveCode,
     liveName: teamNameForCode(liveCode, match),
     liveConfidence: read.pick?.confidence || null,
@@ -2311,7 +2314,7 @@ function renderDailyRead(match) {
     ${drift ? `
       <div class="daily-read__drift ${drift.drifted ? "is-drifted" : "is-aligned"}">
         <span>${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")}</span>
-        <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
+        <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)}${drift.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : ""} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
         <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(drift.officialScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(drift.liveScore || "N/A")}</p>
         ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
         ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
@@ -2539,8 +2542,10 @@ function renderPublicTraceUnsafe() {
         const replayRoom = daily?.lab?.rehearsal?.focus?.length ? ` · replay ${escapeHtml(listText(daily.lab.rehearsal.focus))}` : "";
         const winnerVolatility = daily?.lab?.winnerVolatility ? ` · win drift ${escapeHtml(daily.lab.winnerVolatility.label)} ${percentText(daily.lab.winnerVolatility.gap)}` : "";
         const scorePath = daily?.lab?.scoreScenarios?.length ? ` · score ${escapeHtml(scoreScenarioText(daily.lab.scoreScenarios))}` : "";
+        const driftOfficialPct = drift?.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : "";
+        const driftLivePct = drift?.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : "";
         const driftLine = drift
-          ? `${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")} · ${escapeHtml(drift.officialName)} -> ${escapeHtml(drift.liveName)} · score ${escapeHtml(drift.officialScore || "-")} -> ${escapeHtml(drift.liveScore || "-")}`
+          ? `${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")} · ${escapeHtml(drift.officialName)}${driftOfficialPct} -> ${escapeHtml(drift.liveName)}${driftLivePct} · score ${escapeHtml(drift.officialScore || "-")} -> ${escapeHtml(drift.liveScore || "-")}`
           : "";
         return `
           <div class="trace-row ${settledClass}" role="row">

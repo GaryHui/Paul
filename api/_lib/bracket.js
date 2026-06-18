@@ -1,4 +1,18 @@
+const fs = require("fs");
+const path = require("path");
+
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
+const dataDir = path.join(__dirname, "..", "..", "data");
+
+let ratingCache = null;
+
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
 
 function parseMatchTime(match) {
   const date = match?.kickoffAt ? new Date(match.kickoffAt) : new Date(`${match.date} 20:00:00 GMT+0000`);
@@ -184,8 +198,126 @@ function isCorrectPick(pick, winner) {
   return String(pick || "").toUpperCase() === String(winner || "").toUpperCase();
 }
 
-function baselineCode(prediction, key) {
-  return prediction?.evidence?.baselines?.[key]?.winnerCode || prediction?.proof?.payload?.evidence?.baselines?.[key]?.winnerCode || null;
+function retroRatings() {
+  if (!ratingCache) ratingCache = readJson(path.join(dataDir, "team-ratings.json"), {});
+  return ratingCache;
+}
+
+function findRatingRecord(code) {
+  const ratings = retroRatings();
+  if (!code) return null;
+  if (Array.isArray(ratings)) return ratings.find((item) => item.code === code || item.teamCode === code) || null;
+  return ratings[code] || null;
+}
+
+function normalize3Way(probs) {
+  const home = Number(probs?.home || probs?.a || 0);
+  const draw = Number(probs?.draw || 0);
+  const away = Number(probs?.away || probs?.b || 0);
+  const sum = home + draw + away;
+  if (!sum) return null;
+  return { home: home / sum, draw: draw / sum, away: away / sum };
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function eloProbabilities(aRating, bRating, allowDraw) {
+  const diff = Number(aRating) - Number(bRating);
+  const homeRaw = 1 / (1 + 10 ** (-diff / 400));
+  const draw = allowDraw ? clamp(0.28 - Math.abs(diff) / 2400, 0.12, 0.3) : 0;
+  return normalize3Way({
+    home: homeRaw * (1 - draw),
+    draw,
+    away: (1 - homeRaw) * (1 - draw)
+  });
+}
+
+function poisson(k, lambda) {
+  let factorial = 1;
+  for (let i = 2; i <= k; i += 1) factorial *= i;
+  return (Math.exp(-lambda) * lambda ** k) / factorial;
+}
+
+function poissonProbabilities(aLambda, bLambda, allowDraw) {
+  let home = 0;
+  let draw = 0;
+  let away = 0;
+  for (let a = 0; a <= 7; a += 1) {
+    for (let b = 0; b <= 7; b += 1) {
+      const p = poisson(a, aLambda) * poisson(b, bLambda);
+      if (a > b) home += p;
+      else if (a === b) draw += p;
+      else away += p;
+    }
+  }
+  if (!allowDraw) {
+    home += draw / 2;
+    away += draw / 2;
+    draw = 0;
+  }
+  return normalize3Way({ home, draw, away });
+}
+
+function blendModelProbabilities(models) {
+  const usable = models.filter((model) => model.probabilities && model.weight > 0);
+  const totalWeight = usable.reduce((sum, model) => sum + model.weight, 0);
+  if (!totalWeight) return null;
+  return normalize3Way({
+    home: usable.reduce((sum, model) => sum + model.probabilities.home * model.weight, 0) / totalWeight,
+    draw: usable.reduce((sum, model) => sum + model.probabilities.draw * model.weight, 0) / totalWeight,
+    away: usable.reduce((sum, model) => sum + model.probabilities.away * model.weight, 0) / totalWeight
+  });
+}
+
+function favoriteCodeFromProbabilities(match, probabilities) {
+  if (!match?.teamA?.code || !match?.teamB?.code || !probabilities) return null;
+  const candidates = [
+    { side: "home", code: match.teamA.code, probability: probabilities.home },
+    { side: "away", code: match.teamB.code, probability: probabilities.away }
+  ];
+  if (match.round === "Group Stage") candidates.push({ side: "draw", code: "DRAW", probability: probabilities.draw });
+  candidates.sort((a, b) => Number(b.probability || 0) - Number(a.probability || 0));
+  return candidates[0]?.code || null;
+}
+
+function retroModelProbabilities(match) {
+  if (!match?.teamA?.code || !match?.teamB?.code) return { rating: null, poisson: null };
+  const ratingA = findRatingRecord(match.teamA.code);
+  const ratingB = findRatingRecord(match.teamB.code);
+  const allowDraw = match.round === "Group Stage";
+  const rating = ratingA?.elo && ratingB?.elo ? eloProbabilities(ratingA.elo, ratingB.elo, allowDraw) : null;
+  let score = null;
+  if (ratingA?.attack && ratingA?.defense && ratingB?.attack && ratingB?.defense) {
+    const base = allowDraw ? 1.22 : 1.28;
+    const aLambda = clamp(base * Number(ratingA.attack) / Math.max(0.1, Number(ratingB.defense)), 0.25, 3.5);
+    const bLambda = clamp(base * Number(ratingB.attack) / Math.max(0.1, Number(ratingA.defense)), 0.25, 3.5);
+    score = poissonProbabilities(aLambda, bLambda, allowDraw);
+  }
+  return { rating, poisson: score };
+}
+
+function evidenceObject(prediction) {
+  return prediction?.evidence || prediction?.proof?.payload?.evidence || {};
+}
+
+function baselineCode(prediction, key, match) {
+  const evidence = evidenceObject(prediction);
+  const stored = evidence?.baselines?.[key]?.winnerCode || null;
+  if (stored) return stored;
+  const models = retroModelProbabilities(match);
+  if (key === "ratingFavorite") return favoriteCodeFromProbabilities(match, models.rating);
+  if (key === "poissonFavorite") return favoriteCodeFromProbabilities(match, models.poisson);
+  if (key === "blendedFavorite") {
+    const blended = blendModelProbabilities([
+      { probabilities: normalize3Way(evidence?.market?.probabilities), weight: 55 },
+      { probabilities: models.rating, weight: 25 },
+      { probabilities: models.poisson, weight: 20 }
+    ]);
+    return favoriteCodeFromProbabilities(match, blended);
+  }
+  return null;
 }
 
 function confidenceBand(confidence) {
@@ -202,12 +334,12 @@ function createAccuracyBucket(extra = {}) {
 }
 
 const trackedRoundLabels = {
-  "Round of 32": "32 强",
-  "Round of 16": "16 强",
-  Quarterfinal: "8 强",
-  Semifinal: "4 强",
-  "Third Place": "季军赛",
-  Final: "决赛"
+  "Round of 32": "Round of 32",
+  "Round of 16": "Round of 16",
+  Quarterfinal: "Quarterfinal",
+  Semifinal: "Semifinal",
+  "Third Place": "Third Place",
+  Final: "Final"
 };
 
 function roundAccuracyBuckets() {
@@ -228,8 +360,8 @@ function finalizeAccuracyBucket(bucket) {
 function stageAccuracySnapshot(predictions, results, matches) {
   const byId = new Map(matches.map((match) => [Number(match.id), match]));
   const stats = {
-    group: createAccuracyBucket({ round: "Group Stage", label: "小组赛" }),
-    knockout: createAccuracyBucket({ round: "Knockout", label: "淘汰赛" }),
+    group: createAccuracyBucket({ round: "Group Stage", label: "Group Stage" }),
+    knockout: createAccuracyBucket({ round: "Knockout", label: "Knockout" }),
     rounds: roundAccuracyBuckets(),
     upsets: { called: 0, hit: 0 },
     proofVerified: 0,
@@ -277,12 +409,12 @@ function stageAccuracySnapshot(predictions, results, matches) {
       if (correct) bucket.correct += 1;
       if (correct && roundBucket) roundBucket.correct += 1;
 
-      const marketPick = baselineCode(prediction, "marketFavorite");
+      const marketPick = baselineCode(prediction, "marketFavorite", match);
       const baselineMap = [
         ["market", marketPick],
-        ["rating", baselineCode(prediction, "ratingFavorite")],
-        ["poisson", baselineCode(prediction, "poissonFavorite")],
-        ["blended", baselineCode(prediction, "blendedFavorite")]
+        ["rating", baselineCode(prediction, "ratingFavorite", match)],
+        ["poisson", baselineCode(prediction, "poissonFavorite", match)],
+        ["blended", baselineCode(prediction, "blendedFavorite", match)]
       ];
       baselineMap.forEach(([name, baselinePick]) => {
         if (!baselinePick) return;
@@ -320,7 +452,7 @@ function stageAccuracySnapshot(predictions, results, matches) {
   Object.values(stats.baselines)
     .filter((bucket) => typeof bucket.graded === "number")
     .forEach((bucket) => {
-      bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
+      finalizeAccuracyBucket(bucket);
     });
   stats.baselines.paulVsMarket.edge = stats.baselines.paulVsMarket.paulOnlyCorrect - stats.baselines.paulVsMarket.marketOnlyCorrect;
   Object.values(stats.calibration.buckets).forEach((bucket) => {
