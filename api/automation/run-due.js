@@ -8,7 +8,7 @@ const { fetchMatchResult } = require("../_lib/results");
 const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult } = require("../_lib/store");
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
-const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 0.25);
+const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2.17);
 const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12);
 const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 4);
 const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 8);

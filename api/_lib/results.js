@@ -1,4 +1,16 @@
+const fs = require("fs");
+const path = require("path");
+
 const defaultProviders = ["zafronix", "worldcup26", "football-data", "generic"];
+const dataDir = path.join(__dirname, "..", "..", "data");
+
+function readJson(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
 
 function configuredProviders() {
   const raw = process.env.RESULTS_PROVIDERS || process.env.RESULTS_PROVIDER;
@@ -219,6 +231,22 @@ async function fetchGenericResult(match) {
   };
 }
 
+function fetchLocalVerifiedResult(match) {
+  const allResults = readJson(path.join(dataDir, "match-results.json"), {});
+  const record = allResults?.[match.id] || allResults?.[String(match.id)] || null;
+  if (!record || record.status !== "final") return null;
+  const homeScore = Number(record.homeScore);
+  const awayScore = Number(record.awayScore);
+  return scoreResult(
+    match,
+    homeScore,
+    awayScore,
+    true,
+    record.source || "data/match-results.json",
+    record.providerMatchId || `local-${match.id}`
+  );
+}
+
 async function fetchMatchResult(match) {
   if (!match.teamA?.code || !match.teamB?.code) return null;
   const errors = [];
@@ -244,6 +272,8 @@ async function fetchMatchResult(match) {
       errors.push(`${provider}: ${error.message}`);
     }
   }
+  const localResult = fetchLocalVerifiedResult(match);
+  if (localResult) return localResult;
   if (errors.length && process.env.RESULTS_STRICT === "true") {
     throw new Error(errors.join("; "));
   }

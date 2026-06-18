@@ -363,21 +363,32 @@ function buildPreLockRehearsal(match, evidence) {
   const marketFavorite = evidence.baselines?.marketFavorite || null;
   const blendedFavorite = evidence.baselines?.blendedFavorite || null;
   const upsetEdge = evidence.paulEdge || null;
+  const universalEdge = evidence.universal || null;
   const rehearsalWindowHours = Number(process.env.PAUL_PRELOCK_NEWS_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36);
   const nearLockWindow = hours !== null && hours >= 0 && hours <= rehearsalWindowHours;
   const optaThin = !localAdvancedData;
-  const upsetSensitive = Boolean(upsetEdge && (upsetEdge.upsetScore >= 35 || upsetEdge.drawSqueeze || upsetEdge.conservativeOverride));
+  const universalUpset = Boolean(
+    universalEdge &&
+    universalEdge.pickSide &&
+    universalEdge.marketPickSide &&
+    universalEdge.pickSide !== universalEdge.marketPickSide &&
+    (universalEdge.override || Number(universalEdge.edge || 0) >= 0.025 || Number(universalEdge.marketMargin || 1) <= 0.12)
+  );
+  const upsetSensitive = Boolean(upsetEdge && (upsetEdge.upsetScore >= 30 || upsetEdge.drawSqueeze || upsetEdge.conservativeOverride)) || universalUpset;
   const searchReasons = [];
   if (nearLockWindow) searchReasons.push("kickoff is inside the pre-lock rehearsal window");
   if (!hasTeamNews) searchReasons.push("latest team-news/injury detail is still thin");
   if (!hasLineupContext) searchReasons.push("lineup/tactical context is still thin");
   if (optaThin) searchReasons.push("advanced metrics need public Opta-style confirmation");
-  if (upsetSensitive) searchReasons.push("upset/watchlist signals need stress-testing");
+  if (upsetSensitive) searchReasons.push("upset/watchlist signals need extra news, lineup, and Opta-style stress-testing");
   const focus = [];
   if (!hasTeamNews) focus.push("team news");
   if (!hasLineupContext) focus.push("likely lineups");
   if (optaThin) focus.push("Opta-style preview metrics");
-  if (upsetSensitive) focus.push("upset path validation");
+  if (upsetSensitive) {
+    focus.push("upset path validation");
+    focus.push("underdog press/transition/set-piece route");
+  }
   if (!focus.length) focus.push("late-breaking availability");
   return {
     status: searchReasons.length ? "needs-fresh-rehearsal" : "locally-covered",
@@ -418,7 +429,19 @@ function buildPreLockRehearsal(match, evidence) {
           }
         : null,
       signals: Array.isArray(upsetEdge?.signals) ? upsetEdge.signals.slice(0, 6) : [],
-      recommendation: upsetEdge?.recommendation || null
+      universalOverlay: universalEdge
+        ? {
+            pickCode: universalEdge.pickCode,
+            pickName: universalEdge.pickName,
+            override: Boolean(universalEdge.override),
+            edge: universalEdge.edge,
+            marketMargin: universalEdge.marketMargin,
+            signals: Array.isArray(universalEdge.signals) ? universalEdge.signals.slice(0, 6) : []
+          }
+        : null,
+      recommendation: upsetSensitive
+        ? "Upset probability is live enough to justify a deeper news/lineup/Opta-style review. Increase upset weight only when fresh evidence confirms the underdog path."
+        : upsetEdge?.recommendation || null
     },
     mistakeMemory: evidence.mistakeEngine?.usable
       ? {
@@ -435,7 +458,8 @@ function buildPreLockRehearsal(match, evidence) {
       suggestedQueries: [
         `${match.teamA.name} vs ${match.teamB.name} team news injuries suspension likely lineup preview`,
         `${match.teamA.name} vs ${match.teamB.name} Opta prediction xG xGA shots preview`,
-        `${match.teamA.name} vs ${match.teamB.name} upset preview tactical analysis underdog news`
+        `${match.teamA.name} vs ${match.teamB.name} upset preview tactical analysis underdog news`,
+        `${match.teamA.name} vs ${match.teamB.name} set pieces pressing transition xG preview`
       ]
     }
   };
@@ -593,6 +617,7 @@ function buildPrompt(payload, evidence) {
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
     "Use evidence.universal as PAUL's cross-model overlay. It may override the market anchor only when universal.override is true; otherwise mention it as reviewed but not decisive.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
+    "When evidence.preLockRehearsal.upsetPreview.recommendation says the upset probability is live enough, spend extra effort on underdog news, lineup absences, set pieces, pressing/transition routes, xG/xGA, and market movement before deciding whether to slightly lift the upset/draw probability.",
     "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
     "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, and score volatility before your wording. Explain it when relevant, but do not invent facts.",
     knockout

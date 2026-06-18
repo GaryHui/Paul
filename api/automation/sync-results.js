@@ -4,7 +4,7 @@ const { loadSnapshot } = require("../_lib/paul");
 const { fetchMatchResult } = require("../_lib/results");
 const { getEvidenceCache, getMistakeMemory, getPredictions, getResults, setResult } = require("../_lib/store");
 
-const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 0.25);
+const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2.17);
 const defaultMaxMatches = Number(process.env.RESULT_SYNC_MAX_MATCHES || 12);
 
 function requestToken(req) {
