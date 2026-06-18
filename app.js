@@ -155,6 +155,43 @@ Object.assign(languageCopy.zh, {
   officialScheduleSource: "官方赛程来源"
 });
 
+Object.assign(languageCopy.en, {
+  ratingsMissing: "Ratings missing",
+  awaitingGroupLock: "Awaiting group lock",
+  awaitingKnockoutLock: "Awaiting knockout lock",
+  awaitingLock: "Awaiting lock",
+  awaitingResult: "Awaiting result",
+  afterFinal: "After final",
+  noComparison: "No comparison",
+  marketPending: "Market pending",
+  ratingsLoaded: "team ratings loaded",
+  ratingsMissingStatus: "team ratings missing"
+});
+
+Object.assign(languageCopy.zh, {
+  pending: "待定",
+  recordEyebrow: "PAUL 战绩",
+  recordTitle: "逐场公开统计命中率。",
+  recordCopy: "每个赛前锁定预测都会在赛后计入战绩，记录公开、带证明，并对所有访客保持一致。",
+  publicFavorite: "市场热门命中率",
+  teamRead: "球队模型命中率",
+  paulGain: "PAUL 比市场多中",
+  calibration: "实际命中率 / 平均信心",
+  referenceRecord: "参考战绩。",
+  extraCorrectPicks: "比市场多命中的场次。",
+  actualVsConfidence: "实际命中率对比信心值。",
+  ratingsMissing: "评级数据缺失",
+  awaitingGroupLock: "等待小组赛锁定",
+  awaitingKnockoutLock: "等待淘汰赛锁定",
+  awaitingLock: "等待锁定",
+  awaitingResult: "等待赛果",
+  afterFinal: "赛后计算",
+  noComparison: "暂无对比",
+  marketPending: "等待市场数据",
+  ratingsLoaded: "球队评级已加载",
+  ratingsMissingStatus: "球队评级缺失"
+});
+
 ["es", "fr", "de", "pt", "ar", "ja", "ko", "it", "nl", "tr"].forEach((key) => {
   Object.entries(languageCopy.en).forEach(([copyKey, value]) => {
     languageCopy[key][copyKey] ||= value;
@@ -2352,7 +2389,7 @@ function officialMarketTrace(match, official) {
 function traceAwaitingPickLabel(match) {
   const resolved = resolvedTeams(match);
   if (!resolved.aCode || !resolved.bCode) return tr("bracketSlotPending");
-  return match.round === "Group Stage" ? "Awaiting group lock" : "Awaiting knockout lock";
+  return match.round === "Group Stage" ? tr("awaitingGroupLock") : tr("awaitingKnockoutLock");
 }
 
 function tracePaulPick(match, official, daily) {
@@ -2377,11 +2414,11 @@ function tracePaulPick(match, official, daily) {
       status: "Daily read"
     };
   }
-  return { code: null, name: "Awaiting lock", confidence: null, probabilities: null, predictedScore: null, status: traceAwaitingPickLabel(match) };
+  return { code: null, name: tr("awaitingLock"), confidence: null, probabilities: null, predictedScore: null, status: traceAwaitingPickLabel(match) };
 }
 
 function traceResult(match, result) {
-  if (!result?.status || result.status !== "final") return { label: "Awaiting result", winnerCode: null, score: null };
+  if (!result?.status || result.status !== "final") return { label: tr("awaitingResult"), winnerCode: null, score: null };
   const resolved = resolvedTeams(match);
   const winnerCode = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore)
     ? "DRAW"
@@ -2406,8 +2443,8 @@ function tracePaulOutcomeLabel(paul, result) {
 }
 
 function traceMarketImpact(paulCode, marketCode, winnerCode) {
-  if (!winnerCode) return "After final";
-  if (!paulCode || !marketCode) return "No comparison";
+  if (!winnerCode) return tr("afterFinal");
+  if (!paulCode || !marketCode) return tr("noComparison");
   const paulCorrect = String(paulCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const marketCorrect = String(marketCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const impact = paulCorrect - marketCorrect;
@@ -2487,7 +2524,7 @@ function renderPublicTraceUnsafe() {
               <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${scorePath}${replayRoom}</em>
             </span>
             <span>
-              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : "Market pending"}</strong>
+              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("marketPending")}</strong>
               <em>${market?.provider ? `${escapeHtml(market.provider)}${market.bookmakerCount ? ` · ${market.bookmakerCount} books` : ""}${marketProbabilities ? ` · ${marketProbabilities}` : ""}` : tr("noMarket")}</em>
             </span>
             <span>
@@ -3084,7 +3121,7 @@ async function loadAutomationStatus() {
     const readiness = status.dataReadiness || {};
     const baselines = stageAccuracy.baselines || {};
     setText("marketBaselineStat", baselines.market?.graded ? `${baselines.market.accuracy}%` : tr("pending"));
-    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : (readiness.teamRatings ? tr("pending") : "Ratings missing"));
+    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : (readiness.teamRatings ? tr("pending") : tr("ratingsMissing")));
     const edge = baselines.paulVsMarket?.edge;
     setText("paulEdgeStat", Number.isFinite(edge) ? `${edge >= 0 ? "+" : ""}${edge}` : tr("pending"));
     const calibration = stageAccuracy.calibration || {};
@@ -3128,7 +3165,7 @@ async function loadAutomationStatus() {
       : readiness.marketOdds
         ? "market odds loaded"
         : "market odds missing";
-    const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
+    const ratingState = readiness.teamRatings ? tr("ratingsLoaded") : tr("ratingsMissingStatus");
     statusText.textContent = `${qwenState}; ${cronState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${dailyDueState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;

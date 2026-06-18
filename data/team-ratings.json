@@ -1,0 +1,338 @@
+{
+  "ALG": {
+    "name": "Algeria",
+    "elo": 1760,
+    "attack": 1.027,
+    "defense": 0.987,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "ARG": {
+    "name": "Argentina",
+    "elo": 1940,
+    "attack": 1.24,
+    "defense": 1.213,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "AUS": {
+    "name": "Australia",
+    "elo": 1740,
+    "attack": 0.973,
+    "defense": 1,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "AUT": {
+    "name": "Austria",
+    "elo": 1810,
+    "attack": 1.067,
+    "defense": 1.08,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "BEL": {
+    "name": "Belgium",
+    "elo": 1850,
+    "attack": 1.147,
+    "defense": 1.093,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "BIH": {
+    "name": "Bosnia and Herzegovina",
+    "elo": 1730,
+    "attack": 0.973,
+    "defense": 0.96,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "BRA": {
+    "name": "Brazil",
+    "elo": 1910,
+    "attack": 1.227,
+    "defense": 1.16,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CAN": {
+    "name": "Canada",
+    "elo": 1770,
+    "attack": 1.04,
+    "defense": 0.987,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CIV": {
+    "name": "Cote d'Ivoire",
+    "elo": 1780,
+    "attack": 1.053,
+    "defense": 1.013,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "COD": {
+    "name": "DR Congo",
+    "elo": 1720,
+    "attack": 0.973,
+    "defense": 0.947,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "COL": {
+    "name": "Colombia",
+    "elo": 1840,
+    "attack": 1.12,
+    "defense": 1.093,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CPV": {
+    "name": "Cape Verde",
+    "elo": 1690,
+    "attack": 0.933,
+    "defense": 0.893,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CRO": {
+    "name": "Croatia",
+    "elo": 1830,
+    "attack": 1.08,
+    "defense": 1.12,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CUW": {
+    "name": "Curacao",
+    "elo": 1630,
+    "attack": 0.84,
+    "defense": 0.827,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "CZE": {
+    "name": "Czechia",
+    "elo": 1760,
+    "attack": 1,
+    "defense": 1.027,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "ECU": {
+    "name": "Ecuador",
+    "elo": 1820,
+    "attack": 1.067,
+    "defense": 1.107,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "EGY": {
+    "name": "Egypt",
+    "elo": 1770,
+    "attack": 1.04,
+    "defense": 1,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "ENG": {
+    "name": "England",
+    "elo": 1900,
+    "attack": 1.2,
+    "defense": 1.173,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "ESP": {
+    "name": "Spain",
+    "elo": 1920,
+    "attack": 1.213,
+    "defense": 1.2,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "FRA": {
+    "name": "France",
+    "elo": 1930,
+    "attack": 1.253,
+    "defense": 1.2,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "GER": {
+    "name": "Germany",
+    "elo": 1890,
+    "attack": 1.173,
+    "defense": 1.147,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "GHA": {
+    "name": "Ghana",
+    "elo": 1750,
+    "attack": 1.013,
+    "defense": 0.973,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "HAI": {
+    "name": "Haiti",
+    "elo": 1640,
+    "attack": 0.853,
+    "defense": 0.827,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "IRN": {
+    "name": "IR Iran",
+    "elo": 1760,
+    "attack": 1,
+    "defense": 1.027,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "IRQ": {
+    "name": "Iraq",
+    "elo": 1680,
+    "attack": 0.907,
+    "defense": 0.893,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "JOR": {
+    "name": "Jordan",
+    "elo": 1660,
+    "attack": 0.88,
+    "defense": 0.867,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "JPN": {
+    "name": "Japan",
+    "elo": 1830,
+    "attack": 1.12,
+    "defense": 1.08,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "KOR": {
+    "name": "Korea Republic",
+    "elo": 1780,
+    "attack": 1.04,
+    "defense": 1.013,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "KSA": {
+    "name": "Saudi Arabia",
+    "elo": 1710,
+    "attack": 0.933,
+    "defense": 0.947,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "MAR": {
+    "name": "Morocco",
+    "elo": 1840,
+    "attack": 1.093,
+    "defense": 1.147,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "MEX": {
+    "name": "Mexico",
+    "elo": 1800,
+    "attack": 1.053,
+    "defense": 1.04,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "NED": {
+    "name": "Netherlands",
+    "elo": 1880,
+    "attack": 1.16,
+    "defense": 1.16,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "NOR": {
+    "name": "Norway",
+    "elo": 1820,
+    "attack": 1.147,
+    "defense": 1.027,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "NZL": {
+    "name": "New Zealand",
+    "elo": 1670,
+    "attack": 0.88,
+    "defense": 0.907,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "PAN": {
+    "name": "Panama",
+    "elo": 1690,
+    "attack": 0.907,
+    "defense": 0.92,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "PAR": {
+    "name": "Paraguay",
+    "elo": 1750,
+    "attack": 0.973,
+    "defense": 1.027,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "POR": {
+    "name": "Portugal",
+    "elo": 1900,
+    "attack": 1.213,
+    "defense": 1.147,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "QAT": {
+    "name": "Qatar",
+    "elo": 1700,
+    "attack": 0.933,
+    "defense": 0.92,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "RSA": {
+    "name": "South Africa",
+    "elo": 1680,
+    "attack": 0.893,
+    "defense": 0.92,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "SCO": {
+    "name": "Scotland",
+    "elo": 1750,
+    "attack": 0.973,
+    "defense": 1.013,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "SEN": {
+    "name": "Senegal",
+    "elo": 1800,
+    "attack": 1.053,
+    "defense": 1.08,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "SUI": {
+    "name": "Switzerland",
+    "elo": 1820,
+    "attack": 1.067,
+    "defense": 1.12,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "SWE": {
+    "name": "Sweden",
+    "elo": 1770,
+    "attack": 1.013,
+    "defense": 1.04,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "TUN": {
+    "name": "Tunisia",
+    "elo": 1720,
+    "attack": 0.933,
+    "defense": 0.987,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "TUR": {
+    "name": "Turkiye",
+    "elo": 1790,
+    "attack": 1.08,
+    "defense": 1.013,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "URU": {
+    "name": "Uruguay",
+    "elo": 1860,
+    "attack": 1.133,
+    "defense": 1.147,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "USA": {
+    "name": "United States",
+    "elo": 1810,
+    "attack": 1.093,
+    "defense": 1.04,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  },
+  "UZB": {
+    "name": "Uzbekistan",
+    "elo": 1700,
+    "attack": 0.92,
+    "defense": 0.947,
+    "source": "PAUL internal 2026 team baseline from snapshot power/attack/defense"
+  }
+}

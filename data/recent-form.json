@@ -1,0 +1,338 @@
+{
+  "ALG": {
+    "name": "Algeria",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "ARG": {
+    "name": "Argentina",
+    "formScore": 9,
+    "formTier": "strong",
+    "notes": "Internal 2026 baseline form score 9/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "AUS": {
+    "name": "Australia",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "AUT": {
+    "name": "Austria",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "BEL": {
+    "name": "Belgium",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "BIH": {
+    "name": "Bosnia and Herzegovina",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "BRA": {
+    "name": "Brazil",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CAN": {
+    "name": "Canada",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CIV": {
+    "name": "Cote d'Ivoire",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "COD": {
+    "name": "DR Congo",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "COL": {
+    "name": "Colombia",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CPV": {
+    "name": "Cape Verde",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CRO": {
+    "name": "Croatia",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CUW": {
+    "name": "Curacao",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "CZE": {
+    "name": "Czechia",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "ECU": {
+    "name": "Ecuador",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "EGY": {
+    "name": "Egypt",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "ENG": {
+    "name": "England",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "ESP": {
+    "name": "Spain",
+    "formScore": 8,
+    "formTier": "strong",
+    "notes": "Internal 2026 baseline form score 8/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "FRA": {
+    "name": "France",
+    "formScore": 8,
+    "formTier": "strong",
+    "notes": "Internal 2026 baseline form score 8/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "GER": {
+    "name": "Germany",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "GHA": {
+    "name": "Ghana",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "HAI": {
+    "name": "Haiti",
+    "formScore": 3,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 3/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "IRN": {
+    "name": "IR Iran",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "IRQ": {
+    "name": "Iraq",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "JOR": {
+    "name": "Jordan",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "JPN": {
+    "name": "Japan",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "KOR": {
+    "name": "Korea Republic",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "KSA": {
+    "name": "Saudi Arabia",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "MAR": {
+    "name": "Morocco",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "MEX": {
+    "name": "Mexico",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "NED": {
+    "name": "Netherlands",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "NOR": {
+    "name": "Norway",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "NZL": {
+    "name": "New Zealand",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "PAN": {
+    "name": "Panama",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "PAR": {
+    "name": "Paraguay",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "POR": {
+    "name": "Portugal",
+    "formScore": 8,
+    "formTier": "strong",
+    "notes": "Internal 2026 baseline form score 8/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "QAT": {
+    "name": "Qatar",
+    "formScore": 3,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 3/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "RSA": {
+    "name": "South Africa",
+    "formScore": 3,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 3/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "SCO": {
+    "name": "Scotland",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "SEN": {
+    "name": "Senegal",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "SUI": {
+    "name": "Switzerland",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "SWE": {
+    "name": "Sweden",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "TUN": {
+    "name": "Tunisia",
+    "formScore": 4,
+    "formTier": "fragile",
+    "notes": "Internal 2026 baseline form score 4/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "TUR": {
+    "name": "Turkiye",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "URU": {
+    "name": "Uruguay",
+    "formScore": 7,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 7/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "USA": {
+    "name": "United States",
+    "formScore": 6,
+    "formTier": "solid",
+    "notes": "Internal 2026 baseline form score 6/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  },
+  "UZB": {
+    "name": "Uzbekistan",
+    "formScore": 5,
+    "formTier": "mixed",
+    "notes": "Internal 2026 baseline form score 5/10 from PAUL snapshot. Replace with live last-10 feed when available.",
+    "source": "PAUL internal 2026 snapshot baseline"
+  }
+}
