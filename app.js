@@ -2149,6 +2149,9 @@ function currentKvMemoryMarkup() {
 function liveCorrectionMarkup(match) {
   const correction = liveCorrectionFor(match);
   if (!correction) return "";
+  const resolved = resolvedTeams(match);
+  const homeName = teams[resolved.aCode]?.name || slotLabel(match, "a");
+  const awayName = teams[resolved.bCode]?.name || slotLabel(match, "b");
   const live = correction.live || {};
   const official = correction.official || {};
   const updated = correction.generatedAt ? formatProofTime(correction.generatedAt) : tr("unknown");
@@ -2158,7 +2161,7 @@ function liveCorrectionMarkup(match) {
       <span>KV live correction</span>
       <strong>${escapeHtml(official.winnerName || tr("pending"))} -> ${escapeHtml(live.winnerName || tr("pending"))}${live.probability ? ` · ${dailyReadPercent(live.probability)}` : ""}</strong>
       ${correction.scoreChanged ? `<p>${tr("predictedScore")}: ${escapeHtml(official.predictedScore || "N/A")} -> ${escapeHtml(live.predictedScore || "N/A")}</p>` : `<p>${tr("predictedScore")}: ${escapeHtml(live.predictedScore || official.predictedScore || "N/A")}</p>`}
-      ${live.probabilities ? `<p>${escapeHtml(teamNameForCode(match.teamA?.code, match))}: ${dailyReadPercent(live.probabilities.home)} · ${tr("draw")}: ${dailyReadPercent(live.probabilities.draw)} · ${escapeHtml(teamNameForCode(match.teamB?.code, match))}: ${dailyReadPercent(live.probabilities.away)}</p>` : ""}
+      ${live.probabilities ? `<p>${escapeHtml(homeName)}: ${dailyReadPercent(live.probabilities.home)} · ${tr("draw")}: ${dailyReadPercent(live.probabilities.draw)} · ${escapeHtml(awayName)}: ${dailyReadPercent(live.probabilities.away)}</p>` : ""}
       <p>${escapeHtml(correction.reason || "KV memory and latest cached evidence are adjusting the live lab estimate.")}</p>
       <p>Updated ${escapeHtml(updated)} · evidence ${escapeHtml(freshness)}. News refresh will replace this when Daily PAUL Read completes.</p>
     </div>
@@ -2346,6 +2349,12 @@ function officialMarketTrace(match, official) {
   };
 }
 
+function traceAwaitingPickLabel(match) {
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode) return tr("bracketSlotPending");
+  return match.round === "Group Stage" ? "Awaiting group lock" : "Awaiting knockout lock";
+}
+
 function tracePaulPick(match, official, daily) {
   if (official) {
     const code = officialPickCode(official);
@@ -2368,11 +2377,11 @@ function tracePaulPick(match, official, daily) {
       status: "Daily read"
     };
   }
-  return { code: null, name: tr("pending"), confidence: null, probabilities: null, predictedScore: null, status: tr("pending") };
+  return { code: null, name: "Awaiting lock", confidence: null, probabilities: null, predictedScore: null, status: traceAwaitingPickLabel(match) };
 }
 
 function traceResult(match, result) {
-  if (!result?.status || result.status !== "final") return { label: tr("pending"), winnerCode: null, score: null };
+  if (!result?.status || result.status !== "final") return { label: "Awaiting result", winnerCode: null, score: null };
   const resolved = resolvedTeams(match);
   const winnerCode = result.winnerCode || (Number(result.homeScore) === Number(result.awayScore)
     ? "DRAW"
@@ -2397,7 +2406,8 @@ function tracePaulOutcomeLabel(paul, result) {
 }
 
 function traceMarketImpact(paulCode, marketCode, winnerCode) {
-  if (!paulCode || !marketCode || !winnerCode) return tr("pending");
+  if (!winnerCode) return "After final";
+  if (!paulCode || !marketCode) return "No comparison";
   const paulCorrect = String(paulCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const marketCorrect = String(marketCode).toUpperCase() === String(winnerCode).toUpperCase() ? 1 : 0;
   const impact = paulCorrect - marketCorrect;
@@ -2477,7 +2487,7 @@ function renderPublicTraceUnsafe() {
               <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${scorePath}${replayRoom}</em>
             </span>
             <span>
-              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("pending")}</strong>
+              <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : "Market pending"}</strong>
               <em>${market?.provider ? `${escapeHtml(market.provider)}${market.bookmakerCount ? ` · ${market.bookmakerCount} books` : ""}${marketProbabilities ? ` · ${marketProbabilities}` : ""}` : tr("noMarket")}</em>
             </span>
             <span>
@@ -3071,9 +3081,10 @@ async function loadAutomationStatus() {
     setText("finalAccuracyStat", formatAccuracyBucket(roundStats.Final));
     setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
     setText("proofVerifiedStat", stageAccuracy.proofVerified || status.auditCount || 0);
+    const readiness = status.dataReadiness || {};
     const baselines = stageAccuracy.baselines || {};
     setText("marketBaselineStat", baselines.market?.graded ? `${baselines.market.accuracy}%` : tr("pending"));
-    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : tr("pending"));
+    setText("ratingBaselineStat", baselines.rating?.graded ? `${baselines.rating.accuracy}%` : (readiness.teamRatings ? tr("pending") : "Ratings missing"));
     const edge = baselines.paulVsMarket?.edge;
     setText("paulEdgeStat", Number.isFinite(edge) ? `${edge >= 0 ? "+" : ""}${edge}` : tr("pending"));
     const calibration = stageAccuracy.calibration || {};
@@ -3099,7 +3110,6 @@ async function loadAutomationStatus() {
 
     const qwenState = status.hasQwenKey ? "PAUL AI ready" : "PAUL AI not connected";
     const resultState = status.hasResultsApi ? "Results API ready" : "Results API not connected";
-    const readiness = status.dataReadiness || {};
     const evidenceState = readiness.evidenceCacheCount
       ? `${readiness.evidenceCacheCount} odds snapshots cached${readiness.latestEvidenceAt ? `, latest ${formatProofTime(readiness.latestEvidenceAt)}` : ""}`
       : "no cached odds snapshots yet";
