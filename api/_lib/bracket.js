@@ -197,15 +197,40 @@ function confidenceBand(confidence) {
   return "80+";
 }
 
-function createAccuracyBucket() {
-  return { graded: 0, correct: 0, accuracy: 0 };
+function createAccuracyBucket(extra = {}) {
+  return { completed: 0, graded: 0, correct: 0, accuracy: 0, status: "pending", ...extra };
+}
+
+const trackedRoundLabels = {
+  "Round of 32": "32 强",
+  "Round of 16": "16 强",
+  Quarterfinal: "8 强",
+  Semifinal: "4 强",
+  "Third Place": "季军赛",
+  Final: "决赛"
+};
+
+function roundAccuracyBuckets() {
+  return Object.fromEntries(Object.entries(trackedRoundLabels).map(([round, label]) => [
+    round,
+    createAccuracyBucket({ round, label })
+  ]));
+}
+
+function finalizeAccuracyBucket(bucket) {
+  bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
+  if (bucket.graded) bucket.status = "graded";
+  else if (bucket.completed) bucket.status = "ungraded";
+  else bucket.status = "pending";
+  return bucket;
 }
 
 function stageAccuracySnapshot(predictions, results, matches) {
   const byId = new Map(matches.map((match) => [Number(match.id), match]));
   const stats = {
-    group: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
-    knockout: { completed: 0, graded: 0, correct: 0, accuracy: 0 },
+    group: createAccuracyBucket({ round: "Group Stage", label: "小组赛" }),
+    knockout: createAccuracyBucket({ round: "Knockout", label: "淘汰赛" }),
+    rounds: roundAccuracyBuckets(),
     upsets: { called: 0, hit: 0 },
     proofVerified: 0,
     baselines: {
@@ -240,13 +265,17 @@ function stageAccuracySnapshot(predictions, results, matches) {
       const match = byId.get(Number(resolvedMatchId));
       const bucket = match?.round === "Group Stage" ? stats.group : stats.knockout;
       bucket.completed += 1;
+      const roundBucket = stats.rounds[match?.round];
+      if (roundBucket) roundBucket.completed += 1;
       const prediction = predictions[resolvedMatchId];
       if (!prediction) return;
       bucket.graded += 1;
+      if (roundBucket) roundBucket.graded += 1;
       const pick = predictedCode(prediction);
       const winner = winnerCodeFor(result);
       const correct = isCorrectPick(pick, winner);
       if (correct) bucket.correct += 1;
+      if (correct && roundBucket) roundBucket.correct += 1;
 
       const marketPick = baselineCode(prediction, "marketFavorite");
       const baselineMap = [
@@ -287,9 +316,7 @@ function stageAccuracySnapshot(predictions, results, matches) {
       }
     });
 
-  [stats.group, stats.knockout].forEach((bucket) => {
-    bucket.accuracy = bucket.graded ? Math.round((bucket.correct / bucket.graded) * 100) : 0;
-  });
+  [stats.group, stats.knockout, ...Object.values(stats.rounds)].forEach(finalizeAccuracyBucket);
   Object.values(stats.baselines)
     .filter((bucket) => typeof bucket.graded === "number")
     .forEach((bucket) => {

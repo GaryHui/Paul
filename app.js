@@ -1541,6 +1541,7 @@ let automationState = {
   stageAccuracy: {
     group: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
     knockout: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
+    rounds: {},
     upsets: { called: 0, hit: 0 },
     proofVerified: 0
   }
@@ -1624,6 +1625,14 @@ function syncPendingLabel(id) {
 
 function syncLanguageSensitiveStats() {
   ["marketBaselineStat", "ratingBaselineStat", "paulEdgeStat", "calibrationStat", "autoNext"].forEach(syncPendingLabel);
+}
+
+function formatAccuracyBucket(bucket, { compact = false } = {}) {
+  if (!bucket || bucket.status === "pending" || (!bucket.completed && !bucket.graded)) return tr("pending");
+  if (!bucket.graded) return compact ? tr("pending") : `0/${bucket.completed} · ${tr("pending")}`;
+  return compact
+    ? `${bucket.accuracy}%`
+    : `${bucket.correct}/${bucket.graded} · ${bucket.accuracy}%`;
 }
 
 function formatDisplayDateTime(value, options = {}) {
@@ -2059,6 +2068,64 @@ function dailyReadPercent(value) {
   return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
 }
 
+function percentText(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return tr("pending");
+  return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
+}
+
+function listText(items = []) {
+  return Array.isArray(items) ? items.filter(Boolean).join(" / ") : "";
+}
+
+function scoreScenarioText(items = []) {
+  if (!Array.isArray(items) || !items.length) return "";
+  return items
+    .slice(0, 3)
+    .map((item) => `${item.score} ${percentText(item.probability)}`)
+    .join(" / ");
+}
+
+function probabilityCompareText(layer) {
+  if (!layer?.before || !layer?.after) return "";
+  const before = layer.before;
+  const after = layer.after;
+  return `H ${percentText(before.home)} -> ${percentText(after.home)} / D ${percentText(before.draw)} -> ${percentText(after.draw)} / A ${percentText(before.away)} -> ${percentText(after.away)}`;
+}
+
+function calibrationNotesText(layer) {
+  if (!Array.isArray(layer?.notes) || !layer.notes.length) return "";
+  return layer.notes.join(" / ");
+}
+
+function calibrationBlockMarkup(layer, { title = "KV calibration", compact = false } = {}) {
+  if (!layer?.applied) {
+    return `
+      <div class="daily-read__meta daily-read__meta--calibration">
+        <strong>${escapeHtml(title)}</strong>
+        <p>Not applied yet.</p>
+        <p>No usable mistake-memory sample was found for this matchup, or this lock/read was generated before the KV calibration version.</p>
+      </div>
+    `;
+  }
+  const lines = [
+    `<strong>${escapeHtml(title)}</strong>`,
+    `<p>Sample ${escapeHtml(String(layer.sampleSize || 0))} · ${escapeHtml(layer.version || "kv-calibration")}</p>`
+  ];
+  if (layer.before && layer.after) {
+    lines.push(`<p>${compact ? "Prob" : "Before -> after"}: ${escapeHtml(probabilityCompareText(layer))}</p>`);
+  }
+  const adjustments = layer.adjustments || {};
+  lines.push(`<p>Edge ${escapeHtml(String(adjustments.edgeTrustDelta ?? 0))} · Market ${escapeHtml(String(adjustments.marketShrinkDelta ?? 0))} · Draw ${escapeHtml(String(adjustments.drawRiskDelta ?? 0))} · Upset ${escapeHtml(String(adjustments.upsetSensitivityDelta ?? 0))}</p>`);
+  if (Number(adjustments.scoreConfidenceDelta || 0) || Number(adjustments.goalVolatilityDelta || 0)) {
+    lines.push(`<p>Score ${escapeHtml(String(adjustments.scoreConfidenceDelta ?? 0))} · Goals ${escapeHtml(String(adjustments.goalVolatilityDelta ?? 0))}</p>`);
+  }
+  if (calibrationNotesText(layer)) {
+    lines.push(`<p>${escapeHtml(calibrationNotesText(layer))}</p>`);
+  }
+  return `<div class="daily-read__meta daily-read__meta--calibration">${lines.join("")}</div>`;
+}
+
 function liveDriftFor(match, read) {
   const official = officialPrediction(match);
   const officialCode = official ? officialPickCode(official) : null;
@@ -2066,13 +2133,22 @@ function liveDriftFor(match, read) {
   if (!officialCode || !liveCode) return null;
   const normalizedOfficial = String(officialCode).toUpperCase();
   const drifted = normalizedOfficial !== liveCode;
+  const officialScore = official?.analysis?.predictedScore || official?.analysis?.score || null;
+  const liveScore = read?.pick?.predictedScore || null;
+  const scoreChanged = Boolean(officialScore && liveScore && String(officialScore).trim() !== String(liveScore).trim());
   return {
     drifted,
+    scoreChanged,
     officialCode: normalizedOfficial,
     officialName: teamNameForCode(normalizedOfficial, match),
     liveCode,
     liveName: teamNameForCode(liveCode, match),
-    liveConfidence: read.pick?.confidence || null
+    liveConfidence: read.pick?.confidence || null,
+    officialScore,
+    liveScore,
+    winnerVolatility: read?.lab?.winnerVolatility || null,
+    scoreScenarios: Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 3) : [],
+    rehearsal: read?.lab?.rehearsal || null
   };
 }
 
@@ -2126,9 +2202,28 @@ function renderDailyRead(match) {
       <div class="daily-read__drift ${drift.drifted ? "is-drifted" : "is-aligned"}">
         <span>${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")}</span>
         <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
+        ${drift.scoreChanged ? `<p>${tr("predictedScore")}: ${escapeHtml(drift.officialScore || "N/A")} -> ${escapeHtml(drift.liveScore || "N/A")}</p>` : ""}
+        ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
+        ${drift.rehearsal ? `<p>Replay room: ${drift.rehearsal.searchRequired ? "refreshing news / lineups / Opta-style preview" : "local pre-lock rehearsal covered"}${drift.rehearsal.focus?.length ? ` · ${escapeHtml(listText(drift.rehearsal.focus))}` : ""}</p>` : ""}
         <p>${drift.drifted ? tr("postLockDriftCopy") : tr("lockAlignedCopy")}</p>
       </div>
     ` : ""}
+    ${read.lab?.rehearsal ? `
+      <div class="daily-read__meta">
+        <strong>Pre-lock rehearsal</strong>
+        <p>${read.lab.rehearsal.searchRequired ? "Need more news refresh before lock or live drift review." : "Local pre-lock rehearsal is covered."}</p>
+        ${read.lab.rehearsal.focus?.length ? `<p>Focus: ${escapeHtml(listText(read.lab.rehearsal.focus))}</p>` : ""}
+      </div>
+    ` : ""}
+    ${read.lab?.winnerVolatility || read.lab?.scoreScenarios?.length ? `
+      <div class="daily-read__meta">
+        <strong>Lab drift</strong>
+        ${read.lab?.winnerVolatility ? `<p>Winner volatility: ${escapeHtml(read.lab.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(read.lab.winnerVolatility.gap)} · ${escapeHtml(read.lab.winnerVolatility.label || "watch")}</p>` : ""}
+        ${read.lab?.scoreScenarios?.length ? `<p>Top score paths: ${escapeHtml(scoreScenarioText(read.lab.scoreScenarios))}</p>` : ""}
+      </div>
+    ` : ""}
+    ${calibrationBlockMarkup(read.pick?.calibrationLayer, { title: "KV calibration", compact: false })}
     <div class="daily-read__bars">
       ${rows.map((row) => {
         const pct = Number.isFinite(Number(row.value)) ? Math.max(0, Math.min(100, Math.round(Number(row.value)))) : 0;
@@ -2309,7 +2404,7 @@ function renderPublicTraceUnsafe() {
         <span>${tr("result")}</span>
         <span>${tr("impact")}</span>
       </div>
-      ${rows.map(({ match, market, paul, result }) => {
+      ${rows.map(({ match, market, paul, result, daily, official }) => {
         const resolved = resolvedTeams(match);
         const matchName = `${teams[resolved.aCode]?.name || slotLabel(match, "a")} vs ${teams[resolved.bCode]?.name || slotLabel(match, "b")}`;
         const marketName = market?.favoriteName || teamNameForCode(market?.favoriteCode, match);
@@ -2323,6 +2418,13 @@ function renderPublicTraceUnsafe() {
         const settledClass = result.winnerCode ? (paulCorrect ? "trace-row--correct" : "trace-row--missed") : "";
         const paulClass = paul.status === "Official locked" ? "trace-paul--locked" : "";
         const paulOutcome = tracePaulOutcomeLabel(paul, result);
+        const drift = daily ? liveDriftFor(match, daily) : null;
+        const replayRoom = daily?.lab?.rehearsal?.focus?.length ? ` · replay ${escapeHtml(listText(daily.lab.rehearsal.focus))}` : "";
+        const winnerVolatility = daily?.lab?.winnerVolatility ? ` · win drift ${escapeHtml(daily.lab.winnerVolatility.label)} ${percentText(daily.lab.winnerVolatility.gap)}` : "";
+        const scorePath = daily?.lab?.scoreScenarios?.length ? ` · score ${escapeHtml(scoreScenarioText(daily.lab.scoreScenarios))}` : "";
+        const driftLine = drift
+          ? `${drift.drifted ? tr("postLockDrift") : tr("liveEstimate")} · ${escapeHtml(drift.officialName)} -> ${escapeHtml(drift.liveName)}${drift.scoreChanged ? ` · ${escapeHtml(drift.officialScore || "-")} -> ${escapeHtml(drift.liveScore || "-")}` : ""}`
+          : "";
         return `
           <div class="trace-row ${settledClass}" role="row">
             <span>
@@ -2331,7 +2433,7 @@ function renderPublicTraceUnsafe() {
             </span>
             <span class="${paulClass}">
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
-              <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}</em>
+              <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${scorePath}${replayRoom}</em>
             </span>
             <span>
               <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("pending")}</strong>
@@ -2515,6 +2617,19 @@ function officialAnalysisMarkup(official) {
           <p>${escapeHtml(analysis.upsetRisk)}</p>
         </div>
       ` : ""}
+      <div class="locked-analysis__block">
+        <strong>KV calibration</strong>
+        ${analysis.calibrationLayer?.applied
+          ? `
+            <p>Sample ${escapeHtml(String(analysis.calibrationLayer.sampleSize || 0))} · ${escapeHtml(analysis.calibrationLayer.version || "kv-calibration")}</p>
+            <p>${escapeHtml(probabilityCompareText(analysis.calibrationLayer))}</p>
+            <p>${escapeHtml(calibrationNotesText(analysis.calibrationLayer) || "Automatic pre-match correction from post-match review KV.")}</p>
+          `
+          : `
+            <p>Not applied yet.</p>
+            <p>No usable mistake-memory sample was available for this lock, or the prediction was locked before the KV calibration rollout.</p>
+          `}
+      </div>
       ${officialEvidenceMarkup(analysis)}
     </div>
   `;
@@ -2894,8 +3009,17 @@ async function loadAutomationStatus() {
     setText("overallAccuracyStat", `${status.accuracy?.accuracy || 0}%`);
     setText("correctPicksStat", status.accuracy?.correct || 0);
     setText("autoNext", formatLocalizedNextPrediction(nextPrediction));
-    setText("groupAccuracyStat", `${stageAccuracy.group?.accuracy || 0}%`);
-    setText("knockoutAccuracyStat", `${stageAccuracy.knockout?.accuracy || 0}%`);
+    const roundStats = stageAccuracy.rounds || {};
+    setText("groupAccuracyStat", formatAccuracyBucket(stageAccuracy.group, { compact: true }));
+    setText("knockoutAccuracyStat", formatAccuracyBucket(stageAccuracy.knockout, { compact: true }));
+    setText("round32AccuracyStat", formatAccuracyBucket(roundStats["Round of 32"], { compact: true }));
+    setText("round16AccuracyStat", formatAccuracyBucket(roundStats["Round of 16"], { compact: true }));
+    setText("round32LabStat", formatAccuracyBucket(roundStats["Round of 32"]));
+    setText("round16LabStat", formatAccuracyBucket(roundStats["Round of 16"]));
+    setText("quarterAccuracyStat", formatAccuracyBucket(roundStats.Quarterfinal));
+    setText("semiAccuracyStat", formatAccuracyBucket(roundStats.Semifinal));
+    setText("thirdPlaceAccuracyStat", formatAccuracyBucket(roundStats["Third Place"]));
+    setText("finalAccuracyStat", formatAccuracyBucket(roundStats.Final));
     setText("upsetHitsStat", `${stageAccuracy.upsets?.hit || 0}/${stageAccuracy.upsets?.called || 0}`);
     setText("proofVerifiedStat", stageAccuracy.proofVerified || status.auditCount || 0);
     const baselines = stageAccuracy.baselines || {};
@@ -2906,7 +3030,7 @@ async function loadAutomationStatus() {
     const calibration = stageAccuracy.calibration || {};
     setText(
       "calibrationStat",
-      calibration.graded ? `${calibration.actualAccuracy}% / ${calibration.averageConfidence}%` : tr("pending")
+      calibration.graded ? `${calibration.actualAccuracy}% / ${calibration.averageConfidence}%` : `${tr("pending")} · 0 samples`
     );
     automationState = {
       predictions: mergedPredictions,

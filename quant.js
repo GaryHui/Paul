@@ -185,6 +185,11 @@ function renderSummary(data) {
       "计算：结合 PAUL/Kelly 校准概率、市场隐含胜率、校准信任系数、每日判断同向率和概率优势。",
       "用途：当 PAUL 总胜负命中率只有五成多时，不应平均看待所有比赛；应优先观察胜算等级更高的场。"
     ]),
+    metric("实时预测漂移", `${data.summary.driftWinnerChanged || 0}/${data.summary.driftTracked || 0}`, [
+      "来源：正式锁定预测 vs 最新 Daily PAUL Read。",
+      `胜方漂移：${data.summary.driftWinnerChanged || 0} 场；比分漂移：${data.summary.driftScoreChanged || 0} 场；高波动：${data.summary.driftVolatile || 0} 场。`,
+      `已触发信任降权：${data.summary.driftPenaltyRows || 0} 场。Proof 不改，只影响量化实验室的概率、信任和仓位。`
+    ]),
     metric("观察名单", data.summary.watch || 0, [
       "来源：本页所有逐行过滤结果。",
       "计算：decision.action === WATCH 的比赛数量。",
@@ -313,6 +318,8 @@ function decisionClass(decision) {
 
 function reasonMarkup(row) {
   const pick = row.pick || {};
+  const dailyLab = row.dailyLab || pick.lab || null;
+  const calibrationLayer = pick.calibrationLayer || null;
   const evidenceItems = Array.isArray(pick.evidenceUsedZh) && pick.evidenceUsedZh.length ? pick.evidenceUsedZh : pick.evidenceUsed;
   const evidence = Array.isArray(evidenceItems) && evidenceItems.length ? `<span class="sub">证据：${text(evidenceItems.join("；"))}</span>` : "";
   const riskText = pick.upsetRiskZh || pick.upsetRisk || "";
@@ -335,6 +342,27 @@ function reasonMarkup(row) {
   const mistakeMemory = row.mistakeEngine?.usable && memorySummary
     ? `<span class="sub">失误引擎 KV：已复盘 ${text(memorySummary.totalReviewed || 0)} 场 · 方向失误 ${text(memorySummary.directionMisses || 0)} · 比分失误 ${text(memorySummary.scoreMisses || 0)} · Edge ${memoryAdjustment?.edgeTrustDelta ?? 0}</span>`
     : "";
+  const calibrationLayerText = calibrationLayer?.applied
+    ? `<span class="sub">KV 自动校正：样本 ${text(calibrationLayer.sampleSize || 0)} 场 · H ${pct(calibrationLayer.before?.home)} -> ${pct(calibrationLayer.after?.home)} / D ${pct(calibrationLayer.before?.draw)} -> ${pct(calibrationLayer.after?.draw)} / A ${pct(calibrationLayer.before?.away)} -> ${pct(calibrationLayer.after?.away)}</span>`
+    : `<span class="sub">KV 自动校正：本场未命中可用样本，或该锁单/日读生成于 KV 校正接入之前。</span>`;
+  const calibrationAdjustments = calibrationLayer?.applied
+    ? `<span class="sub">校正项：Edge ${calibrationLayer.adjustments?.edgeTrustDelta ?? 0} · 市场回缩 ${calibrationLayer.adjustments?.marketShrinkDelta ?? 0} · 平局 ${calibrationLayer.adjustments?.drawRiskDelta ?? 0} · 冷门 ${calibrationLayer.adjustments?.upsetSensitivityDelta ?? 0} · 比分 ${calibrationLayer.adjustments?.scoreConfidenceDelta ?? 0} · 进球波动 ${calibrationLayer.adjustments?.goalVolatilityDelta ?? 0}</span>`
+    : "";
+  const calibrationNotes = calibrationLayer?.applied && calibrationLayer?.notes?.length
+    ? `<span class="sub">校正说明：${text(calibrationLayer.notes.join(" / "))}</span>`
+    : "";
+  const rehearsal = dailyLab?.rehearsal
+    ? `<span class="sub">锁定前预演：${dailyLab.rehearsal.searchRequired ? "需继续抓新闻/阵容/Opta 风格预览" : "本地信息已基本覆盖"}${dailyLab.rehearsal.focus?.length ? ` · 重点 ${text(dailyLab.rehearsal.focus.join(" / "))}` : ""}</span>`
+    : "";
+  const winnerVolatility = dailyLab?.winnerVolatility
+    ? `<span class="sub">实时胜方波动：${text(dailyLab.winnerVolatility.leaderName || "-")} 领先 ${pct(dailyLab.winnerVolatility.gap)} · ${text(dailyLab.winnerVolatility.label || "unknown")}</span>`
+    : "";
+  const scoreScenarios = Array.isArray(dailyLab?.scoreScenarios) && dailyLab.scoreScenarios.length
+    ? `<span class="sub">实时比分路径：${text(dailyLab.scoreScenarios.slice(0, 3).map((item) => `${item.score} ${pct(item.probability)}`).join(" / "))}</span>`
+    : "";
+  const liveDrift = row.liveDrift?.scoreChangeRisk || row.liveDrift?.winnerChangeRisk
+    ? `<span class="sub">锁定后实验室：${text(row.liveDrift?.winnerChangeRisk?.noteZh || row.liveDrift?.scoreChangeRisk?.noteZh || row.liveDrift?.noteZh || "")}</span>`
+    : "";
   const decisionReasons = row.decision?.reasons?.length
     ? `<span class="sub">过滤器：${text(row.decision.reasons.join(" "))}</span>`
     : "";
@@ -354,6 +382,13 @@ function reasonMarkup(row) {
       <p>${text(row.analysisReasonZh || pick.reasoning || labelRisk(row.skipReason) || "暂无分析。")}</p>
       ${daily}
       ${mistakeMemory}
+      ${calibrationLayerText}
+      ${calibrationAdjustments}
+      ${calibrationNotes}
+      ${rehearsal}
+      ${winnerVolatility}
+      ${scoreScenarios}
+      ${liveDrift}
       ${decisionReasons}
       ${review}
       ${mistakeTags}
@@ -406,15 +441,29 @@ function driftMarkup(row) {
     ? "Proof 不改；实时数据已偏向另一边，实验室会降低原方向信任。"
     : "实时判断仍与正式锁定一致，只用于概率和仓位校准。";
   return `
-    <span class="sub ${cls}">
-      ${title}：锁定 ${text(drift.official?.name || "-")}，实时 ${text(drift.live?.name || "-")}${drift.live?.confidence ? ` ${pct(drift.live.confidence)}` : ""}
+    <div class="prediction-drift ${cls}">
+      <span>${title}</span>
+      <strong>${text(drift.official?.name || "-")} -> ${text(drift.live?.name || "-")}${drift.live?.confidence ? ` · ${pct(drift.live.confidence)}` : ""}</strong>
+      <small>
+        胜方 ${drift.drifted ? "已变化" : "未变化"}
+        ${drift.scoreChanged ? ` · 比分 ${text(drift.official?.predictedScore || "-")} -> ${text(drift.live?.predictedScore || "-")}` : " · 比分未变化"}
+        ${row.driftTrustPenalty ? ` · 信任 ${pct(row.driftTrustPenalty)}` : ""}
+      </small>
+      ${drift.scoreChangeRisk?.scenarios?.length ? `<small>实时比分路径：${text(drift.scoreChangeRisk.scenarios.map((item) => `${item.score} ${pct(item.probability)}`).join(" / "))}</small>` : ""}
       ${infoButton("锁定后实时估计", [
         copy,
         `正式锁定：${drift.official?.name || "-"}，概率 ${pct(drift.official?.probability ? drift.official.probability * 100 : null)}，信心 ${pct(drift.official?.confidence)}。`,
-        `实时估计：${drift.live?.name || "-"}，概率 ${pct(drift.live?.probability ? drift.live.probability * 100 : null)}，信心 ${pct(drift.live?.confidence)}。`,
+        `实时估计：${drift.live?.name || "-"}，概率 ${pct(drift.live?.probability ? drift.live.probability * 100 : null)}，信心 ${pct(drift.live?.confidence)}，比分 ${drift.live?.predictedScore || "N/A"}。`,
+        `量化信任调整：${pct(row.driftTrustPenalty || 0)}。`,
+        drift.winnerChangeRisk
+          ? `胜方波动：${drift.winnerChangeRisk.leaderName || "-"} 领先 ${pct(drift.winnerChangeRisk.gap)}，等级 ${drift.winnerChangeRisk.label || "unknown"}。`
+          : "胜方波动：暂无。",
+        drift.scoreChangeRisk?.scenarios?.length
+          ? `比分路径：${drift.scoreChangeRisk.scenarios.map((item) => `${item.score} ${pct(item.probability)}`).join(" / ")}。`
+          : "比分路径：暂无。",
         drift.noteZh || ""
       ])}
-    </span>
+    </div>
   `;
 }
 

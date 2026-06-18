@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=paul-ai-54" />
+    <link rel="stylesheet" href="styles.css?v=paul-ai-55" />
   </head>
   <body>
     <header class="hero" id="top">
@@ -57,6 +57,14 @@
           <span data-i18n="groupAccuracy">Group-stage accuracy</span>
         </div>
         <div>
+          <strong id="round32AccuracyStat">Pending</strong>
+          <span>Round of 32 accuracy</span>
+        </div>
+        <div>
+          <strong id="round16AccuracyStat">Pending</strong>
+          <span>Round of 16 accuracy</span>
+        </div>
+        <div>
           <strong id="proofVerifiedStat">0</strong>
           <span data-i18n="proofVerifiedPicks">Proof-verified picks</span>
         </div>
@@ -98,6 +106,32 @@
           </article>
         </div>
         <div class="hit-list" id="hitList"></div>
+        <div class="stage-accuracy-grid" aria-label="Knockout round accuracy">
+          <article>
+            <span>32 强</span>
+            <strong id="round32LabStat">Pending</strong>
+          </article>
+          <article>
+            <span>16 强</span>
+            <strong id="round16LabStat">Pending</strong>
+          </article>
+          <article>
+            <span>8 强</span>
+            <strong id="quarterAccuracyStat">Pending</strong>
+          </article>
+          <article>
+            <span>4 强</span>
+            <strong id="semiAccuracyStat">Pending</strong>
+          </article>
+          <article>
+            <span>季军赛</span>
+            <strong id="thirdPlaceAccuracyStat">Pending</strong>
+          </article>
+          <article>
+            <span>决赛</span>
+            <strong id="finalAccuracyStat">Pending</strong>
+          </article>
+        </div>
       </section>
 
       <section class="console" id="matches">

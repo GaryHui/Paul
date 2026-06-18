@@ -1,6 +1,6 @@
 const { callPaul } = require("./paul");
 const { parseMatchTime } = require("./bracket");
-const { getDailyAnalysis, setDailyAnalysisEntry } = require("./store");
+const { getDailyAnalysis, getPredictions, setDailyAnalysisEntry } = require("./store");
 
 const defaultHorizonDays = Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45);
 const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
@@ -25,28 +25,105 @@ function normalizeProbability(value) {
   return Math.max(0, Math.min(100, Math.round(number)));
 }
 
+function bestProbabilityEntries(match, probabilities = {}) {
+  const sides = [
+    { side: "home", name: match.teamA?.name || "Home", value: Number(probabilities.home || 0) },
+    { side: "away", name: match.teamB?.name || "Away", value: Number(probabilities.away || 0) }
+  ];
+  if (match.round === "Group Stage") {
+    sides.push({ side: "draw", name: "Draw", value: Number(probabilities.draw || 0) });
+  }
+  return sides
+    .filter((item) => Number.isFinite(item.value))
+    .sort((a, b) => b.value - a.value);
+}
+
+function buildWinnerVolatility(match, probabilities = {}) {
+  const ordered = bestProbabilityEntries(match, probabilities);
+  if (!ordered.length) return null;
+  const leader = ordered[0];
+  const challenger = ordered[1] || null;
+  const gap = challenger ? leader.value - challenger.value : leader.value;
+  return {
+    leaderSide: leader.side,
+    leaderName: leader.name,
+    leaderProbability: normalizeProbability(leader.value),
+    challengerSide: challenger?.side || null,
+    challengerName: challenger?.name || null,
+    challengerProbability: challenger ? normalizeProbability(challenger.value) : null,
+    gap: normalizeProbability(gap),
+    label: gap <= 0.04 ? "volatile" : gap <= 0.09 ? "watch" : "stable"
+  };
+}
+
+function buildLabSnapshot(match, result) {
+  const evidence = result.evidence || {};
+  const analysis = result.analysis || {};
+  const probabilities = analysis.probabilities || {};
+  const scoreScenarios = Array.isArray(evidence.poisson?.topScorelines)
+    ? evidence.poisson.topScorelines.slice(0, 5).map((item) => ({
+        score: item.score,
+        probability: normalizeProbability(Number(item.probability || 0) * 100)
+      }))
+    : [];
+  const upset = evidence.paulEdge || {};
+  const rehearsal = evidence.preLockRehearsal || {};
+  return {
+    winnerVolatility: buildWinnerVolatility(match, probabilities),
+    scoreScenarios,
+    upsetWatch: upset.name
+      ? {
+          engine: upset.name,
+          tier: upset.upsetTier || null,
+          score: normalizeProbability(upset.upsetScore),
+          underdogCode: upset.underdogCode || null,
+          underdogName: upset.underdogName || null,
+          signals: Array.isArray(upset.signals) ? upset.signals.slice(0, 5) : [],
+          recommendation: upset.recommendation || null
+        }
+      : null,
+    rehearsal: rehearsal.status
+      ? {
+          status: rehearsal.status,
+          searchRequired: Boolean(rehearsal.searchPlan?.required),
+          focus: Array.isArray(rehearsal.searchPlan?.focus) ? rehearsal.searchPlan.focus.slice(0, 4) : [],
+          teamNewsAvailable: Boolean(rehearsal.teamNews?.available),
+          optaReferenceReady: Boolean(rehearsal.optaReference?.localAdvancedData),
+          suggestedQueries: Array.isArray(rehearsal.searchPlan?.suggestedQueries) ? rehearsal.searchPlan.suggestedQueries.slice(0, 3) : []
+        }
+      : null
+  };
+}
+
 function dailyReadUpdatedAt(entry) {
   const value = entry?.generatedAt || entry?.freshness?.evidenceGeneratedAt;
   const date = value ? new Date(value) : null;
   return date && !Number.isNaN(date.getTime()) ? date : null;
 }
 
-function dailyAnalysisCadence(match, now = new Date()) {
+function dailyAnalysisCadence(match, now = new Date(), options = {}) {
   const matchTime = parseMatchTime(match);
   if (!matchTime) return null;
   const hoursToKickoff = (matchTime.getTime() - now.getTime()) / (60 * 60 * 1000);
   if (hoursToKickoff < 0) return null;
+  if (options.locked) {
+    if (hoursToKickoff <= 1) return { hours: 0.25, label: "15m-locked-final-hour" };
+    if (hoursToKickoff <= 6) return { hours: 0.5, label: "30m-locked-final-six-hours" };
+    if (hoursToKickoff <= 24) return { hours: 2, label: "2h-locked-final-day" };
+    if (hoursToKickoff <= 72) return { hours: 4, label: "4h-locked-final-72h" };
+  }
   if (hoursToKickoff <= 6) return { hours: 1, label: "1h-final-six-hours" };
+  if (hoursToKickoff <= 24) return { hours: 4, label: "4h-final-day" };
   if (hoursToKickoff <= 48) return { hours: 6, label: "6h-final-48-hours" };
   return { hours: 24, label: "24h-daily-read" };
 }
 
 function dueForDailyAnalysis(match, entry, now = new Date(), options = {}) {
   if (options.force) return { due: true, cadenceHours: 0, cadence: "force" };
-  const cadence = dailyAnalysisCadence(match, now);
-  if (!cadence) return { due: false, cadenceHours: null, cadence: "not-playable" };
+  const cadence = dailyAnalysisCadence(match, now, options);
+  if (!cadence) return { due: false, cadenceHours: null, cadence: "not-playable", locked: Boolean(options.locked) };
   const updatedAt = dailyReadUpdatedAt(entry);
-  if (!updatedAt) return { due: true, cadenceHours: cadence.hours, cadence: cadence.label };
+  if (!updatedAt) return { due: true, cadenceHours: cadence.hours, cadence: cadence.label, locked: Boolean(options.locked) };
   const ageHours = (now.getTime() - updatedAt.getTime()) / (60 * 60 * 1000);
   const configuredGraceHours = Math.max(0, Number(options.dueGraceMinutes ?? defaultDueGraceMinutes)) / 60;
   const cadenceGraceHours = Math.min(configuredGraceHours, cadence.hours * 0.1);
@@ -55,6 +132,7 @@ function dueForDailyAnalysis(match, entry, now = new Date(), options = {}) {
     due: ageHours >= dueThresholdHours,
     cadenceHours: cadence.hours,
     cadence: cadence.label,
+    locked: Boolean(options.locked),
     dueThresholdHours: Number(dueThresholdHours.toFixed(2)),
     ageHours: Math.max(0, Number(ageHours.toFixed(2))),
     updatedAt: updatedAt.toISOString()
@@ -71,10 +149,13 @@ function dailyAnalysisPriority(match, entry, now, state) {
     ? (now.getTime() - updatedAt.getTime()) / (60 * 60 * 1000)
     : Number.POSITIVE_INFINITY;
   let bucket = 5;
-  if (hoursToKickoff <= 6) bucket = 0;
-  else if (hoursToKickoff <= 24) bucket = 1;
-  else if (hoursToKickoff <= 72) bucket = 2;
-  else if (hoursToKickoff <= 168) bucket = 3;
+  if (state?.locked && hoursToKickoff <= 6) bucket = -2;
+  else if (state?.locked && hoursToKickoff <= 24) bucket = -1;
+  else if (state?.locked && hoursToKickoff <= 72) bucket = 0;
+  else if (hoursToKickoff <= 6) bucket = 1;
+  else if (hoursToKickoff <= 24) bucket = 2;
+  else if (hoursToKickoff <= 72) bucket = 3;
+  else if (hoursToKickoff <= 168) bucket = 4;
   else bucket = 4;
 
   return {
@@ -101,14 +182,17 @@ function compactDailyRead(match, result) {
       winnerName: analysis.winnerName || null,
       confidence: normalizeProbability(analysis.confidence),
       predictedScore: analysis.predictedScore || analysis.score || null,
-      upsetRisk: analysis.upsetRisk || null
+      upsetRisk: analysis.upsetRisk || null,
+      calibrationLayer: analysis.calibrationLayer || null
     },
     probabilities: {
       home: normalizeProbability(probabilities.home),
       draw: normalizeProbability(probabilities.draw),
       away: normalizeProbability(probabilities.away)
     },
+    evidenceUsed: Array.isArray(analysis.evidenceUsed) ? analysis.evidenceUsed.slice(0, 8) : [],
     summary: analysis.reasoning || analysis.calibrationNote || "",
+    lab: buildLabSnapshot(match, result),
     freshness: {
       evidenceGeneratedAt: result.evidence?.generatedAt || null,
       searchFallback: Boolean(result.evidence?.searchFallback),
@@ -122,14 +206,15 @@ async function refreshDailyAnalysis(matches, options = {}) {
   const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
   const limit = Number(options.limit ?? defaultLimit);
   const priorityWindowHours = Number(options.priorityWindowHours ?? defaultPriorityWindowHours);
-  const dailyCache = await getDailyAnalysis();
+  const [dailyCache, predictions] = await Promise.all([getDailyAnalysis(), getPredictions()]);
   const eligible = matches
     .filter((match) => eligibleForDailyAnalysis(match, now, horizonDays))
     .sort((a, b) => parseMatchTime(a) - parseMatchTime(b));
   const dueCandidates = eligible
     .map((match) => {
       const entry = dailyCache[match.id] || dailyCache[String(match.id)];
-      const state = dueForDailyAnalysis(match, entry, now, options);
+      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
+      const state = dueForDailyAnalysis(match, entry, now, { ...options, locked });
       return {
         match,
         state,
@@ -161,7 +246,9 @@ async function refreshDailyAnalysis(matches, options = {}) {
 
   for (const { match, state } of candidates) {
     try {
-      const result = await callPaul(match);
+      const result = await callPaul(match, {
+        forceSearch: options.forceSearch !== false
+      });
       const record = compactDailyRead(match, result);
       await setDailyAnalysisEntry(match.id, record);
       events.push({
@@ -171,6 +258,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
         winnerCode: record.pick.winnerCode,
         confidence: record.pick.confidence,
         searchFallback: record.freshness.searchFallback,
+        lockedRefresh: Boolean(state.locked),
         cadence: state.cadence,
         cadenceHours: state.cadenceHours
       });

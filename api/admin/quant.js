@@ -200,6 +200,12 @@ function zhRiskText(value) {
   return `风险等级：${level}。${reasons.join("；")}。`;
 }
 
+function scoreParts(score) {
+  const match = String(score || "").match(/(\d+)\s*-\s*(\d+)/);
+  if (!match) return null;
+  return { home: Number(match[1]), away: Number(match[2]) };
+}
+
 function pickFromPrediction(match, prediction) {
   const analysis = prediction?.analysis || prediction?.proof?.payload?.prediction || null;
   if (!analysis) return null;
@@ -216,6 +222,8 @@ function pickFromPrediction(match, prediction) {
     reasoning: analysis.reasoning || prediction.lockReason || "",
     upsetRisk: analysis.upsetRisk || "",
     upsetRiskZh: zhRiskText(analysis.upsetRisk),
+    lab: null,
+    calibrationLayer: analysis.calibrationLayer || prediction?.proof?.payload?.prediction?.calibrationLayer || null,
     evidenceUsed: listify(analysis.evidenceUsed),
     evidenceUsedZh: listify(analysis.evidenceUsed).map(zhEvidenceItem).filter(Boolean)
   };
@@ -237,6 +245,8 @@ function pickFromDaily(match, dailyRead) {
     reasoning: dailyRead?.summary || pick?.reasoning || "",
     upsetRisk: pick?.upsetRisk || dailyRead?.upsetRisk || "",
     upsetRiskZh: zhRiskText(pick?.upsetRisk || dailyRead?.upsetRisk),
+    lab: dailyRead?.lab || null,
+    calibrationLayer: pick?.calibrationLayer || dailyRead?.calibrationLayer || null,
     evidenceUsed: listify(pick?.evidenceUsed || dailyRead?.evidenceUsed),
     evidenceUsedZh: listify(pick?.evidenceUsed || dailyRead?.evidenceUsed).map(zhEvidenceItem).filter(Boolean)
   };
@@ -247,13 +257,24 @@ function liveDriftFromPicks(officialPick, dailyPick) {
   const officialCode = String(officialPick.code || "").toUpperCase();
   const liveCode = String(dailyPick.code || "").toUpperCase();
   if (!officialCode || !liveCode) return null;
+  const winnerVolatility = dailyPick.lab?.winnerVolatility || null;
+  const scoreScenarios = Array.isArray(dailyPick.lab?.scoreScenarios) ? dailyPick.lab.scoreScenarios.slice(0, 3) : [];
+  const officialScore = scoreParts(officialPick.predictedScore);
+  const liveScore = scoreParts(dailyPick.predictedScore);
+  const scoreChanged = Boolean(
+    officialPick.predictedScore &&
+    dailyPick.predictedScore &&
+    (!officialScore || !liveScore || officialScore.home !== liveScore.home || officialScore.away !== liveScore.away)
+  );
   return {
     drifted: officialCode !== liveCode,
+    scoreChanged,
     official: {
       code: officialPick.code,
       name: officialPick.name,
       confidence: officialPick.confidence,
-      probability: officialPick.probabilities?.[officialPick.side] || null
+      probability: officialPick.probabilities?.[officialPick.side] || null,
+      predictedScore: officialPick.predictedScore || null
     },
     live: {
       code: dailyPick.code,
@@ -263,9 +284,63 @@ function liveDriftFromPicks(officialPick, dailyPick) {
       predictedScore: dailyPick.predictedScore || null,
       updatedBy: "Daily read + latest evidence + mistake memory calibration"
     },
+    winnerChangeRisk: winnerVolatility
+      ? {
+          label: winnerVolatility.label,
+          leaderName: winnerVolatility.leaderName,
+          leaderProbability: winnerVolatility.leaderProbability,
+          challengerName: winnerVolatility.challengerName,
+          challengerProbability: winnerVolatility.challengerProbability,
+          gap: winnerVolatility.gap,
+          noteZh: winnerVolatility.label === "volatile"
+            ? "胜方领先幅度很窄，实验室应把结果视为可翻转场。"
+            : winnerVolatility.label === "watch"
+              ? "胜方仍领先，但需要持续观察实时情报。"
+              : "当前胜方概率结构相对稳定。"
+        }
+      : null,
+    scoreChangeRisk: {
+      changed: scoreChanged,
+      officialScore: officialPick.predictedScore || null,
+      liveScore: dailyPick.predictedScore || null,
+      scenarios: scoreScenarios,
+      noteZh: scoreChanged
+        ? "实时比分判断已经偏离正式锁定比分，实验室应继续跟踪进球路径变化。"
+        : scoreScenarios.length
+          ? "实时比分暂未偏移，但应继续观察最可能比分路径是否切换。"
+          : "缺少足够的比分场景数据。"
+    },
     noteZh: officialCode !== liveCode
       ? "正式 Proof 不变，但实时 PAUL 已被新数据推向另一方向；实验室应降低原锁定方向信任或进入观察。"
-      : "实时 PAUL 与正式锁定方向一致；实验室仍只把新数据用于概率和仓位校准。"
+      : scoreChanged
+        ? "正式胜方未变，但实时比分路径已改变；实验室应继续跟踪进球分布和临场信息。"
+        : "实时 PAUL 与正式锁定方向一致；实验室仍只把新数据用于概率和仓位校准。"
+  };
+}
+
+function liveDriftTrustPenalty(liveDrift) {
+  if (!liveDrift) return 0;
+  let penalty = 0;
+  if (liveDrift.drifted) penalty -= 0.12;
+  if (liveDrift.scoreChanged) penalty -= 0.04;
+  const volatility = liveDrift.winnerChangeRisk?.label;
+  if (volatility === "volatile") penalty -= 0.05;
+  else if (volatility === "watch") penalty -= 0.025;
+  return Number(penalty.toFixed(3));
+}
+
+function summarizeLiveDrift(rows) {
+  const driftRows = rows.filter((row) => row.liveDrift);
+  const winnerChanged = driftRows.filter((row) => row.liveDrift?.drifted).length;
+  const scoreChanged = driftRows.filter((row) => row.liveDrift?.scoreChanged).length;
+  const volatile = driftRows.filter((row) => row.liveDrift?.winnerChangeRisk?.label === "volatile").length;
+  return {
+    tracked: driftRows.length,
+    winnerChanged,
+    scoreChanged,
+    volatile,
+    stable: Math.max(0, driftRows.length - winnerChanged),
+    penaltyRows: rows.filter((row) => Number(row.driftTrustPenalty || 0) < 0).length
   };
 }
 
@@ -826,6 +901,20 @@ function chineseAnalysisReason({
     lines.push(`失误引擎读取 KV 复盘记忆 ${mistakeContext.summary?.totalReviewed || 0} 场，本场只作为校准辅助：Edge ${adjustment.edgeTrustDelta || 0}，平局 ${adjustment.drawRiskDelta || 0}，冷门 ${adjustment.upsetSensitivityDelta || 0}${teamNotes ? `；${teamNotes}` : ""}。`);
   }
 
+  if (pick.lab?.rehearsal) {
+    const rehearsal = pick.lab.rehearsal;
+    lines.push(`锁定前预演：${rehearsal.searchRequired ? "需要继续抓取" : "本地信息基本覆盖"}${rehearsal.focus?.length ? `，重点关注 ${rehearsal.focus.join("、")}` : ""}。`);
+  }
+
+  if (pick.lab?.winnerVolatility) {
+    const volatility = pick.lab.winnerVolatility;
+    lines.push(`实时胜方波动：${volatility.leaderName || "当前领先方"}领先 ${volatility.gap ?? "N/A"}%，等级 ${volatility.label || "unknown"}。`);
+  }
+
+  if (pick.lab?.scoreScenarios?.length) {
+    lines.push(`实时比分路径：${pick.lab.scoreScenarios.slice(0, 3).map((item) => `${item.score}(${item.probability}%)`).join(" / ")}。`);
+  }
+
   if (decision?.reasons?.length) {
     lines.push(`过滤器结论：${decision.reasons.join(" ")}`);
   } else if (decision?.action === "BET") {
@@ -888,6 +977,7 @@ module.exports = async function handler(req, res) {
         const officialPick = pickFromPrediction(match, prediction);
         const dailyPick = pickFromDaily(match, dailyRead);
         const liveDrift = liveDriftFromPicks(officialPick, dailyPick);
+        const driftTrustPenalty = liveDriftTrustPenalty(liveDrift);
         const pick = officialPick || dailyPick || (includeMarketFallback ? fallbackPickFromMarket(match, market) : null);
         const result = results[match.id] || results[String(match.id)] || null;
         const matchTime = parseMatchTime(match);
@@ -905,7 +995,7 @@ module.exports = async function handler(req, res) {
           ? clamp(probability * (1 - dailyBlendWeight) + dailyCalibration.latestProbability * dailyBlendWeight, 0.01, 0.99)
           : probability;
         const rowEdgeTrust = clamp(
-          reliability.edgeTrust + dailyCalibration.trustAdjustment + Number(mistakeAdjustment.edgeTrustDelta || 0),
+          reliability.edgeTrust + dailyCalibration.trustAdjustment + Number(mistakeAdjustment.edgeTrustDelta || 0) + driftTrustPenalty,
           0.25,
           0.95
         );
@@ -1055,7 +1145,9 @@ module.exports = async function handler(req, res) {
             away: { code: match.teamB.code, name: match.teamB.name }
           },
           pick,
+          dailyLab: dailyRead?.lab || null,
           liveDrift,
+          driftTrustPenalty,
           winConfidence,
           market,
           result: result
@@ -1205,10 +1297,12 @@ module.exports = async function handler(req, res) {
           marketEdge: Number((Number(row.winConfidence.marketEdge || 0) * 100).toFixed(2))
         };
       }
+      row.driftTrustPenalty = Number((Number(row.driftTrustPenalty || 0) * 100).toFixed(2));
       row.impliedProbability = row.impliedProbability === null ? null : Number((row.impliedProbability * 100).toFixed(2));
     });
 
     const finalBetRows = rows.filter((row) => row.recommendedStake > 0);
+    const driftSummary = summarizeLiveDrift(rows);
     const averageEdge = finalBetRows.length
       ? finalBetRows.reduce((sum, row) => sum + Number(row.edgePct || 0), 0) / finalBetRows.length
       : 0;
@@ -1303,6 +1397,11 @@ module.exports = async function handler(req, res) {
         maxSingleStake: Number(finalBetRows.reduce((max, row) => Math.max(max, row.recommendedStake), 0).toFixed(2)),
         highWinCandidates: rows.filter((row) => row.winConfidence?.candidate && row.winConfidence?.tier === "HIGH").length,
         mediumWinCandidates: rows.filter((row) => row.winConfidence?.candidate && row.winConfidence?.tier === "MEDIUM").length,
+        driftTracked: driftSummary.tracked,
+        driftWinnerChanged: driftSummary.winnerChanged,
+        driftScoreChanged: driftSummary.scoreChanged,
+        driftVolatile: driftSummary.volatile,
+        driftPenaltyRows: driftSummary.penaltyRows,
         averageEdgePct: Number(averageEdge.toFixed(2))
       },
       rows
