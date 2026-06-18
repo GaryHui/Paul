@@ -4,6 +4,7 @@ const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds")
 const { parseMatchTime } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
 const { getEvidenceCache, getMistakeMemory, setEvidenceEntry } = require("./store");
+const { universalPickForPaul } = require("./universal-model");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -310,6 +311,8 @@ function buildPaulEdge(match, evidence) {
 }
 
 function buildUniversalOverlay(match, evidence) {
+  const productionUniversal = universalPickForPaul(match, evidence);
+  if (productionUniversal) return productionUniversal;
   const marketProbabilities = evidence.market?.probabilities || null;
   const blendedProbabilities = evidence.modelBlend || null;
   const marketFavorite = evidence.baselines?.marketFavorite || null;
@@ -661,7 +664,7 @@ function buildPrompt(payload, evidence) {
     "Do not blindly copy the favorite. Look for plausible upset signals: undervalued teams, injury mismatch, fixture congestion, tactical matchup, psychology, group-table pressure, venue, travel, rest, and weather.",
     "Explicitly compare PAUL's pick with marketFavorite, ratingFavorite, poissonFavorite, and blendedFavorite from evidence.baselines.",
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
-    "Use evidence.universal as PAUL's cross-model overlay. It may override the market anchor only when universal.override is true; otherwise mention it as reviewed but not decisive.",
+    "Use evidence.universal as PAUL's historical Universal gate, distilled from broad backtests. It may permit a market override only when universal.override is true; PAUL's live news and KV learning layer still have final authority.",
     "Use evidence.learning as PAUL's adaptive learning layer. It turns post-match KV corrections into bounded model-weight changes before each prediction, so explain when learning weights materially affect the read.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
     "When evidence.preLockRehearsal.upsetPreview.recommendation says the upset probability is live enough, spend extra effort on underdog news, lineup absences, set pieces, pressing/transition routes, xG/xGA, and market movement before deciding whether to slightly lift the upset/draw probability.",
@@ -930,7 +933,7 @@ function defaultEvidenceUsed(evidence) {
   if (evidence.intelligence || evidence.market?.intelligence) used.push("team news and availability");
   if (evidence.mistakeEngine?.usable) used.push("mistake engine calibration memory");
   if (evidence.learning?.applied) used.push("adaptive learning weights from post-match memory");
-  if (evidence.universal) used.push("universal cross-model overlay");
+  if (evidence.universal) used.push("historical Universal gate");
   if (evidence.searchFallback) used.push("fresh public news/search validation");
   return used;
 }
