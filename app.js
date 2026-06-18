@@ -2433,7 +2433,7 @@ function renderPublicTraceUnsafe() {
     });
 
   const officialCount = rows.filter((row) => row.official).length;
-  const dailyCount = rows.filter((row) => !row.official && row.daily).length;
+  const dailyCount = rows.filter((row) => row.daily).length || Object.keys(automationState.dailyAnalysis || {}).length;
   const marketCount = rows.filter((row) => row.market).length;
   const resultCount = rows.filter((row) => row.result.winnerCode).length;
   if (summary) {
