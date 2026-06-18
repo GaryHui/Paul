@@ -2193,19 +2193,42 @@ function currentKvMemoryMarkup() {
   const total = Number(memory.totalReviewed || 0);
   if (!total) return "";
   const updated = memory.updatedAt ? formatProofTime(memory.updatedAt) : tr("unknown");
-  const profile = memory.learningProfile || {};
-  const adjustment = profile.calibrationAdjustment || memory.calibrationAdjustment || {};
-  const weights = profile.modelWeights || null;
+  const details = currentKvCalibrationDetails({ includeUpdated: false });
   return `
     <div class="daily-read__meta daily-read__meta--calibration">
       <strong>Current KV memory</strong>
       <p>${total} post-match reviews · direction misses ${escapeHtml(String(memory.directionMisses || 0))} · score misses ${escapeHtml(String(memory.scoreMisses || 0))}</p>
-      ${profile.maturity ? `<p>Learning stage: ${escapeHtml(profile.maturity)} · direction miss rate ${escapeHtml(String(profile.directionMissRate ?? "n/a"))} · score miss rate ${escapeHtml(String(profile.scoreMissRate ?? "n/a"))}</p>` : ""}
-      ${weights ? `<p>Adaptive weights: market ${escapeHtml(String(weights.market))} · Elo ${escapeHtml(String(weights.elo))} · score ${escapeHtml(String(weights.poisson))}</p>` : ""}
-      ${adjustment.sampleSize ? `<p>Next-read calibration: market ${escapeHtml(String(adjustment.marketShrinkDelta ?? 0))} · draw ${escapeHtml(String(adjustment.drawRiskDelta ?? 0))} · upset ${escapeHtml(String(adjustment.upsetSensitivityDelta ?? 0))}</p>` : ""}
+      ${details}
       <p>${memory.usable ? "Available for new Daily PAUL reads and future locks." : "Stored, but not enough calibration signal yet."} Updated ${escapeHtml(updated)}.</p>
     </div>
   `;
+}
+
+function currentKvCalibrationDetails({ includeUpdated = true } = {}) {
+  const memory = automationState.mistakeMemory || {};
+  const total = Number(memory.totalReviewed || 0);
+  if (!total) return `<p>No current KV calibration sample is available yet.</p>`;
+  const updated = memory.updatedAt ? formatProofTime(memory.updatedAt) : tr("unknown");
+  const profile = memory.learningProfile || {};
+  const adjustment = profile.calibrationAdjustment || memory.calibrationAdjustment || {};
+  const weights = profile.modelWeights || null;
+  const maturity = profile.maturity || (adjustment.sampleSize ? "active" : "");
+  const lines = [];
+  if (maturity || profile.directionMissRate !== undefined || profile.scoreMissRate !== undefined) {
+    lines.push(`<p>Learning stage: ${escapeHtml(maturity || "active")} · direction miss rate ${escapeHtml(String(profile.directionMissRate ?? "n/a"))} · score miss rate ${escapeHtml(String(profile.scoreMissRate ?? "n/a"))}</p>`);
+  }
+  if (weights) {
+    lines.push(`<p>Adaptive weights: market ${escapeHtml(String(weights.market))} · Elo ${escapeHtml(String(weights.elo))} · score ${escapeHtml(String(weights.poisson))}</p>`);
+  }
+  if (adjustment.sampleSize || memory.usable) {
+    lines.push(`<p>Next-read calibration: edge ${escapeHtml(String(adjustment.edgeTrustDelta ?? 0))} · market ${escapeHtml(String(adjustment.marketShrinkDelta ?? 0))} · draw ${escapeHtml(String(adjustment.drawRiskDelta ?? 0))} · upset ${escapeHtml(String(adjustment.upsetSensitivityDelta ?? 0))}</p>`);
+    lines.push(`<p>Score layer: confidence ${escapeHtml(String(adjustment.scoreConfidenceDelta ?? 0))} · goals ${escapeHtml(String(adjustment.goalVolatilityDelta ?? 0))} · sample ${escapeHtml(String(adjustment.sampleSize || total))}</p>`);
+  }
+  if (Array.isArray(profile.currentBias) && profile.currentBias.length) {
+    lines.push(`<p>Learning bias: ${escapeHtml(profile.currentBias.slice(0, 3).join(" / "))}</p>`);
+  }
+  if (includeUpdated) lines.push(`<p>Updated ${escapeHtml(updated)}.</p>`);
+  return lines.join("") || `<p>${total} KV reviews are stored, but adaptive calibration details are still warming up.</p>`;
 }
 
 function liveCorrectionMarkup(match) {
@@ -2774,6 +2797,7 @@ function officialAnalysisMarkup(official) {
           : `
             <p>Not applied at lock time.</p>
             <p>This proof is frozen. Current KV memory can still calibrate Daily PAUL reads and future locks.</p>
+            ${currentKvCalibrationDetails({ includeUpdated: true })}
           `}
       </div>
       ${currentKv}
