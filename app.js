@@ -1536,6 +1536,7 @@ let automationState = {
   predictions: {},
   results: {},
   dailyAnalysis: {},
+  liveCorrections: {},
   mistakeMemory: null,
   marketTrace: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
@@ -2059,6 +2060,10 @@ function dailyReadFor(match) {
   return automationState.dailyAnalysis?.[match.id] || automationState.dailyAnalysis?.[String(match.id)] || null;
 }
 
+function liveCorrectionFor(match) {
+  return automationState.liveCorrections?.[match.id] || automationState.liveCorrections?.[String(match.id)] || null;
+}
+
 function marketTraceFor(match) {
   return automationState.marketTrace?.[match.id] || automationState.marketTrace?.[String(match.id)] || null;
 }
@@ -2141,6 +2146,25 @@ function currentKvMemoryMarkup() {
   `;
 }
 
+function liveCorrectionMarkup(match) {
+  const correction = liveCorrectionFor(match);
+  if (!correction) return "";
+  const live = correction.live || {};
+  const official = correction.official || {};
+  const updated = correction.generatedAt ? formatProofTime(correction.generatedAt) : tr("unknown");
+  const freshness = correction.freshness?.evidenceUpdatedAt ? formatProofTime(correction.freshness.evidenceUpdatedAt) : tr("pending");
+  return `
+    <div class="daily-read__drift ${correction.drifted ? "is-drifted" : "is-aligned"}">
+      <span>KV live correction</span>
+      <strong>${escapeHtml(official.winnerName || tr("pending"))} -> ${escapeHtml(live.winnerName || tr("pending"))}${live.probability ? ` · ${dailyReadPercent(live.probability)}` : ""}</strong>
+      ${correction.scoreChanged ? `<p>${tr("predictedScore")}: ${escapeHtml(official.predictedScore || "N/A")} -> ${escapeHtml(live.predictedScore || "N/A")}</p>` : `<p>${tr("predictedScore")}: ${escapeHtml(live.predictedScore || official.predictedScore || "N/A")}</p>`}
+      ${live.probabilities ? `<p>${escapeHtml(teamNameForCode(match.teamA?.code, match))}: ${dailyReadPercent(live.probabilities.home)} · ${tr("draw")}: ${dailyReadPercent(live.probabilities.draw)} · ${escapeHtml(teamNameForCode(match.teamB?.code, match))}: ${dailyReadPercent(live.probabilities.away)}</p>` : ""}
+      <p>${escapeHtml(correction.reason || "KV memory and latest cached evidence are adjusting the live lab estimate.")}</p>
+      <p>Updated ${escapeHtml(updated)} · evidence ${escapeHtml(freshness)}. News refresh will replace this when Daily PAUL Read completes.</p>
+    </div>
+  `;
+}
+
 function liveDriftFor(match, read) {
   const official = officialPrediction(match);
   const officialCode = official ? officialPickCode(official) : null;
@@ -2186,9 +2210,10 @@ function renderDailyRead(match) {
     panel.innerHTML = `
       <div class="daily-read__head">
         <span>${tr("dailyRead")}</span>
-        <strong>${tr("nextRefreshPending")}</strong>
+        <strong>${liveCorrectionFor(match) ? tr("liveEstimate") : tr("nextRefreshPending")}</strong>
       </div>
       <p class="daily-read__empty">${tr("dailyRefreshCopy")}</p>
+      ${liveCorrectionMarkup(match)}
       ${currentKvMemoryMarkup()}
     `;
     return;
@@ -3054,6 +3079,7 @@ async function loadAutomationStatus() {
       predictions: mergedPredictions,
       results: status.results || {},
       dailyAnalysis: status.dailyAnalysis || automationState.dailyAnalysis || {},
+      liveCorrections: status.liveCorrections || automationState.liveCorrections || {},
       mistakeMemory: status.mistakeMemory || automationState.mistakeMemory || null,
       marketTrace: status.marketTrace || automationState.marketTrace || {},
       accuracy: status.accuracy || automationState.accuracy,
