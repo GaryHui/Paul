@@ -6,6 +6,7 @@ const defaultHorizonDays = Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45)
 const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
 const defaultDueGraceMinutes = Number(process.env.DAILY_ANALYSIS_DUE_GRACE_MINUTES || 90);
 const defaultPostKickoffHours = Number(process.env.DAILY_ANALYSIS_POST_KICKOFF_HOURS || 3);
+const defaultProtectedMaxMatches = Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 4);
 const defaultPriorityWindowHours = Number(
   process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS ||
   process.env.PREDICTION_LEAD_HOURS ||
@@ -123,9 +124,11 @@ function dailyAnalysisCadence(match, now = new Date(), options = {}) {
     if (hoursToKickoff <= 24) return { hours: 2, label: "2h-locked-final-day" };
     if (hoursToKickoff <= 72) return { hours: 4, label: "4h-locked-final-72h" };
   }
-  if (hoursToKickoff <= 6) return { hours: 1, label: "1h-final-six-hours" };
-  if (hoursToKickoff <= 24) return { hours: 4, label: "4h-final-day" };
-  if (hoursToKickoff <= 48) return { hours: 6, label: "6h-final-48-hours" };
+  if (hoursToKickoff <= 1) return { hours: 0.25, label: "15m-final-hour-news-check" };
+  if (hoursToKickoff <= 3) return { hours: 0.5, label: "30m-final-three-hours-news-check" };
+  if (hoursToKickoff <= 12) return { hours: 1, label: "1h-final-12-hours-news-check" };
+  if (hoursToKickoff <= 24) return { hours: 2, label: "2h-final-day-news-check" };
+  if (hoursToKickoff <= 48) return { hours: 4, label: "4h-final-48-hours-news-check" };
   return { hours: 24, label: "24h-daily-read" };
 }
 
@@ -177,6 +180,41 @@ function dailyAnalysisPriority(match, entry, now, state) {
   };
 }
 
+function dailyAnalysisQueue(matches, dailyCache = {}, predictions = {}, options = {}) {
+  const now = options.now || new Date();
+  const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
+  const eligible = matches
+    .filter((match) => {
+      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
+      return eligibleForDailyAnalysis(match, now, horizonDays, {
+        ...options,
+        locked,
+        allowPostKickoff: Boolean(options.allowPostKickoff ?? locked)
+      });
+    })
+    .sort((a, b) => parseMatchTime(a) - parseMatchTime(b));
+  const dueCandidates = eligible
+    .map((match) => {
+      const entry = dailyCache[match.id] || dailyCache[String(match.id)];
+      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
+      const state = dueForDailyAnalysis(match, entry, now, { ...options, locked });
+      return {
+        match,
+        state,
+        priority: dailyAnalysisPriority(match, entry, now, state)
+      };
+    })
+    .filter((item) => item.state.due)
+    .sort((a, b) => {
+      if (a.priority.bucket !== b.priority.bucket) return a.priority.bucket - b.priority.bucket;
+      if (a.priority.hoursToKickoff !== b.priority.hoursToKickoff) {
+        return a.priority.hoursToKickoff - b.priority.hoursToKickoff;
+      }
+      return b.priority.ageHours - a.priority.ageHours;
+    });
+  return { eligible, dueCandidates };
+}
+
 function compactDailyRead(match, result) {
   const analysis = result.analysis || {};
   const probabilities = analysis.probabilities || {};
@@ -217,38 +255,17 @@ async function refreshDailyAnalysis(matches, options = {}) {
   const horizonDays = Number(options.horizonDays ?? defaultHorizonDays);
   const limit = Number(options.limit ?? defaultLimit);
   const priorityWindowHours = Number(options.priorityWindowHours ?? defaultPriorityWindowHours);
+  const protectedMaxMatches = Math.max(0, Number(options.protectedMaxMatches ?? defaultProtectedMaxMatches));
   const [dailyCache, predictions] = await Promise.all([getDailyAnalysis(), getPredictions()]);
-  const eligible = matches
-    .filter((match) => {
-      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
-      return eligibleForDailyAnalysis(match, now, horizonDays, {
-        ...options,
-        locked,
-        allowPostKickoff: Boolean(options.allowPostKickoff ?? locked)
-      });
-    })
-    .sort((a, b) => parseMatchTime(a) - parseMatchTime(b));
-  const dueCandidates = eligible
-    .map((match) => {
-      const entry = dailyCache[match.id] || dailyCache[String(match.id)];
-      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
-      const state = dueForDailyAnalysis(match, entry, now, { ...options, locked });
-      return {
-        match,
-        state,
-        priority: dailyAnalysisPriority(match, entry, now, state)
-      };
-    })
-    .filter((item) => item.state.due)
-    .sort((a, b) => {
-      if (a.priority.bucket !== b.priority.bucket) return a.priority.bucket - b.priority.bucket;
-      if (a.priority.hoursToKickoff !== b.priority.hoursToKickoff) {
-        return a.priority.hoursToKickoff - b.priority.hoursToKickoff;
-      }
-      return b.priority.ageHours - a.priority.ageHours;
-    });
+  const { eligible, dueCandidates } = dailyAnalysisQueue(matches, dailyCache, predictions, {
+    ...options,
+    now,
+    horizonDays
+  });
   const protectedCandidates = limit > 0
-    ? dueCandidates.filter((item) => item.priority.hoursToKickoff <= priorityWindowHours)
+    ? dueCandidates
+      .filter((item) => item.priority.hoursToKickoff <= priorityWindowHours)
+      .slice(0, Math.min(limit, protectedMaxMatches || limit))
     : [];
   const selectedIds = new Set(protectedCandidates.map((item) => String(item.match.id)));
   const remainingSlots = Math.max(0, limit - protectedCandidates.length);
@@ -302,6 +319,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
     errors: events.filter((event) => event.status === "error").length,
     horizonDays,
     limit,
+    protectedMaxMatches,
     priorityWindowHours,
     events
   };
@@ -310,6 +328,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
 module.exports = {
   eligibleForDailyAnalysis,
   dailyAnalysisCadence,
+  dailyAnalysisQueue,
   dailyAnalysisPriority,
   dueForDailyAnalysis,
   refreshDailyAnalysis

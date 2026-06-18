@@ -3,6 +3,7 @@ const path = require("path");
 const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
+const { dailyAnalysisQueue } = require("../_lib/daily-analysis");
 const { hasResultsProvider, providerName } = require("../_lib/results");
 const { buildMistakeContext } = require("../_lib/mistake-engine");
 const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
@@ -258,6 +259,23 @@ module.exports = async function handler(req, res) {
     .at(-1) || null;
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
+  const dailyQueue = dailyAnalysisQueue(resolvedMatches, dailyAnalysis, predictions, {
+    now: new Date(),
+    allowPostKickoff: true
+  });
+  const nextDailyAnalysisDue = dailyQueue.dueCandidates.slice(0, 6).map((item) => ({
+    matchId: item.match.id,
+    label: `${item.match.teamA?.name || "Home"} vs ${item.match.teamB?.name || "Away"}`,
+    round: item.match.round,
+    kickoffAt: item.match.kickoffAt || null,
+    cadence: item.state.cadence,
+    cadenceHours: item.state.cadenceHours,
+    ageHours: item.state.ageHours ?? null,
+    hoursToKickoff: Number.isFinite(item.priority.hoursToKickoff)
+      ? Number(item.priority.hoursToKickoff.toFixed(2))
+      : null,
+    locked: Boolean(item.state.locked)
+  }));
   const resolvedById = Object.fromEntries(resolvedMatches.map((match) => [String(match.id), match]));
   const marketTrace = Object.fromEntries(Object.entries(evidenceCache || {})
     .map(([matchId, evidence]) => {
@@ -320,9 +338,12 @@ module.exports = async function handler(req, res) {
       oddsRefreshHorizonDays: Number(process.env.ODDS_REFRESH_HORIZON_DAYS || 60),
       dailyAnalysisCount: dailyEntries.length,
       latestDailyReadAt,
+      dailyAnalysisDueCount: dailyQueue.dueCandidates.length,
+      nextDailyAnalysisDue,
       cronOddsRefreshMaxMatches: Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12),
-      cronDailyAnalysisMaxMatches: Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 12),
+      cronDailyAnalysisMaxMatches: Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 4),
       dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8),
+      dailyAnalysisProtectedMaxMatches: Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 4),
       dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
       dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36),
       firstMatchEvidence: first

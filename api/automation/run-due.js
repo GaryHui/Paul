@@ -9,8 +9,8 @@ const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult }
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2);
-const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 0);
-const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 0);
+const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12);
+const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 4);
 const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 8);
 const cronResultSyncMaxMatches = Number(process.env.CRON_RESULT_SYNC_MAX_MATCHES || 4);
 

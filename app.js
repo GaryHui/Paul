@@ -3116,6 +3116,12 @@ async function loadAutomationStatus() {
     const dailyState = readiness.dailyAnalysisCount
       ? `${readiness.dailyAnalysisCount} daily PAUL reads cached${readiness.latestDailyReadAt ? `, latest ${formatProofTime(readiness.latestDailyReadAt)}` : ""}`
       : "no daily PAUL reads yet";
+    const nextDaily = Array.isArray(readiness.nextDailyAnalysisDue) && readiness.nextDailyAnalysisDue.length
+      ? readiness.nextDailyAnalysisDue[0]
+      : null;
+    const dailyDueState = Number(readiness.dailyAnalysisDueCount || 0)
+      ? `daily due ${readiness.dailyAnalysisDueCount}${nextDaily ? `, next #${nextDaily.matchId} ${nextDaily.cadence}` : ""}`
+      : "daily queue clear";
     const cronState = status.cronProtected ? "Cron protected" : "Cron secret missing";
     const oddsState = readiness.liveOddsProvider
       ? `live odds via ${readiness.liveOddsProvider}`
@@ -3123,7 +3129,7 @@ async function loadAutomationStatus() {
         ? "market odds loaded"
         : "market odds missing";
     const ratingState = readiness.teamRatings ? "team ratings loaded" : "team ratings missing";
-    statusText.textContent = `${qwenState}; ${cronState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
+    statusText.textContent = `${qwenState}; ${cronState}; ${oddsState}; ${evidenceState}; ${dailyState}; ${dailyDueState}; ${ratingState}; ${resultState}; ${status.totalMatches || 0} fixtures loaded.`;
   } catch (error) {
     statusText.textContent = error.message;
     const trace = document.getElementById("publicTrace");
