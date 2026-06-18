@@ -5,18 +5,23 @@ const { getDailyAnalysis, getPredictions, setDailyAnalysisEntry } = require("./s
 const defaultHorizonDays = Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45);
 const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
 const defaultDueGraceMinutes = Number(process.env.DAILY_ANALYSIS_DUE_GRACE_MINUTES || 90);
+const defaultPostKickoffHours = Number(process.env.DAILY_ANALYSIS_POST_KICKOFF_HOURS || 3);
 const defaultPriorityWindowHours = Number(
   process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS ||
   process.env.PREDICTION_LEAD_HOURS ||
   72
 );
 
-function eligibleForDailyAnalysis(match, now = new Date(), horizonDays = defaultHorizonDays) {
+function eligibleForDailyAnalysis(match, now = new Date(), horizonDays = defaultHorizonDays, options = {}) {
   if (!match?.teamA?.code || !match?.teamB?.code) return false;
   const matchTime = parseMatchTime(match);
   if (!matchTime) return false;
-  if (matchTime < now) return false;
-  return matchTime.getTime() - now.getTime() <= horizonDays * 24 * 60 * 60 * 1000;
+  const diffMs = matchTime.getTime() - now.getTime();
+  if (diffMs < 0) {
+    const postKickoffHours = Number(options.postKickoffHours ?? defaultPostKickoffHours);
+    return Boolean(options.allowPostKickoff) && Math.abs(diffMs) <= postKickoffHours * 60 * 60 * 1000;
+  }
+  return diffMs <= horizonDays * 24 * 60 * 60 * 1000;
 }
 
 function normalizeProbability(value) {
@@ -105,7 +110,13 @@ function dailyAnalysisCadence(match, now = new Date(), options = {}) {
   const matchTime = parseMatchTime(match);
   if (!matchTime) return null;
   const hoursToKickoff = (matchTime.getTime() - now.getTime()) / (60 * 60 * 1000);
-  if (hoursToKickoff < 0) return null;
+  if (hoursToKickoff < 0) {
+    const postKickoffHours = Number(options.postKickoffHours ?? defaultPostKickoffHours);
+    if (options.locked && Math.abs(hoursToKickoff) <= postKickoffHours) {
+      return { hours: 0.25, label: "15m-locked-live-drift-window" };
+    }
+    return null;
+  }
   if (options.locked) {
     if (hoursToKickoff <= 1) return { hours: 0.25, label: "15m-locked-final-hour" };
     if (hoursToKickoff <= 6) return { hours: 0.5, label: "30m-locked-final-six-hours" };
@@ -208,7 +219,14 @@ async function refreshDailyAnalysis(matches, options = {}) {
   const priorityWindowHours = Number(options.priorityWindowHours ?? defaultPriorityWindowHours);
   const [dailyCache, predictions] = await Promise.all([getDailyAnalysis(), getPredictions()]);
   const eligible = matches
-    .filter((match) => eligibleForDailyAnalysis(match, now, horizonDays))
+    .filter((match) => {
+      const locked = Boolean(predictions[match.id] || predictions[String(match.id)]);
+      return eligibleForDailyAnalysis(match, now, horizonDays, {
+        ...options,
+        locked,
+        allowPostKickoff: Boolean(options.allowPostKickoff ?? locked)
+      });
+    })
     .sort((a, b) => parseMatchTime(a) - parseMatchTime(b));
   const dueCandidates = eligible
     .map((match) => {

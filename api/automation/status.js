@@ -4,7 +4,8 @@ const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
 const { hasResultsProvider, providerName } = require("../_lib/results");
-const { getDailyAnalysis, getEvidenceCache, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
+const { buildMistakeContext } = require("../_lib/mistake-engine");
+const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
 function sideFromMarket(probabilities = {}, allowDraw = true) {
   const sides = allowDraw ? ["home", "draw", "away"] : ["home", "away"];
@@ -47,6 +48,8 @@ module.exports = async function handler(req, res) {
   const results = await getResults();
   const evidenceCache = await getEvidenceCache();
   const dailyAnalysis = await getDailyAnalysis();
+  const mistakeMemory = await getMistakeMemory();
+  const globalMistakeContext = buildMistakeContext({ teamA: {}, teamB: {} }, mistakeMemory);
   const evidenceEntries = Object.values(evidenceCache || {});
   const dailyEntries = Object.values(dailyAnalysis || {});
   const latestEvidenceAt = evidenceEntries
@@ -84,6 +87,15 @@ module.exports = async function handler(req, res) {
     predictions,
     results,
     dailyAnalysis,
+    mistakeMemory: {
+      updatedAt: globalMistakeContext.updatedAt,
+      usable: globalMistakeContext.usable,
+      totalReviewed: globalMistakeContext.summary?.totalReviewed || 0,
+      directionMisses: globalMistakeContext.summary?.directionMisses || 0,
+      scoreMisses: globalMistakeContext.summary?.scoreMisses || 0,
+      exactHits: globalMistakeContext.summary?.exactHits || 0,
+      calibrationAdjustment: globalMistakeContext.calibrationAdjustment || null
+    },
     marketTrace,
     resolvedMatches: resolvedMatches.map((match) => ({
       id: match.id,
@@ -105,6 +117,8 @@ module.exports = async function handler(req, res) {
       oddsRefreshHorizonDays: Number(process.env.ODDS_REFRESH_HORIZON_DAYS || 60),
       dailyAnalysisCount: dailyEntries.length,
       latestDailyReadAt,
+      cronOddsRefreshMaxMatches: Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12),
+      cronDailyAnalysisMaxMatches: Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 12),
       dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8),
       dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
       dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36),

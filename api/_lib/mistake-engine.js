@@ -52,6 +52,34 @@ function causeCounts(items) {
   }, {});
 }
 
+const calibrationKeys = [
+  "edgeTrustDelta",
+  "scoreModelDelta",
+  "marketShrinkDelta",
+  "drawRiskDelta",
+  "upsetSensitivityDelta",
+  "goalVolatilityDelta"
+];
+
+function emptyCalibrationTotals() {
+  return Object.fromEntries(calibrationKeys.map((key) => [key, 0]));
+}
+
+function addCalibrationTotals(target = {}, hints = {}) {
+  calibrationKeys.forEach((key) => {
+    target[key] = Number(target[key] || 0) + Number(hints?.[key] || 0);
+  });
+  return target;
+}
+
+function averageCalibrationTotals(totals = {}, matches = 0) {
+  if (!matches) return null;
+  return Object.fromEntries(calibrationKeys.map((key) => [
+    key,
+    Number((Number(totals[key] || 0) / matches).toFixed(4))
+  ]));
+}
+
 function classifyReview({ match, result, analysis, evidence }) {
   const predictedWinner = String(analysis?.winnerCode || analysis?.winner || "").toUpperCase();
   const actualWinner = winnerForResult(match, result);
@@ -237,6 +265,7 @@ function emptyAggregate() {
     scoreMisses: 0,
     exactHits: 0,
     causeCounts: {},
+    calibrationTotals: emptyCalibrationTotals(),
     teamMemory: {}
   };
 }
@@ -250,12 +279,20 @@ function addReviewToAggregate(aggregate, review) {
   Object.entries(causeCounts(review.causeTags || [])).forEach(([cause, count]) => {
     aggregate.causeCounts[cause] = (aggregate.causeCounts[cause] || 0) + count;
   });
+  addCalibrationTotals(aggregate.calibrationTotals, review.calibrationHints);
   (review.teamCodes || []).forEach((code) => {
-    aggregate.teamMemory[code] ||= { matches: 0, directionMisses: 0, scoreMisses: 0, causes: {} };
+    aggregate.teamMemory[code] ||= {
+      matches: 0,
+      directionMisses: 0,
+      scoreMisses: 0,
+      causes: {},
+      calibrationTotals: emptyCalibrationTotals()
+    };
     const team = aggregate.teamMemory[code];
     team.matches += 1;
     if (!review.directionHit) team.directionMisses += 1;
     if (!review.scoreHit) team.scoreMisses += 1;
+    addCalibrationTotals(team.calibrationTotals, review.calibrationHints);
     Object.entries(causeCounts(review.causeTags || [])).forEach(([cause, count]) => {
       team.causes[cause] = (team.causes[cause] || 0) + count;
     });
@@ -266,6 +303,16 @@ function rebuildAggregate(memory) {
   const aggregate = emptyAggregate();
   Object.values(memory.matches || {}).forEach((review) => addReviewToAggregate(aggregate, review));
   memory.aggregate = aggregate;
+}
+
+function aggregateForMemory(memory = {}) {
+  const matches = memory.matches || {};
+  const matchCount = Object.keys(matches).length;
+  const aggregateTotal = Number(memory.aggregate?.total || 0);
+  if (memory.aggregate && aggregateTotal >= matchCount) return memory.aggregate;
+  const aggregate = emptyAggregate();
+  Object.values(matches).forEach((review) => addReviewToAggregate(aggregate, review));
+  return aggregate;
 }
 
 async function recordMistakeReview({ match, result, prediction, evidence, baseReview = null }) {
@@ -332,7 +379,7 @@ async function recordMistakeReview({ match, result, prediction, evidence, baseRe
 }
 
 function summarizeRelevantMistakes(match, memory = {}) {
-  const aggregate = memory.aggregate || {};
+  const aggregate = aggregateForMemory(memory);
   const teams = teamCodes(match).map((code) => ({ code, memory: aggregate.teamMemory?.[code] || null }));
   const relevant = teams.filter((item) => item.memory);
   const causeCountsAll = aggregate.causeCounts || {};
@@ -348,11 +395,13 @@ function summarizeRelevantMistakes(match, memory = {}) {
     scoreMisses: aggregate.scoreMisses || 0,
     exactHits: aggregate.exactHits || 0,
     topGlobalCauses,
+    averageCalibration: averageCalibrationTotals(aggregate.calibrationTotals, aggregate.total || 0),
     teams: relevant.map((item) => ({
       code: item.code,
       matches: item.memory.matches || 0,
       directionMissRate: item.memory.matches ? Number(((item.memory.directionMisses || 0) / item.memory.matches).toFixed(3)) : null,
       scoreMissRate: item.memory.matches ? Number(((item.memory.scoreMisses || 0) / item.memory.matches).toFixed(3)) : null,
+      averageCalibration: averageCalibrationTotals(item.memory.calibrationTotals, item.memory.matches || 0),
       topCauses: Object.entries(item.memory.causes || {})
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
@@ -362,18 +411,38 @@ function summarizeRelevantMistakes(match, memory = {}) {
   };
 }
 
+function weightedTeamCalibration(summary = {}) {
+  const teams = Array.isArray(summary.teams) ? summary.teams.filter((item) => item?.averageCalibration && Number(item.matches || 0) > 0) : [];
+  const totalWeight = teams.reduce((sum, item) => sum + Number(item.matches || 0), 0);
+  if (!totalWeight) return null;
+  const totals = emptyCalibrationTotals();
+  teams.forEach((item) => {
+    const weight = Number(item.matches || 0) / totalWeight;
+    calibrationKeys.forEach((key) => {
+      totals[key] += Number(item.averageCalibration?.[key] || 0) * weight;
+    });
+  });
+  return Object.fromEntries(calibrationKeys.map((key) => [key, Number(totals[key].toFixed(4))]));
+}
+
 function mistakeAdjustmentFromMemory(summary = {}) {
   const total = Number(summary.totalReviewed || 0);
   if (!total) return null;
-  const directionMissRate = Number(summary.directionMisses || 0) / total;
-  const scoreMissRate = Number(summary.scoreMisses || 0) / total;
-  const drawPressure = summary.topGlobalCauses?.find((item) => item.cause === "draw_underestimated")?.count || 0;
-  const upsetPressure = summary.topGlobalCauses?.find((item) => item.cause === "upset_underestimated")?.count || 0;
+  const globalAverage = summary.averageCalibration || {};
+  const teamAverage = weightedTeamCalibration(summary) || {};
+  const blend = (key, fallback = 0) => {
+    const globalValue = Number(globalAverage?.[key] || 0);
+    const teamValue = Number(teamAverage?.[key] || 0);
+    const combined = globalValue * 0.65 + teamValue * 0.35;
+    return Number.isFinite(combined) && combined !== 0 ? combined : fallback;
+  };
   return {
-    edgeTrustDelta: Number(clamp(0.02 - directionMissRate * 0.05, -0.04, 0.015).toFixed(3)),
-    scoreConfidenceDelta: Number(clamp(0.015 - scoreMissRate * 0.035, -0.035, 0.012).toFixed(3)),
-    drawRiskDelta: Number(clamp(drawPressure / Math.max(total, 1) * 0.05, 0, 0.025).toFixed(3)),
-    upsetSensitivityDelta: Number(clamp(upsetPressure / Math.max(total, 1) * 0.045, 0, 0.025).toFixed(3)),
+    edgeTrustDelta: Number(clamp(blend("edgeTrustDelta"), -0.04, 0.02).toFixed(3)),
+    scoreConfidenceDelta: Number(clamp(blend("scoreModelDelta"), -0.035, 0.018).toFixed(3)),
+    marketShrinkDelta: Number(clamp(blend("marketShrinkDelta"), -0.02, 0.05).toFixed(3)),
+    drawRiskDelta: Number(clamp(blend("drawRiskDelta"), -0.02, 0.03).toFixed(3)),
+    upsetSensitivityDelta: Number(clamp(blend("upsetSensitivityDelta"), -0.03, 0.03).toFixed(3)),
+    goalVolatilityDelta: Number(clamp(blend("goalVolatilityDelta"), -0.02, 0.02).toFixed(3)),
     sampleSize: total
   };
 }

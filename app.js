@@ -1536,6 +1536,7 @@ let automationState = {
   predictions: {},
   results: {},
   dailyAnalysis: {},
+  mistakeMemory: null,
   marketTrace: {},
   accuracy: { accuracy: 0, completed: 0, graded: 0, correct: 0 },
   stageAccuracy: {
@@ -2126,6 +2127,20 @@ function calibrationBlockMarkup(layer, { title = "KV calibration", compact = fal
   return `<div class="daily-read__meta daily-read__meta--calibration">${lines.join("")}</div>`;
 }
 
+function currentKvMemoryMarkup() {
+  const memory = automationState.mistakeMemory || {};
+  const total = Number(memory.totalReviewed || 0);
+  if (!total) return "";
+  const updated = memory.updatedAt ? formatProofTime(memory.updatedAt) : tr("unknown");
+  return `
+    <div class="daily-read__meta daily-read__meta--calibration">
+      <strong>Current KV memory</strong>
+      <p>${total} post-match reviews · direction misses ${escapeHtml(String(memory.directionMisses || 0))} · score misses ${escapeHtml(String(memory.scoreMisses || 0))}</p>
+      <p>${memory.usable ? "Available for new Daily PAUL reads and future locks." : "Stored, but not enough calibration signal yet."} Updated ${escapeHtml(updated)}.</p>
+    </div>
+  `;
+}
+
 function liveDriftFor(match, read) {
   const official = officialPrediction(match);
   const officialCode = official ? officialPickCode(official) : null;
@@ -2174,6 +2189,7 @@ function renderDailyRead(match) {
         <strong>${tr("nextRefreshPending")}</strong>
       </div>
       <p class="daily-read__empty">${tr("dailyRefreshCopy")}</p>
+      ${currentKvMemoryMarkup()}
     `;
     return;
   }
@@ -2605,6 +2621,7 @@ function officialEvidenceMarkup(analysis) {
 function officialAnalysisMarkup(official) {
   const analysis = official?.analysis || {};
   const reasoning = analysis.reasoning || analysis.calibrationNote || tr("lockedWithoutDetails");
+  const currentKv = currentKvMemoryMarkup();
   return `
     <div class="locked-analysis">
       <div class="locked-analysis__block">
@@ -2626,10 +2643,11 @@ function officialAnalysisMarkup(official) {
             <p>${escapeHtml(calibrationNotesText(analysis.calibrationLayer) || "Automatic pre-match correction from post-match review KV.")}</p>
           `
           : `
-            <p>Not applied yet.</p>
-            <p>No usable mistake-memory sample was available for this lock, or the prediction was locked before the KV calibration rollout.</p>
+            <p>Not applied at lock time.</p>
+            <p>This proof is frozen. Current KV memory can still calibrate Daily PAUL reads and future locks.</p>
           `}
       </div>
+      ${currentKv}
       ${officialEvidenceMarkup(analysis)}
     </div>
   `;
@@ -3036,6 +3054,7 @@ async function loadAutomationStatus() {
       predictions: mergedPredictions,
       results: status.results || {},
       dailyAnalysis: status.dailyAnalysis || automationState.dailyAnalysis || {},
+      mistakeMemory: status.mistakeMemory || automationState.mistakeMemory || null,
       marketTrace: status.marketTrace || automationState.marketTrace || {},
       accuracy: status.accuracy || automationState.accuracy,
       stageAccuracy
