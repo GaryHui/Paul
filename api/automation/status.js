@@ -114,26 +114,55 @@ function scoreParts(score) {
   return { home: Number(match[1]), away: Number(match[2]) };
 }
 
-function adjustedScore(officialScore, evidence, adjustment = {}) {
+function scoreSide(parts) {
+  if (!parts) return null;
+  if (parts.home === parts.away) return "draw";
+  return parts.home > parts.away ? "home" : "away";
+}
+
+function commonScorePrior(score) {
+  const priors = {
+    "1-0": 0.018,
+    "0-1": 0.018,
+    "1-1": 0.018,
+    "2-1": 0.014,
+    "1-2": 0.014,
+    "2-0": 0.01,
+    "0-2": 0.01,
+    "0-0": 0.008,
+    "2-2": 0.006,
+    "3-1": 0.004,
+    "1-3": 0.004
+  };
+  return priors[score] || 0;
+}
+
+function adjustedScore(officialScore, evidence, adjustment = {}, pickSide = null) {
   const scenarios = Array.isArray(evidence?.poisson?.topScorelines) ? evidence.poisson.topScorelines : [];
   if (!officialScore || !scenarios.length) return officialScore || evidence?.poisson?.predictedScore || null;
   const official = scoreParts(officialScore);
   if (!official) return officialScore;
   const officialTotal = official.home + official.away;
   const goalDelta = Number(adjustment.goalVolatilityDelta || adjustment.scoreConfidenceDelta || 0);
+  let candidates = scenarios.filter((item) => scoreParts(item.score));
+  const sideCandidates = pickSide ? candidates.filter((item) => scoreSide(scoreParts(item.score)) === pickSide) : [];
+  if (sideCandidates.length) candidates = sideCandidates;
   if (goalDelta > 0.006) {
-    return scenarios.find((item) => {
+    const higher = candidates.filter((item) => {
       const parts = scoreParts(item.score);
       return parts && parts.home + parts.away >= officialTotal + 1;
-    })?.score || officialScore;
+    });
+    if (higher.length) candidates = higher;
   }
   if (goalDelta < -0.006) {
-    return scenarios.find((item) => {
+    const lower = candidates.filter((item) => {
       const parts = scoreParts(item.score);
       return parts && parts.home + parts.away <= Math.max(0, officialTotal - 1);
-    })?.score || officialScore;
+    });
+    if (lower.length) candidates = lower;
   }
-  return scenarios[0]?.score || officialScore;
+  candidates.sort((a, b) => (Number(b.probability || 0) + commonScorePrior(b.score)) - (Number(a.probability || 0) + commonScorePrior(a.score)));
+  return candidates[0]?.score || scenarios[0]?.score || officialScore;
 }
 
 function liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mistakeMemory) {
@@ -165,7 +194,7 @@ function liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mis
   const officialSide = sideFromCode(match, analysis.winnerCode || analysis.winner || analysis.winnerName);
   const liveSide = strongestSide(match, normalizedProbabilities(next));
   const officialScore = analysis.predictedScore || analysis.score || null;
-  const liveScore = adjustedScore(officialScore, evidence, adjustment);
+  const liveScore = adjustedScore(officialScore, evidence, adjustment, liveSide);
   const correctionReasons = [
     `${mistakeContext.summary?.totalReviewed || 0} KV post-match reviews are active`,
     "locked proof is unchanged",

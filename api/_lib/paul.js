@@ -77,7 +77,7 @@ function poissonProbabilities(aLambda, bLambda, allowDraw) {
   return {
     probabilities: normalize3Way({ home, draw, away }),
     predictedScore: bestScore,
-    topScorelines: scorelines.sort((a, b) => b.probability - a.probability).slice(0, 5),
+    topScorelines: scorelines.sort((a, b) => b.probability - a.probability).slice(0, 12),
     expectedGoals: {
       home: Number(aLambda.toFixed(2)),
       away: Number(bLambda.toFixed(2))
@@ -706,7 +706,48 @@ function scoreParts(score) {
   return { home: Number(match[1]), away: Number(match[2]) };
 }
 
-function calibratedPredictedScore(evidence, adjustment = {}) {
+function scoreSide(parts) {
+  if (!parts) return null;
+  if (parts.home === parts.away) return "draw";
+  return parts.home > parts.away ? "home" : "away";
+}
+
+function commonScorePrior(score) {
+  const priors = {
+    "1-0": 0.018,
+    "0-1": 0.018,
+    "1-1": 0.018,
+    "2-1": 0.014,
+    "1-2": 0.014,
+    "2-0": 0.01,
+    "0-2": 0.01,
+    "0-0": 0.008,
+    "2-2": 0.006,
+    "3-1": 0.004,
+    "1-3": 0.004
+  };
+  return priors[score] || 0;
+}
+
+function scoreCandidateRank(item, context = {}) {
+  const parts = scoreParts(item.score);
+  if (!parts) return -Infinity;
+  const total = parts.home + parts.away;
+  const margin = Math.abs(parts.home - parts.away);
+  let rank = Number(item.probability || 0) + commonScorePrior(item.score);
+  if (context.pickSide && scoreSide(parts) === context.pickSide) rank += 0.02;
+  if (context.targetTotal !== null && Number.isFinite(context.targetTotal)) {
+    rank -= Math.abs(total - context.targetTotal) * 0.006;
+  }
+  if (context.pickSide && context.pickSide !== "draw" && Number(context.pickProbability || 0) < 0.58 && margin === 1) {
+    rank += 0.01;
+  }
+  if (context.goalDelta < -0.006 && total <= context.baseTotal) rank += 0.008;
+  if (context.goalDelta > 0.006 && total >= context.baseTotal + 1) rank += 0.008;
+  return rank;
+}
+
+function calibratedPredictedScore(evidence, adjustment = {}, pickSide = null, pickProbability = 0) {
   const base = evidence.poisson?.predictedScore || null;
   const scenarios = Array.isArray(evidence.poisson?.topScorelines) ? evidence.poisson.topScorelines : [];
   if (!base || !scenarios.length) return base;
@@ -714,6 +755,21 @@ function calibratedPredictedScore(evidence, adjustment = {}) {
   if (!baseParts) return base;
   const baseTotal = baseParts.home + baseParts.away;
   const goalDelta = Number(adjustment.goalVolatilityDelta || 0);
+  let candidates = scenarios.filter((item) => scoreParts(item.score));
+  const sideCandidates = pickSide ? candidates.filter((item) => scoreSide(scoreParts(item.score)) === pickSide) : [];
+  if (sideCandidates.length) candidates = sideCandidates;
+  let targetTotal = baseTotal;
+  if (goalDelta >= 0.008) targetTotal = baseTotal + 1;
+  if (goalDelta <= -0.008) targetTotal = Math.max(0, baseTotal - 1);
+  const totalCandidates = candidates.filter((item) => {
+    const parts = scoreParts(item.score);
+    if (goalDelta >= 0.008) return parts && (parts.home + parts.away) >= baseTotal + 1;
+    if (goalDelta <= -0.008) return parts && (parts.home + parts.away) <= Math.max(0, baseTotal - 1);
+    return true;
+  });
+  if (totalCandidates.length) candidates = totalCandidates;
+  candidates.sort((a, b) => scoreCandidateRank(b, { pickSide, pickProbability, targetTotal, baseTotal, goalDelta }) - scoreCandidateRank(a, { pickSide, pickProbability, targetTotal, baseTotal, goalDelta }));
+  if (candidates[0]?.score) return candidates[0].score;
   if (goalDelta >= 0.008) {
     return scenarios.find((item) => {
       const parts = scoreParts(item.score);
@@ -849,7 +905,7 @@ function deterministicAnalysis(payload, evidence) {
     winnerCode: pick.code,
     winnerName: pick.name,
     confidence,
-    predictedScore: calibratedPredictedScore(evidence, evidence.mistakeEngine?.calibrationAdjustment) || null,
+    predictedScore: calibratedPredictedScore(evidence, evidence.mistakeEngine?.calibrationAdjustment, side, pickProbability) || null,
     probabilities: probabilitiesToPercentages(baseProbabilities),
     evidenceUsed: defaultEvidenceUsed(evidence),
     marketBaseline: evidence.baselines?.marketFavorite
