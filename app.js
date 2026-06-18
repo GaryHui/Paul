@@ -2254,6 +2254,24 @@ function liveCorrectionMarkup(match) {
   `;
 }
 
+function lockVsLiveMarkup(match) {
+  const read = dailyReadFor(match);
+  const drift = read ? liveDriftFor(match, read) : null;
+  if (drift) {
+    return `
+      <div class="daily-read__drift ${drift.drifted || drift.scoreChanged ? "is-drifted" : "is-aligned"}">
+        <span>${drift.drifted || drift.scoreChanged ? tr("postLockDrift") : tr("liveEstimate")}</span>
+        <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)}${drift.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : ""} -> ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
+        <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(drift.officialScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(drift.liveScore || "N/A")}</p>
+        ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
+        <p>${tr("driftReason")}: ${escapeHtml(driftReasonText(drift, read))}</p>
+      </div>
+    `;
+  }
+  return liveCorrectionMarkup(match);
+}
+
 function scoreFromScenarios(scenarios = []) {
   return scenarios.find((item) => item?.score)?.score || null;
 }
@@ -2770,10 +2788,11 @@ function officialEvidenceMarkup(analysis) {
   `;
 }
 
-function officialAnalysisMarkup(official) {
+function officialAnalysisMarkup(official, match) {
   const analysis = official?.analysis || {};
   const reasoning = analysis.reasoning || analysis.calibrationNote || tr("lockedWithoutDetails");
   const currentKv = currentKvMemoryMarkup();
+  const lockVsLive = match ? lockVsLiveMarkup(match) : "";
   return `
     <div class="locked-analysis">
       <div class="locked-analysis__block">
@@ -2800,6 +2819,7 @@ function officialAnalysisMarkup(official) {
             ${currentKvCalibrationDetails({ includeUpdated: true })}
           `}
       </div>
+      ${lockVsLive}
       ${currentKv}
       ${officialEvidenceMarkup(analysis)}
     </div>
@@ -2975,7 +2995,7 @@ function renderPK() {
       : tr("finalScorePending");
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${verdict}</strong> · ${tr("predictedScore")}: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
-      ${officialAnalysisMarkup(official)}
+      ${officialAnalysisMarkup(official, match)}
       <p>${resultCopy}</p>
     `;
   } else {
