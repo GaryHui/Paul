@@ -2007,6 +2007,10 @@ function officialPredictedScore(record) {
   return String(record?.analysis?.predictedScore || record?.analysis?.score || "").replace(/\s/g, "");
 }
 
+function officialPredictedScoreLabel(record) {
+  return String(record?.analysis?.predictedScore || record?.analysis?.score || "").trim();
+}
+
 function resultScoreString(result) {
   if (!result || result.homeScore === undefined || result.awayScore === undefined) return "";
   return `${result.homeScore}-${result.awayScore}`.replace(/\s/g, "");
@@ -2694,7 +2698,10 @@ function correctMatchRows() {
         proof: proofEntryForMatch(match.id),
         label: `${home} ${result.homeScore}-${result.awayScore} ${away}`,
         pickName: teamNameForCode(pick, match),
-        outcome: predictionOutcomeText(official, result)
+        outcome: predictionOutcomeText(official, result),
+        predictedScore: officialPredictedScoreLabel(official) || "N/A",
+        finalScore: resultScoreString(result) || "N/A",
+        scoreExact: Boolean(officialPredictedScore(official) && officialPredictedScore(official) === resultScoreString(result))
       };
     })
     .filter(Boolean);
@@ -2721,11 +2728,12 @@ function renderHitList() {
       <span>${hits.length}</span>
     </div>
     <div class="hit-list__items">
-      ${hits.length ? hits.map(({ match, label, pickName, proof, outcome }) => `
+      ${hits.length ? hits.map(({ match, label, pickName, proof, outcome, predictedScore, finalScore, scoreExact }) => `
         <article class="hit-card">
           <span>#${match.id}</span>
           <strong>${escapeHtml(label)}</strong>
           <em>${tr("pick")}: ${escapeHtml(pickName)}${outcome ? ` · ${escapeHtml(outcome)}` : ""}</em>
+          <em>Predicted score: ${escapeHtml(predictedScore)} · Final score: ${escapeHtml(finalScore)} · ${scoreExact ? "score exact" : "score missed"}</em>
           ${proof ? `<button class="button button--ghost hit-json-button" type="button" data-match-id="${match.id}">${tr("verifyJson")}</button>` : ""}
         </article>
       `).join("") : `<p>${tr("noCorrectPicksYet")}</p>`}
