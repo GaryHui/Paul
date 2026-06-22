@@ -1,5 +1,6 @@
 const DATASET_NOTE =
   "The test processes matches in listed order. Group matches are graded as 1X2. Knockout matches are graded by advancing winner, matching PAUL's win-or-go-home product target.";
+const { calibratedScoreScenarios } = require("./paul");
 
 const ranks2022 = {
   Brazil: 1,
@@ -581,6 +582,81 @@ function poissonProbabilities(match, form, ranks) {
   return normalize({ home: home * (1 - draw), draw, away: (1 - home) * (1 - draw) });
 }
 
+function poisson(k, lambda) {
+  let factorial = 1;
+  for (let i = 2; i <= k; i += 1) factorial *= i;
+  return (Math.exp(-lambda) * lambda ** k) / factorial;
+}
+
+function scorelineProfileFromMemory(memory = []) {
+  const scoreCounts = {};
+  const totalGoalCounts = {};
+  const marginCounts = {};
+  let totalGoals = 0;
+  let highEvent = 0;
+  let lowEvent = 0;
+  memory.forEach((item) => {
+    const total = item.home + item.away;
+    const margin = Math.abs(item.home - item.away);
+    const key = `${item.home}-${item.away}`;
+    totalGoals += total;
+    if (total >= 4) highEvent += 1;
+    if (total <= 2) lowEvent += 1;
+    scoreCounts[key] = (scoreCounts[key] || 0) + 1;
+    totalGoalCounts[total] = (totalGoalCounts[total] || 0) + 1;
+    marginCounts[margin] = (marginCounts[margin] || 0) + 1;
+  });
+  const top = (counts, limit = 8) => Object.entries(counts)
+    .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))
+    .slice(0, limit)
+    .map(([key, count]) => ({ key, count }));
+  return {
+    sampleSize: memory.length,
+    averageTotalGoals: memory.length ? Number((totalGoals / memory.length).toFixed(2)) : null,
+    highEventRate: memory.length ? Number((highEvent / memory.length).toFixed(3)) : null,
+    lowEventRate: memory.length ? Number((lowEvent / memory.length).toFixed(3)) : null,
+    topScores: top(scoreCounts),
+    totalGoalCounts: top(totalGoalCounts, 10),
+    marginCounts: top(marginCounts)
+  };
+}
+
+function scorelinePoisson(match, form, ranks, allowDraw) {
+  const homeRank = ranks[match.home] || 40;
+  const awayRank = ranks[match.away] || 40;
+  const homeForm = formScore(form[match.home] || priorRecord());
+  const awayForm = formScore(form[match.away] || priorRecord());
+  const rankEdge = (awayRank - homeRank) / 45;
+  const formEdge = (homeForm - awayForm) * 0.55;
+  const totalBase = allowDraw ? 2.55 : 2.75;
+  const totalLambda = Math.max(1.55, Math.min(4.35, totalBase + Math.abs(rankEdge + formEdge) * 0.45));
+  const share = 1 / (1 + Math.exp(-(rankEdge + formEdge)));
+  const homeLambda = Math.max(0.25, Math.min(3.7, totalLambda * share));
+  const awayLambda = Math.max(0.25, Math.min(3.7, totalLambda * (1 - share)));
+  let bestScore = "0-0";
+  let best = 0;
+  const topScorelines = [];
+  for (let home = 0; home <= 7; home += 1) {
+    for (let away = 0; away <= 7; away += 1) {
+      if (!allowDraw && home === away) continue;
+      const probability = poisson(home, homeLambda) * poisson(away, awayLambda);
+      if (probability > best) {
+        best = probability;
+        bestScore = `${home}-${away}`;
+      }
+      topScorelines.push({ score: `${home}-${away}`, probability: Number(probability.toFixed(6)) });
+    }
+  }
+  return {
+    predictedScore: bestScore,
+    topScorelines: topScorelines.sort((a, b) => b.probability - a.probability).slice(0, 24),
+    expectedGoals: {
+      home: Number(homeLambda.toFixed(2)),
+      away: Number(awayLambda.toFixed(2))
+    }
+  };
+}
+
 function blend(models) {
   return normalize({
     home: models.market.home * 0.55 + models.rating.home * 0.25 + models.poisson.home * 0.2,
@@ -726,6 +802,15 @@ function updateForm(form, match) {
 function runDataset(dataset) {
   const matches = parseRows(dataset);
   const form = {};
+  const scorelineMemory = [];
+  const scoreline = {
+    graded: 0,
+    exact: 0,
+    top3: 0,
+    top5: 0,
+    directionExact: 0,
+    examples: []
+  };
   const metrics = {
     paul: emptyMetric(),
     market: emptyMetric(),
@@ -748,6 +833,44 @@ function runDataset(dataset) {
     models.blended = blend(models);
     const actual = actualSide(match, dataset);
     const paul = paulEdgePick(match, models, form);
+    const scoreEvidence = {
+      poisson: scorelinePoisson(match, form, dataset.ranks, allowsDraw(match)),
+      market: { probabilities: models.market },
+      baselines: {
+        marketFavorite: { side: allowsDraw(match) ? favorite(models.market) : winnerFavorite(models.market), probability: models.market[allowsDraw(match) ? favorite(models.market) : winnerFavorite(models.market)] },
+        blendedFavorite: { side: allowsDraw(match) ? favorite(models.blended) : winnerFavorite(models.blended), probability: models.blended[allowsDraw(match) ? favorite(models.blended) : winnerFavorite(models.blended)] }
+      },
+      paulEdge: { drawSqueeze: false },
+      mistakeEngine: {
+        summary: { scorelineProfile: scorelineProfileFromMemory(scorelineMemory) },
+        learningProfile: {
+          scoreMissRate: scoreline.graded ? Number(((scoreline.graded - scoreline.exact) / scoreline.graded).toFixed(3)) : 0
+        }
+      },
+      learning: {
+        profile: {
+          scoreMissRate: scoreline.graded ? Number(((scoreline.graded - scoreline.exact) / scoreline.graded).toFixed(3)) : 0
+        }
+      }
+    };
+    const scorePaths = calibratedScoreScenarios(scoreEvidence, {}, paul.pick, paul.probabilities[paul.pick] || 0, 5);
+    const predictedScore = scorePaths[0]?.score || scoreEvidence.poisson.predictedScore;
+    const actualScore = `${match.score.home}-${match.score.away}`;
+    scoreline.graded += 1;
+    if (predictedScore === actualScore) scoreline.exact += 1;
+    if (scorePaths.slice(0, 3).some((item) => item.score === actualScore)) scoreline.top3 += 1;
+    if (scorePaths.slice(0, 5).some((item) => item.score === actualScore)) scoreline.top5 += 1;
+    if (paul.pick === actual && predictedScore === actualScore) scoreline.directionExact += 1;
+    if (scoreline.examples.length < 14 || predictedScore === actualScore) {
+      scoreline.examples.push({
+        id: match.id,
+        match: `${match.home} vs ${match.away}`,
+        actualScore,
+        predictedScore,
+        top3: scorePaths.slice(0, 3).map((item) => item.score),
+        exact: predictedScore === actualScore
+      });
+    }
     const picks = {
       paul: paul.pick,
       market: allowsDraw(match) ? favorite(models.market) : winnerFavorite(models.market),
@@ -782,15 +905,22 @@ function runDataset(dataset) {
       score: `${match.score.home}-${match.score.away}`,
       actual,
       picks,
+      predictedScore,
+      scorePaths: scorePaths.slice(0, 5).map((item) => item.score),
       paul: { confidence: paul.confidence, upsetScore: paul.upsetScore, signals: paul.signals },
       odds: match.odds
     });
 
     updateForm(form, match);
+    scorelineMemory.push({ home: match.score.home, away: match.score.away });
   });
 
   Object.values(metrics).forEach(finalizeMetric);
   finalizeCalibration(calibration);
+  scoreline.exactAccuracy = scoreline.graded ? Math.round((scoreline.exact / scoreline.graded) * 100) : 0;
+  scoreline.top3Accuracy = scoreline.graded ? Math.round((scoreline.top3 / scoreline.graded) * 100) : 0;
+  scoreline.top5Accuracy = scoreline.graded ? Math.round((scoreline.top5 / scoreline.graded) * 100) : 0;
+  scoreline.directionExactAccuracy = scoreline.graded ? Math.round((scoreline.directionExact / scoreline.graded) * 100) : 0;
 
   return {
     year: dataset.year,
@@ -804,6 +934,7 @@ function runDataset(dataset) {
       upsetHits,
       upsetAccuracy: upsetCalls ? Math.round((upsetHits / upsetCalls) * 100) : 0
     },
+    scoreline,
     calibration,
     trace
   };
@@ -820,6 +951,7 @@ function combineRuns(runs, label, role) {
   };
   const calibration = {};
   const edge = { upsetCalls: 0, upsetHits: 0 };
+  const scoreline = { graded: 0, exact: 0, top3: 0, top5: 0, directionExact: 0, examples: [] };
 
   runs.forEach((run) => {
     Object.entries(metrics).forEach(([key, metric]) => {
@@ -835,10 +967,21 @@ function combineRuns(runs, label, role) {
     });
     edge.upsetCalls += run.edge.upsetCalls;
     edge.upsetHits += run.edge.upsetHits;
+    scoreline.graded += run.scoreline?.graded || 0;
+    scoreline.exact += run.scoreline?.exact || 0;
+    scoreline.top3 += run.scoreline?.top3 || 0;
+    scoreline.top5 += run.scoreline?.top5 || 0;
+    scoreline.directionExact += run.scoreline?.directionExact || 0;
+    scoreline.examples.push(...(run.scoreline?.examples || []).map((item) => ({ ...item, datasetYear: run.year })));
   });
 
   Object.values(metrics).forEach(finalizeMetric);
   finalizeCalibration(calibration);
+  scoreline.exactAccuracy = scoreline.graded ? Math.round((scoreline.exact / scoreline.graded) * 100) : 0;
+  scoreline.top3Accuracy = scoreline.graded ? Math.round((scoreline.top3 / scoreline.graded) * 100) : 0;
+  scoreline.top5Accuracy = scoreline.graded ? Math.round((scoreline.top5 / scoreline.graded) * 100) : 0;
+  scoreline.directionExactAccuracy = scoreline.graded ? Math.round((scoreline.directionExact / scoreline.graded) * 100) : 0;
+  scoreline.examples = scoreline.examples.slice(0, 40);
   edge.upsetAccuracy = edge.upsetCalls ? Math.round((edge.upsetHits / edge.upsetCalls) * 100) : 0;
   edge.paulMinusMarket = metrics.paul.correct - metrics.market.correct;
   edge.paulMinusBlended = metrics.paul.correct - metrics.blended.correct;
@@ -853,6 +996,7 @@ function combineRuns(runs, label, role) {
     },
     metrics,
     edge,
+    scoreline,
     calibration,
     trace: runs.flatMap((run) => run.trace.map((match) => ({ ...match, datasetYear: run.year })))
   };
