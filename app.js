@@ -2547,6 +2547,26 @@ function traceMarketImpact(paulCode, marketCode, winnerCode) {
   return `${impact >= 0 ? "+" : ""}${impact}`;
 }
 
+function publicTraceMarketEdge() {
+  let edge = 0;
+  let compared = 0;
+  tournament.matches.forEach((match) => {
+    const resolved = resolvedTeams(match);
+    if (!resolved.aCode || !resolved.bCode) return;
+    const official = officialPredictionRecord(match);
+    const daily = dailyReadFor(match);
+    const market = marketTraceFor(match) || officialMarketTrace(match, official);
+    const paul = tracePaulPick(match, official, daily);
+    const result = traceResult(match, officialResult(match));
+    if (!paul.code || !market?.favoriteCode || !result.winnerCode) return;
+    const paulCorrect = String(paul.code).toUpperCase() === String(result.winnerCode).toUpperCase() ? 1 : 0;
+    const marketCorrect = String(market.favoriteCode).toUpperCase() === String(result.winnerCode).toUpperCase() ? 1 : 0;
+    edge += paulCorrect - marketCorrect;
+    compared += 1;
+  });
+  return compared ? { edge, compared } : null;
+}
+
 function renderPublicTraceUnsafe() {
   const container = document.getElementById("publicTrace");
   const summary = document.getElementById("publicTraceSummary");
@@ -3240,6 +3260,10 @@ async function loadAutomationStatus() {
       accuracy: status.accuracy || automationState.accuracy,
       stageAccuracy
     };
+    const traceEdge = publicTraceMarketEdge();
+    if (traceEdge) {
+      setText("paulEdgeStat", `${traceEdge.edge >= 0 ? "+" : ""}${traceEdge.edge}`);
+    }
     updateChampionLabel();
     renderMatchList();
     renderPK();
