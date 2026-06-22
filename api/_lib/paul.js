@@ -804,19 +804,94 @@ function commonScorePrior(score) {
   return priors[score] || 0;
 }
 
+function scoreShapeContext(evidence = {}, adjustment = {}, pickSide = null, pickProbability = 0) {
+  const market = evidence.market?.probabilities || {};
+  const poisson = evidence.poisson || {};
+  const expectedHome = Number(poisson.expectedGoals?.home);
+  const expectedAway = Number(poisson.expectedGoals?.away);
+  const expectedTotal = Number.isFinite(expectedHome) && Number.isFinite(expectedAway)
+    ? expectedHome + expectedAway
+    : null;
+  const marketPickProbability = Number(sideProbability(market, pickSide) || 0);
+  const marketDraw = Number(market.draw || 0);
+  const learningProfile = evidence.learning?.profile || evidence.mistakeEngine?.learningProfile || {};
+  const scoreMissRate = Number(learningProfile.scoreMissRate || 0);
+  const favoriteSide = evidence.baselines?.marketFavorite?.side || evidence.baselines?.blendedFavorite?.side || null;
+  const favoriteProbability = Math.max(
+    Number(sideProbability(market, favoriteSide) || 0),
+    Number(evidence.baselines?.marketFavorite?.probability || 0),
+    Number(evidence.baselines?.blendedFavorite?.probability || 0),
+    Number(pickProbability || 0)
+  );
+  const scorePriorWeight = scoreMissRate >= 0.8 ? 0.35 : scoreMissRate >= 0.65 ? 0.55 : 1;
+  const compressed = Boolean(
+    evidence.paulEdge?.drawSqueeze ||
+      marketDraw >= 0.29 ||
+      (favoriteProbability > 0 && favoriteProbability <= 0.56)
+  );
+  const strongFavorite = Boolean(favoriteProbability >= 0.64 || marketPickProbability >= 0.62);
+  const upsetPick = Boolean(
+    pickSide &&
+      favoriteSide &&
+      pickSide !== "draw" &&
+      favoriteSide !== "draw" &&
+      pickSide !== favoriteSide
+  );
+  const highEventBias = Number(adjustment.goalVolatilityDelta || 0) > 0.006 ||
+    evidence.mistakeEngine?.learningProfile?.currentBias?.includes("lift high-event score paths");
+  const lowEventBias = Number(adjustment.goalVolatilityDelta || 0) < -0.006 ||
+    evidence.mistakeEngine?.learningProfile?.currentBias?.includes("prefer lower-event score paths");
+  return {
+    expectedTotal,
+    marketDraw,
+    favoriteProbability,
+    marketPickProbability,
+    scoreMissRate,
+    scorePriorWeight,
+    compressed,
+    strongFavorite,
+    upsetPick,
+    highEventBias,
+    lowEventBias
+  };
+}
+
 function scoreCandidateRank(item, context = {}) {
   const parts = scoreParts(item.score);
   if (!parts) return -Infinity;
   const total = parts.home + parts.away;
   const margin = Math.abs(parts.home - parts.away);
-  let rank = Number(item.probability || 0) + commonScorePrior(item.score);
+  let rank = Number(item.probability || 0) + commonScorePrior(item.score) * Number(context.scorePriorWeight ?? 1);
   if (context.pickSide && scoreSide(parts) === context.pickSide) rank += 0.02;
+  if (context.expectedTotal !== null && Number.isFinite(context.expectedTotal)) {
+    rank -= Math.abs(total - context.expectedTotal) * 0.004;
+  }
   if (context.targetTotal !== null && Number.isFinite(context.targetTotal)) {
     rank -= Math.abs(total - context.targetTotal) * 0.006;
+  }
+  if (context.compressed) {
+    if (margin <= 1) rank += 0.012;
+    if (total <= 2) rank += 0.008;
+    if (total >= 4) rank -= 0.012;
+  }
+  if (context.strongFavorite && context.pickSide && context.pickSide !== "draw") {
+    if (margin >= 2 && total >= 2 && total <= 4) rank += 0.012;
+    if (margin === 1 && total <= 2) rank -= 0.004;
+  }
+  if (context.upsetPick) {
+    if (margin === 1) rank += 0.014;
+    if (margin >= 2) rank -= 0.012;
+  }
+  if (context.pickSide === "draw") {
+    if (item.score === "1-1") rank += context.lowEventBias ? 0.004 : 0.012;
+    if (item.score === "0-0") rank += context.lowEventBias ? 0.014 : 0.004;
+    if (margin > 0) rank -= 0.03;
   }
   if (context.pickSide && context.pickSide !== "draw" && Number(context.pickProbability || 0) < 0.58 && margin === 1) {
     rank += 0.01;
   }
+  if (context.highEventBias && total >= Math.max(3, context.baseTotal + 1)) rank += 0.01;
+  if (context.lowEventBias && total <= Math.max(1, context.baseTotal)) rank += 0.01;
   if (context.goalDelta < -0.006 && total <= context.baseTotal) rank += 0.008;
   if (context.goalDelta > 0.006 && total >= context.baseTotal + 1) rank += 0.008;
   return rank;
@@ -830,6 +905,7 @@ function calibratedPredictedScore(evidence, adjustment = {}, pickSide = null, pi
   if (!baseParts) return base;
   const baseTotal = baseParts.home + baseParts.away;
   const goalDelta = Number(adjustment.goalVolatilityDelta || 0);
+  const shape = scoreShapeContext(evidence, adjustment, pickSide, pickProbability);
   let candidates = scenarios.filter((item) => scoreParts(item.score));
   const sideCandidates = pickSide ? candidates.filter((item) => scoreSide(scoreParts(item.score)) === pickSide) : [];
   if (sideCandidates.length) candidates = sideCandidates;
@@ -843,7 +919,21 @@ function calibratedPredictedScore(evidence, adjustment = {}, pickSide = null, pi
     return true;
   });
   if (totalCandidates.length) candidates = totalCandidates;
-  candidates.sort((a, b) => scoreCandidateRank(b, { pickSide, pickProbability, targetTotal, baseTotal, goalDelta }) - scoreCandidateRank(a, { pickSide, pickProbability, targetTotal, baseTotal, goalDelta }));
+  candidates.sort((a, b) => scoreCandidateRank(b, {
+    ...shape,
+    pickSide,
+    pickProbability,
+    targetTotal,
+    baseTotal,
+    goalDelta
+  }) - scoreCandidateRank(a, {
+    ...shape,
+    pickSide,
+    pickProbability,
+    targetTotal,
+    baseTotal,
+    goalDelta
+  }));
   if (candidates[0]?.score) return candidates[0].score;
   if (goalDelta >= 0.008) {
     return scenarios.find((item) => {
@@ -1016,7 +1106,7 @@ function mergeAnalysisWithEvidence(payload, evidence, analysis = {}) {
     winnerCode: anchored.winnerCode,
     winnerName: anchored.winnerName,
     confidence: anchored.confidence,
-    predictedScore: analysis.predictedScore || anchored.predictedScore,
+    predictedScore: anchored.predictedScore,
     probabilities: finalProbabilities,
     evidenceUsed: finalEvidenceUsed,
     marketBaseline: analysis.marketBaseline || anchored.marketBaseline,
