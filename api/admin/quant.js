@@ -1385,6 +1385,13 @@ module.exports = async function handler(req, res) {
     });
 
     const finalBetRows = rows.filter((row) => row.recommendedStake > 0);
+    const settledSimulationRows = rows.filter((row) => row.simulation?.eligible && row.simulation?.stake && row.result?.status === "final");
+    const settledSimulationWins = settledSimulationRows.filter((row) => row.pickOutcome === "correct").length;
+    const settledSimulationLosses = settledSimulationRows.filter((row) => row.pickOutcome === "missed").length;
+    const settledSimulationRoi = settledSimulationStake ? settledSimulationProfit / settledSimulationStake : null;
+    const averageSettledSimulationOdds = settledSimulationRows.length
+      ? settledSimulationRows.reduce((sum, row) => sum + Number(row.simulation?.odds || row.selectedOdds || 0), 0) / settledSimulationRows.length
+      : null;
     const driftSummary = summarizeLiveDrift(rows);
     const averageEdge = finalBetRows.length
       ? finalBetRows.reduce((sum, row) => sum + Number(row.edgePct || 0), 0) / finalBetRows.length
@@ -1474,6 +1481,12 @@ module.exports = async function handler(req, res) {
         simulatedBalance: Number(simulationBalance.toFixed(2)),
         settledSimulationProfit: Number(settledSimulationProfit.toFixed(2)),
         settledSimulationStake: Number(settledSimulationStake.toFixed(2)),
+        settledSimulationBets: settledSimulationRows.length,
+        settledSimulationWins,
+        settledSimulationLosses,
+        settledSimulationWinRate: settledSimulationRows.length ? Number(((settledSimulationWins / settledSimulationRows.length) * 100).toFixed(2)) : null,
+        settledSimulationRoi: settledSimulationRoi === null ? null : Number((settledSimulationRoi * 100).toFixed(2)),
+        averageSettledSimulationOdds: averageSettledSimulationOdds === null ? null : Number(averageSettledSimulationOdds.toFixed(2)),
         pendingSimulationStake: Number(pendingSimulationStake.toFixed(2)),
         portfolioCap: Number(portfolioCap.toFixed(2)),
         portfolioScale: Number(scale.toFixed(3)),

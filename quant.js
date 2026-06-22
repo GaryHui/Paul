@@ -210,6 +210,13 @@ function renderSummary(data) {
       `未开赛模拟占用：${money(data.summary.pendingSimulationStake || 0)}。`,
       "计算：按比赛时间顺序，用真实赛果结算已完赛场次；未完赛只显示赢/输两种余额情景。"
     ]),
+    metric("模拟账本", `${data.summary.settledSimulationWins || 0}/${data.summary.settledSimulationBets || 0}`, [
+      "这里统计的是实际进入 PAUL 小结模拟账本并且已经完赛结算的场次，不等于 PAUL 方向命中的全部场次。",
+      `方向总命中：${liveDirectionPaul.correct || 0}/${liveDirectionPaul.graded || 0}；模拟已结算：${data.summary.settledSimulationBets || 0} 场。`,
+      `模拟命中：${data.summary.settledSimulationWins || 0}；模拟未中：${data.summary.settledSimulationLosses || 0}；模拟胜率：${pct(data.summary.settledSimulationWinRate)}。`,
+      `模拟 ROI：${pct(data.summary.settledSimulationRoi)}；平均结算赔率：${odds(data.summary.averageSettledSimulationOdds)}。`,
+      "所以 41 场方向命中只能说明 PAUL 看方向不错；账户能赚多少还取决于下注了几场、下注赔率、仓位大小，以及错的场次亏损。"
+    ]),
     metric("CLV 正/负", `${data.summary.positiveClv || 0}/${data.summary.negativeClv || 0}`, [
       "来源：开盘/执行赔率与收盘赔率对比。",
       "计算：CLV 为正的场次数 / CLV 为负的场次数。",
