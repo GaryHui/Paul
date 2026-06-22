@@ -2701,7 +2701,7 @@ function renderPublicTraceUnsafe() {
             <span class="${paulClass}">
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
               ${scorePathDetails ? `<em>${scorePathDetails}</em>` : ""}
-              <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${scorePath}${replayRoom}</em>
+              <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${replayRoom}</em>
             </span>
             <span>
               <strong>${market?.favoriteCode ? `${escapeHtml(marketName)}${marketProb ? ` · ${marketProb}` : ""}` : tr("marketPending")}</strong>

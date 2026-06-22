@@ -258,7 +258,7 @@ function liveDriftFromPicks(officialPick, dailyPick) {
   const liveCode = String(dailyPick.code || "").toUpperCase();
   if (!officialCode || !liveCode) return null;
   const winnerVolatility = dailyPick.lab?.winnerVolatility || null;
-  const scoreScenarios = Array.isArray(dailyPick.lab?.scoreScenarios) ? dailyPick.lab.scoreScenarios.slice(0, 3) : [];
+  const scoreScenarios = Array.isArray(dailyPick.lab?.scoreScenarios) ? dailyPick.lab.scoreScenarios.slice(0, 5) : [];
   const officialScore = scoreParts(officialPick.predictedScore);
   const liveScore = scoreParts(dailyPick.predictedScore);
   const scoreChanged = Boolean(
@@ -994,7 +994,8 @@ function chineseAnalysisReason({
   }
 
   if (pick.lab?.scoreScenarios?.length) {
-    lines.push(`实时比分路径：${pick.lab.scoreScenarios.slice(0, 3).map((item) => `${item.score}(${item.probability}%)`).join(" / ")}。`);
+    lines.push(`实时比分路径 Top3：${pick.lab.scoreScenarios.slice(0, 3).map((item) => `${item.score}(${item.probability}%)`).join(" / ")}。`);
+    lines.push(`实时比分路径 Top5：${pick.lab.scoreScenarios.slice(0, 5).map((item) => `${item.score}(${item.probability}%)`).join(" / ")}。`);
   }
 
   if (decision?.reasons?.length) {

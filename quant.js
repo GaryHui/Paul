@@ -327,6 +327,26 @@ function decisionClass(decision) {
   return "pill bad";
 }
 
+function normalizeScore(value) {
+  return String(value || "").replace(/\s/g, "");
+}
+
+function scorePathText(items = [], limit = 3) {
+  return items
+    .slice(0, limit)
+    .map((item) => `${item.score} ${pct(item.probability)}`)
+    .join(" / ");
+}
+
+function scorePathHitLabel(items = [], result) {
+  const actual = normalizeScore(result?.score);
+  if (!actual || !Array.isArray(items) || !items.length) return "";
+  const paths = items.map((item) => normalizeScore(item?.score));
+  if (paths.slice(0, 3).includes(actual)) return "Top3 比分路径命中";
+  if (paths.slice(0, 5).includes(actual)) return "Top5 比分路径命中";
+  return "Top5 比分路径未中";
+}
+
 function reasonMarkup(row) {
   const pick = row.pick || {};
   const dailyLab = row.dailyLab || pick.lab || null;
@@ -368,8 +388,13 @@ function reasonMarkup(row) {
   const winnerVolatility = dailyLab?.winnerVolatility
     ? `<span class="sub">实时胜方波动：${text(dailyLab.winnerVolatility.leaderName || "-")} 领先 ${pct(dailyLab.winnerVolatility.gap)} · ${text(dailyLab.winnerVolatility.label || "unknown")}</span>`
     : "";
+  const scorePathHit = scorePathHitLabel(dailyLab?.scoreScenarios, row.result);
   const scoreScenarios = Array.isArray(dailyLab?.scoreScenarios) && dailyLab.scoreScenarios.length
-    ? `<span class="sub">实时比分路径：${text(dailyLab.scoreScenarios.slice(0, 3).map((item) => `${item.score} ${pct(item.probability)}`).join(" / "))}</span>`
+    ? `
+      <span class="sub">实时比分路径 Top3：${text(scorePathText(dailyLab.scoreScenarios, 3))}</span>
+      <span class="sub">实时比分路径 Top5：${text(scorePathText(dailyLab.scoreScenarios, 5))}</span>
+      ${scorePathHit ? `<span class="sub result-${scorePathHit.includes("未中") ? "missed" : "correct"}">${text(scorePathHit)}</span>` : ""}
+    `
     : "";
   const liveDrift = row.liveDrift?.scoreChangeRisk || row.liveDrift?.winnerChangeRisk
     ? `<span class="sub">锁定后实验室：${text(row.liveDrift?.winnerChangeRisk?.noteZh || row.liveDrift?.scoreChangeRisk?.noteZh || row.liveDrift?.noteZh || "")}</span>`
