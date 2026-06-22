@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const { collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
+const { calibratedPredictedScore, collectPredictionEvidence, loadSnapshot } = require("../_lib/paul");
 const { auditSnapshot } = require("../_lib/audit");
 const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapshot } = require("../_lib/bracket");
 const { dailyAnalysisQueue } = require("../_lib/daily-analysis");
@@ -138,6 +138,8 @@ function commonScorePrior(score) {
 }
 
 function adjustedScore(officialScore, evidence, adjustment = {}, pickSide = null) {
+  const calibrated = calibratedPredictedScore(evidence, adjustment, pickSide, Number(evidence?.livePickProbability || 0));
+  if (calibrated) return calibrated;
   const scenarios = Array.isArray(evidence?.poisson?.topScorelines) ? evidence.poisson.topScorelines : [];
   if (!officialScore || !scenarios.length) return officialScore || evidence?.poisson?.predictedScore || null;
   const official = scoreParts(officialScore);
@@ -194,7 +196,18 @@ function liveCorrectionForMatch(match, prediction, dailyRead, evidenceCache, mis
   const officialSide = sideFromCode(match, analysis.winnerCode || analysis.winner || analysis.winnerName);
   const liveSide = strongestSide(match, normalizedProbabilities(next));
   const officialScore = analysis.predictedScore || analysis.score || null;
-  const liveScore = adjustedScore(officialScore, evidence, adjustment, liveSide);
+  const livePickProbability = liveSide ? Number(next[liveSide] || 0) : 0;
+  const scoreEvidence = {
+    ...(evidence || {}),
+    livePickProbability,
+    mistakeEngine: mistakeContext,
+    learning: {
+      ...(evidence?.learning || {}),
+      profile: mistakeContext.learningProfile || evidence?.learning?.profile || null,
+      applied: Boolean(mistakeContext.usable)
+    }
+  };
+  const liveScore = adjustedScore(officialScore, scoreEvidence, adjustment, liveSide);
   const correctionReasons = [
     `${mistakeContext.summary?.totalReviewed || 0} KV post-match reviews are active`,
     "locked proof is unchanged",

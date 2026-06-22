@@ -1181,5 +1181,6 @@ function loadSnapshot() {
 module.exports = {
   callPaul,
   collectPredictionEvidence,
+  calibratedPredictedScore,
   loadSnapshot
 };
