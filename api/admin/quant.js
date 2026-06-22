@@ -1,6 +1,6 @@
 const { parseMatchTime, resolveMatches } = require("../_lib/bracket");
 const { buildMistakeContext } = require("../_lib/mistake-engine");
-const { loadSnapshot } = require("../_lib/paul");
+const { calibratedPredictedScore, loadSnapshot } = require("../_lib/paul");
 const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults } = require("../_lib/store");
 
 const HISTORICAL_BACKTEST = {
@@ -282,7 +282,9 @@ function liveDriftFromPicks(officialPick, dailyPick) {
       confidence: dailyPick.confidence,
       probability: dailyPick.probabilities?.[dailyPick.side] || null,
       predictedScore: dailyPick.predictedScore || null,
-      updatedBy: "Daily read + latest evidence + mistake memory calibration"
+      updatedBy: dailyPick.source === "KV live estimate"
+        ? "KV live estimate + latest cached evidence + mistake memory calibration"
+        : "Daily read + latest evidence + mistake memory calibration"
     },
     winnerChangeRisk: winnerVolatility
       ? {
@@ -315,6 +317,77 @@ function liveDriftFromPicks(officialPick, dailyPick) {
       : scoreChanged
         ? "正式胜方未变，但实时比分路径已改变；实验室应继续跟踪进球分布和临场信息。"
         : "实时 PAUL 与正式锁定方向一致；实验室仍只把新数据用于概率和仓位校准。"
+  };
+}
+
+function normalizeLiveProbabilities(probabilities) {
+  const normalized = normalizeProbabilities(probabilities);
+  if (!normalized) return null;
+  const sum = Number(normalized.home || 0) + Number(normalized.draw || 0) + Number(normalized.away || 0);
+  if (!sum) return null;
+  return {
+    home: normalized.home / sum,
+    draw: normalized.draw / sum,
+    away: normalized.away / sum
+  };
+}
+
+function livePickFromKvCorrection(match, officialPick, evidence, mistakeContext) {
+  if (!officialPick || !evidence || !mistakeContext) return null;
+  const base = normalizeLiveProbabilities(officialPick.probabilities);
+  if (!base) return null;
+  const adjustment = mistakeContext.calibrationAdjustment || {};
+  let next = { ...base };
+  const market = normalizeLiveProbabilities(evidence.market?.probabilities);
+  const marketShrink = clamp(
+    Number(adjustment.marketShrinkDelta || 0) + Math.max(0, -Number(adjustment.edgeTrustDelta || 0)),
+    0,
+    0.12
+  );
+  if (market && marketShrink) {
+    ["home", "draw", "away"].forEach((side) => {
+      next[side] = next[side] * (1 - marketShrink) + market[side] * marketShrink;
+    });
+  }
+  if (match.round === "Group Stage" && Number(adjustment.drawRiskDelta || 0)) {
+    next.draw = clamp(next.draw + Number(adjustment.drawRiskDelta || 0), 0.05, 0.55);
+    const totalOther = Math.max(0.001, next.home + next.away);
+    const remaining = Math.max(0.001, 1 - next.draw);
+    next.home = remaining * (next.home / totalOther);
+    next.away = remaining * (next.away / totalOther);
+  }
+  next = normalizeLiveProbabilities(next);
+  const side = bestSide(match, next);
+  if (!side) return null;
+  const scoreEvidence = {
+    ...evidence,
+    mistakeEngine: mistakeContext,
+    learning: {
+      ...(evidence.learning || {}),
+      profile: mistakeContext.learningProfile || evidence.learning?.profile || null,
+      applied: Boolean(mistakeContext.usable)
+    }
+  };
+  return {
+    source: "KV live estimate",
+    side,
+    code: sideCode(match, side),
+    name: sideName(match, side),
+    confidence: Math.round(Number(next[side] || 0) * 100),
+    predictedScore: calibratedPredictedScore(scoreEvidence, adjustment, side, Number(next[side] || 0)) || officialPick.predictedScore || null,
+    probabilities: next,
+    reasoning: `${mistakeContext.summary?.totalReviewed || 0} KV reviews + latest cached evidence are adjusting the lab estimate.`,
+    upsetRisk: "",
+    upsetRiskZh: "",
+    lab: null,
+    calibrationLayer: {
+      version: "kv-live-estimate-v1",
+      applied: Boolean(mistakeContext.usable),
+      sampleSize: mistakeContext.summary?.totalReviewed || 0,
+      adjustments: adjustment
+    },
+    evidenceUsed: ["KV live correction", "latest cached evidence", "official lock unchanged"],
+    evidenceUsedZh: ["KV live calibration", "latest cached evidence", "official proof unchanged"]
   };
 }
 
@@ -976,9 +1049,10 @@ module.exports = async function handler(req, res) {
         const market = oddsRecord(evidence);
         const officialPick = pickFromPrediction(match, prediction);
         const dailyPick = pickFromDaily(match, dailyRead);
-        const liveDrift = liveDriftFromPicks(officialPick, dailyPick);
+        const livePick = dailyPick || livePickFromKvCorrection(match, officialPick, evidence, mistakeContext);
+        const liveDrift = liveDriftFromPicks(officialPick, livePick);
         const driftTrustPenalty = liveDriftTrustPenalty(liveDrift);
-        const pick = officialPick || dailyPick || (includeMarketFallback ? fallbackPickFromMarket(match, market) : null);
+        const pick = officialPick || livePick || (includeMarketFallback ? fallbackPickFromMarket(match, market) : null);
         const result = results[match.id] || results[String(match.id)] || null;
         const matchTime = parseMatchTime(match);
         const winnerCode = resultWinner(result);
@@ -1145,7 +1219,7 @@ module.exports = async function handler(req, res) {
             away: { code: match.teamB.code, name: match.teamB.name }
           },
           pick,
-          dailyLab: dailyRead?.lab || null,
+          dailyLab: dailyRead?.lab || livePick?.lab || null,
           liveDrift,
           driftTrustPenalty,
           winConfidence,
