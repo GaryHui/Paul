@@ -2137,19 +2137,57 @@ function dailyReadPercent(value) {
 function percentText(value) {
   const number = Number(value);
   if (!Number.isFinite(number)) return tr("pending");
-  return `${Math.max(0, Math.min(100, Math.round(number)))}%`;
+  const percent = Math.abs(number) > 0 && Math.abs(number) <= 1 ? number * 100 : number;
+  return `${Math.max(0, Math.min(100, Math.round(percent)))}%`;
 }
 
 function listText(items = []) {
   return Array.isArray(items) ? items.filter(Boolean).join(" / ") : "";
 }
 
-function scoreScenarioText(items = []) {
+function scoreScenarioText(items = [], limit = 3) {
   if (!Array.isArray(items) || !items.length) return "";
   return items
-    .slice(0, 3)
+    .slice(0, limit)
     .map((item) => `${item.score} ${percentText(item.probability)}`)
     .join(" / ");
+}
+
+function normalizeScoreLabel(score) {
+  return String(score || "").replace(/\s/g, "");
+}
+
+function scoreScenariosFor(match, official = officialPredictionRecord(match), daily = dailyReadFor(match)) {
+  const officialScenarios = official?.analysis?.scoreScenarios || official?.proof?.payload?.prediction?.scoreScenarios;
+  if (Array.isArray(officialScenarios) && officialScenarios.length) return officialScenarios.slice(0, 5);
+  const dailyScenarios = daily?.lab?.scoreScenarios;
+  return Array.isArray(dailyScenarios) ? dailyScenarios.slice(0, 5) : [];
+}
+
+function scoreScenarioHit(scenarios = [], result) {
+  const actual = result?.score || resultScoreString(result);
+  const normalizedActual = normalizeScoreLabel(actual);
+  if (!normalizedActual || !Array.isArray(scenarios) || !scenarios.length) {
+    return { top3: false, top5: false, label: "" };
+  }
+  const scores = scenarios.map((item) => normalizeScoreLabel(item?.score));
+  const top3 = scores.slice(0, 3).includes(normalizedActual);
+  const top5 = scores.slice(0, 5).includes(normalizedActual);
+  const label = top3 ? "Top3 score hit" : top5 ? "Top5 score hit" : "Top5 score missed";
+  return { top3, top5, label };
+}
+
+function scoreScenarioMarkup(scenarios = [], result = null) {
+  if (!Array.isArray(scenarios) || !scenarios.length) return "";
+  const hit = scoreScenarioHit(scenarios, result);
+  return `
+    <div class="daily-read__meta">
+      <strong>Score paths</strong>
+      <p>Top 3: ${escapeHtml(scoreScenarioText(scenarios, 3))}</p>
+      <p>Top 5: ${escapeHtml(scoreScenarioText(scenarios, 5))}</p>
+      ${hit.label ? `<p>${escapeHtml(hit.label)}</p>` : ""}
+    </div>
+  `;
 }
 
 function probabilityCompareText(layer) {
@@ -2268,7 +2306,8 @@ function lockVsLiveMarkup(match) {
         <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)}${drift.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : ""} -> ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
         <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(drift.officialScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(drift.liveScore || "N/A")}</p>
         ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
-        ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Top 3 score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios, 3))}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Top 5 score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios, 5))}</p>` : ""}
         <p>${tr("driftReason")}: ${escapeHtml(driftReasonText(drift, read))}</p>
       </div>
     `;
@@ -2286,7 +2325,7 @@ function driftReasonText(drift, read) {
     reasons.push(`winner gap ${percentText(drift.winnerVolatility.gap)} (${drift.winnerVolatility.label || "watch"})`);
   }
   if (drift?.scoreScenarios?.length) {
-    reasons.push(`top score paths ${scoreScenarioText(drift.scoreScenarios)}`);
+    reasons.push(`top score paths ${scoreScenarioText(drift.scoreScenarios, 5)}`);
   }
   if (drift?.rehearsal?.searchRequired) {
     reasons.push(`fresh news/lineup/Opta review: ${listText(drift.rehearsal.focus || []) || "required"}`);
@@ -2311,7 +2350,7 @@ function liveDriftFor(match, read) {
   const drifted = normalizedOfficial !== liveCode;
   const officialScore = official?.analysis?.predictedScore || official?.analysis?.score || null;
   const officialConfidence = official?.analysis?.confidence || null;
-  const scoreScenarios = Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 3) : [];
+  const scoreScenarios = Array.isArray(read?.lab?.scoreScenarios) ? read.lab.scoreScenarios.slice(0, 5) : [];
   const liveScore = read?.pick?.predictedScore || scoreFromScenarios(scoreScenarios) || null;
   const scoreChanged = Boolean(officialScore && liveScore && String(officialScore).trim() !== String(liveScore).trim());
   return {
@@ -2385,7 +2424,8 @@ function renderDailyRead(match) {
         <strong>${tr("officialLock")}: ${escapeHtml(drift.officialName)}${drift.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : ""} · ${tr("liveEstimate")}: ${escapeHtml(drift.liveName)}${drift.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : ""}</strong>
         <p>${tr("predictedScore")}: ${tr("officialLock")} ${escapeHtml(drift.officialScore || "N/A")} -> ${tr("liveEstimate")} ${escapeHtml(drift.liveScore || "N/A")}</p>
         ${drift.winnerVolatility ? `<p>Win drift: ${escapeHtml(drift.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(drift.winnerVolatility.gap)} · ${escapeHtml(drift.winnerVolatility.label || "watch")}</p>` : ""}
-        ${drift.scoreScenarios?.length ? `<p>Score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios))}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Top 3 score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios, 3))}</p>` : ""}
+        ${drift.scoreScenarios?.length ? `<p>Top 5 score paths: ${escapeHtml(scoreScenarioText(drift.scoreScenarios, 5))}</p>` : ""}
         ${drift.rehearsal ? `<p>Replay room: ${drift.rehearsal.searchRequired ? "refreshing news / lineups / Opta-style preview" : "local pre-lock rehearsal covered"}${drift.rehearsal.focus?.length ? ` · ${escapeHtml(listText(drift.rehearsal.focus))}` : ""}</p>` : ""}
         <p>${tr("driftReason")}: ${escapeHtml(driftReasonText(drift, read))}</p>
       </div>
@@ -2401,7 +2441,8 @@ function renderDailyRead(match) {
       <div class="daily-read__meta">
         <strong>Lab drift</strong>
         ${read.lab?.winnerVolatility ? `<p>Winner volatility: ${escapeHtml(read.lab.winnerVolatility.leaderName || tr("pending"))} · gap ${percentText(read.lab.winnerVolatility.gap)} · ${escapeHtml(read.lab.winnerVolatility.label || "watch")}</p>` : ""}
-        ${read.lab?.scoreScenarios?.length ? `<p>Top score paths: ${escapeHtml(scoreScenarioText(read.lab.scoreScenarios))}</p>` : ""}
+        ${read.lab?.scoreScenarios?.length ? `<p>Top 3 score paths: ${escapeHtml(scoreScenarioText(read.lab.scoreScenarios, 3))}</p>` : ""}
+        ${read.lab?.scoreScenarios?.length ? `<p>Top 5 score paths: ${escapeHtml(scoreScenarioText(read.lab.scoreScenarios, 5))}</p>` : ""}
       </div>
     ` : ""}
     ${calibrationBlockMarkup(read.pick?.calibrationLayer, { title: "KV calibration", compact: false })}
@@ -2501,6 +2542,7 @@ function tracePaulPick(match, official, daily) {
       confidence: official.analysis?.confidence || null,
       probabilities: official.analysis?.probabilities || null,
       predictedScore: official.analysis?.predictedScore || official.analysis?.score || null,
+      scoreScenarios: scoreScenariosFor(match, official, daily),
       status: "Official locked"
     };
   }
@@ -2511,10 +2553,11 @@ function tracePaulPick(match, official, daily) {
       confidence: daily.pick.confidence || null,
       probabilities: daily.probabilities || null,
       predictedScore: daily.pick.predictedScore || daily.pick.score || null,
+      scoreScenarios: scoreScenariosFor(match, official, daily),
       status: "Daily read"
     };
   }
-  return { code: null, name: tr("awaitingLock"), confidence: null, probabilities: null, predictedScore: null, status: traceAwaitingPickLabel(match) };
+  return { code: null, name: tr("awaitingLock"), confidence: null, probabilities: null, predictedScore: null, scoreScenarios: [], status: traceAwaitingPickLabel(match) };
 }
 
 function traceResult(match, result) {
@@ -2540,6 +2583,15 @@ function tracePaulOutcomeLabel(paul, result) {
   return currentLanguage === "zh"
     ? `PAUL 胜负命中 · ${scoreHit ? "比分全中" : "比分未中"}`
     : `PAUL win call hit · score ${scoreHit ? "exact" : "missed"}`;
+}
+
+function tracePaulOutcomeLabel(paul, result) {
+  if (!result.winnerCode || !paul.code) return "";
+  const winnerHit = String(paul.code).toUpperCase() === String(result.winnerCode).toUpperCase();
+  if (!winnerHit) return "PAUL win call missed";
+  const scoreHit = paul.predictedScore && result.score && normalizeScoreLabel(paul.predictedScore) === normalizeScoreLabel(result.score);
+  const scenarioHit = scoreScenarioHit(paul.scoreScenarios, result);
+  return `PAUL win call hit · score ${scoreHit ? "exact" : "missed"}${scenarioHit.label ? ` · ${scenarioHit.label}` : ""}`;
 }
 
 function traceMarketImpact(paulCode, marketCode, winnerCode) {
@@ -2630,6 +2682,11 @@ function renderPublicTraceUnsafe() {
         const replayRoom = daily?.lab?.rehearsal?.focus?.length ? ` · replay ${escapeHtml(listText(daily.lab.rehearsal.focus))}` : "";
         const winnerVolatility = daily?.lab?.winnerVolatility ? ` · win drift ${escapeHtml(daily.lab.winnerVolatility.label)} ${percentText(daily.lab.winnerVolatility.gap)}` : "";
         const scorePath = daily?.lab?.scoreScenarios?.length ? ` · score ${escapeHtml(scoreScenarioText(daily.lab.scoreScenarios))}` : "";
+        const scoreScenarios = scoreScenariosFor(match, official, daily);
+        const scorePathHit = scoreScenarioHit(scoreScenarios, result);
+        const scorePathDetails = scoreScenarios.length
+          ? ` · Top3 ${escapeHtml(scoreScenarioText(scoreScenarios, 3))} · Top5 ${escapeHtml(scoreScenarioText(scoreScenarios, 5))}${scorePathHit.label && result.winnerCode ? ` · ${escapeHtml(scorePathHit.label)}` : ""}`
+          : "";
         const driftOfficialPct = drift?.officialConfidence ? ` ${dailyReadPercent(drift.officialConfidence)}` : "";
         const driftLivePct = drift?.liveConfidence ? ` ${dailyReadPercent(drift.liveConfidence)}` : "";
         const driftLine = drift
@@ -2643,6 +2700,7 @@ function renderPublicTraceUnsafe() {
             </span>
             <span class="${paulClass}">
               <strong>${escapeHtml(paul.name)}${paulConfidence}</strong>
+              ${scorePathDetails ? `<em>${scorePathDetails}</em>` : ""}
               <em>${escapeHtml(paul.status)}${paulScore}${paulProbabilities ? ` · ${paulProbabilities}` : ""}${driftLine ? ` · ${escapeHtml(driftLine)}` : ""}${winnerVolatility}${scorePath}${replayRoom}</em>
             </span>
             <span>
@@ -2691,6 +2749,8 @@ function correctMatchRows() {
       const resolved = resolvedTeams(match);
       const home = teams[resolved.aCode]?.name || slotLabel(match, "a");
       const away = teams[resolved.bCode]?.name || slotLabel(match, "b");
+      const scoreScenarios = scoreScenariosFor(match, official, dailyReadFor(match));
+      const scorePathHit = scoreScenarioHit(scoreScenarios, result);
       return {
         match,
         official,
@@ -2701,7 +2761,9 @@ function correctMatchRows() {
         outcome: predictionOutcomeText(official, result),
         predictedScore: officialPredictedScoreLabel(official) || "N/A",
         finalScore: resultScoreString(result) || "N/A",
-        scoreExact: Boolean(officialPredictedScore(official) && officialPredictedScore(official) === resultScoreString(result))
+        scoreExact: Boolean(officialPredictedScore(official) && officialPredictedScore(official) === resultScoreString(result)),
+        scoreScenarios,
+        scorePathHit
       };
     })
     .filter(Boolean);
@@ -2728,12 +2790,13 @@ function renderHitList() {
       <span>${hits.length}</span>
     </div>
     <div class="hit-list__items">
-      ${hits.length ? hits.map(({ match, label, pickName, proof, outcome, predictedScore, finalScore, scoreExact }) => `
+      ${hits.length ? hits.map(({ match, label, pickName, proof, outcome, predictedScore, finalScore, scoreExact, scoreScenarios, scorePathHit }) => `
         <article class="hit-card">
           <span>#${match.id}</span>
           <strong>${escapeHtml(label)}</strong>
           <em>${tr("pick")}: ${escapeHtml(pickName)}${outcome ? ` · ${escapeHtml(outcome)}` : ""}</em>
           <em>Predicted score: ${escapeHtml(predictedScore)} · Final score: ${escapeHtml(finalScore)} · ${scoreExact ? "score exact" : "score missed"}</em>
+          ${scoreScenarios.length ? `<em>Top3: ${escapeHtml(scoreScenarioText(scoreScenarios, 3))}</em><em>Top5: ${escapeHtml(scoreScenarioText(scoreScenarios, 5))}${scorePathHit.label ? ` · ${escapeHtml(scorePathHit.label)}` : ""}</em>` : ""}
           ${proof ? `<button class="button button--ghost hit-json-button" type="button" data-match-id="${match.id}">${tr("verifyJson")}</button>` : ""}
         </article>
       `).join("") : `<p>${tr("noCorrectPicksYet")}</p>`}
@@ -2821,6 +2884,8 @@ function officialAnalysisMarkup(official, match) {
   const reasoning = analysis.reasoning || analysis.calibrationNote || tr("lockedWithoutDetails");
   const currentKv = currentKvMemoryMarkup();
   const lockVsLive = match ? lockVsLiveMarkup(match) : "";
+  const scorePaths = match ? scoreScenariosFor(match, official, dailyReadFor(match)) : [];
+  const scorePathsMarkup = match ? scoreScenarioMarkup(scorePaths, officialResult(match)) : "";
   return `
     <div class="locked-analysis">
       <div class="locked-analysis__block">
@@ -2848,6 +2913,7 @@ function officialAnalysisMarkup(official, match) {
           `}
       </div>
       ${lockVsLive}
+      ${scorePathsMarkup}
       ${currentKv}
       ${officialEvidenceMarkup(analysis)}
     </div>
@@ -2856,6 +2922,7 @@ function officialAnalysisMarkup(official, match) {
 
 function officialModelCards(official, match) {
   const analysis = official.analysis || {};
+  const scorePaths = scoreScenariosFor(match, official, dailyReadFor(match));
   return `
     <article class="model-card">
       <h3>${tr("officialPaulPick")}</h3>
@@ -2866,6 +2933,7 @@ function officialModelCards(official, match) {
       <h3>${tr("predictedScore")}</h3>
       <div class="vote">${escapeHtml(analysis.predictedScore || analysis.score || "N/A")}</div>
       <p>${tr("lockedAt")}: ${formatDisplayDateTime(official.generatedAt, { year: "numeric" })}.</p>
+      ${scorePaths.length ? `<p>Top 3: ${escapeHtml(scoreScenarioText(scorePaths, 3))}</p><p>Top 5: ${escapeHtml(scoreScenarioText(scorePaths, 5))}</p>` : ""}
     </article>
     <article class="model-card">
       <h3>${tr("upsetWatch")}</h3>

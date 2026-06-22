@@ -29,6 +29,13 @@ function compactPrediction(analysis = {}) {
     winnerName: analysis.winnerName || null,
     confidence: analysis.confidence || null,
     predictedScore: analysis.predictedScore || analysis.score || null,
+    scoreScenarios: Array.isArray(analysis.scoreScenarios)
+      ? analysis.scoreScenarios.slice(0, 5).map((item) => ({
+          score: item.score || null,
+          probability: item.probability ?? null,
+          rank: item.rank ?? null
+        }))
+      : null,
     probabilities: analysis.probabilities || null,
     upsetRisk: analysis.upsetRisk || null,
     reasoning: analysis.reasoning || null,
