@@ -154,6 +154,9 @@ function renderSummary(data) {
   const liveDirectionPaul = liveComparison.direction?.paul || {};
   const liveDirectionMarket = liveComparison.direction?.market || {};
   const liveExactPaul = liveComparison.exactScore?.paul || {};
+  const exactMatchLines = Array.isArray(liveExactPaul.matches) && liveExactPaul.matches.length
+    ? liveExactPaul.matches.slice(0, 12).map((item) => `#${item.matchId}: ${item.predictedScore} = ${item.actualScore}`)
+    : ["No official exact-score matches listed yet."];
   summary.hidden = false;
   summary.innerHTML = [
     metric("历史回测方向", `${pct(historicalPaul.accuracy)} · ${historicalPaul.correct || 0}/${historicalPaul.graded || 0}`, [
@@ -172,6 +175,7 @@ function renderSummary(data) {
       `PAUL 方向：${liveDirectionPaul.correct || 0}/${liveDirectionPaul.graded || 0} = ${pct(liveDirectionPaul.accuracy)}。`,
       `市场方向：${liveDirectionMarket.correct || 0}/${liveDirectionMarket.graded || 0} = ${pct(liveDirectionMarket.accuracy)}。`,
       `PAUL 比分全中：${liveExactPaul.correct || 0}/${liveExactPaul.graded || 0} = ${pct(liveExactPaul.accuracy)}。`,
+      ...exactMatchLines,
       "比分不中但胜负方向中，会继续计入方向命中；比分层单独复盘。"
     ]),
     metric("可下注", data.summary.bettable, [

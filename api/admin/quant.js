@@ -505,7 +505,16 @@ function liveModelStats(predictions, results) {
     stats.graded += 1;
     if (pick === winner) stats.correct += 1;
     const score = predictionScore(prediction).replace(/\s/g, "");
-    if (score && score === `${result.homeScore}-${result.awayScore}`) stats.exactScore += 1;
+    const actualScore = `${result.homeScore}-${result.awayScore}`;
+    if (score && score === actualScore) {
+      stats.exactScore += 1;
+      stats.exactScoreMatches.push({
+        matchId: result.matchId || matchId,
+        predictedScore: score,
+        actualScore,
+        winner
+      });
+    }
     if (score) stats.exactScoreGraded += 1;
     const marketPick = String(
       prediction?.evidence?.baselines?.marketFavorite?.winnerCode ||
@@ -517,7 +526,7 @@ function liveModelStats(predictions, results) {
       if (marketPick === winner) stats.marketCorrect += 1;
     }
     return stats;
-  }, { graded: 0, correct: 0, exactScore: 0, exactScoreGraded: 0, marketGraded: 0, marketCorrect: 0 });
+  }, { graded: 0, correct: 0, exactScore: 0, exactScoreGraded: 0, exactScoreMatches: [], marketGraded: 0, marketCorrect: 0 });
 }
 
 function postMatchCalibrationDelta(results, mistakeMemory = {}) {
@@ -581,7 +590,7 @@ function reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy
         market: { correct: live.marketCorrect, graded: live.marketGraded, accuracy: live.marketGraded ? live.marketCorrect / live.marketGraded : null }
       },
       exactScore: {
-        paul: { correct: live.exactScore, graded: live.exactScoreGraded, accuracy: live.exactScoreGraded ? live.exactScore / live.exactScoreGraded : null },
+        paul: { correct: live.exactScore, graded: live.exactScoreGraded, accuracy: live.exactScoreGraded ? live.exactScore / live.exactScoreGraded : null, matches: live.exactScoreMatches || [] },
         market: { correct: null, graded: 0, accuracy: null, note: "市场 1X2 赔率没有精确比分预测，不能和 PAUL 比分全中率直接比较。" }
       }
     },
@@ -1084,12 +1093,12 @@ module.exports = async function handler(req, res) {
         else if (pick.source === "Market fallback") skipReason = "Reference only";
         else if (!odds) skipReason = "Missing odds";
         else if (!probability) skipReason = "Missing PAUL probability";
-        const pickCode = String(pick?.code || "").toUpperCase();
+        const pickCode = String(officialPick?.code || "").toUpperCase();
         const finalWinnerCode = String(winnerCode || "").toUpperCase();
         const pickOutcome = isFinal && pickCode && finalWinnerCode
           ? (pickCode === finalWinnerCode ? "correct" : "missed")
           : (isFinal ? "ungraded" : "pending");
-        const exactScoreHit = Boolean(isFinal && resultScore && pick?.predictedScore && String(pick.predictedScore).replace(/\s/g, "") === resultScore);
+        const exactScoreHit = Boolean(isFinal && resultScore && officialPick?.predictedScore && String(officialPick.predictedScore).replace(/\s/g, "") === resultScore);
 
         const preliminaryStake = kellyStake({
           odds,
