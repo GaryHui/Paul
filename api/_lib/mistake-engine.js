@@ -17,6 +17,17 @@ function scoreParts(score) {
   return { home: Number(match[1]), away: Number(match[2]) };
 }
 
+function scoreKey(parts) {
+  return parts ? `${parts.home}-${parts.away}` : null;
+}
+
+function topCountEntries(counts = {}, limit = 8) {
+  return Object.entries(counts)
+    .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))
+    .slice(0, limit)
+    .map(([key, count]) => ({ key, count }));
+}
+
 function winnerForResult(match, result) {
   if (result?.winnerCode) return String(result.winnerCode).toUpperCase();
   if (Number(result?.homeScore) === Number(result?.awayScore)) return "DRAW";
@@ -380,6 +391,27 @@ async function recordMistakeReview({ match, result, prediction, evidence, baseRe
 
 function summarizeRelevantMistakes(match, memory = {}) {
   const aggregate = aggregateForMemory(memory);
+  const scoreCounts = {};
+  const totalCounts = {};
+  const marginCounts = {};
+  let scoredReviews = 0;
+  let totalGoals = 0;
+  let highEvent = 0;
+  let lowEvent = 0;
+  Object.values(memory.matches || {}).forEach((review) => {
+    const actual = scoreParts(review?.actualScore);
+    if (!actual) return;
+    const key = scoreKey(actual);
+    const total = actual.home + actual.away;
+    const margin = Math.abs(actual.home - actual.away);
+    scoredReviews += 1;
+    totalGoals += total;
+    if (total >= 4) highEvent += 1;
+    if (total <= 2) lowEvent += 1;
+    scoreCounts[key] = (scoreCounts[key] || 0) + 1;
+    totalCounts[total] = (totalCounts[total] || 0) + 1;
+    marginCounts[margin] = (marginCounts[margin] || 0) + 1;
+  });
   const teams = teamCodes(match).map((code) => ({ code, memory: aggregate.teamMemory?.[code] || null }));
   const relevant = teams.filter((item) => item.memory);
   const causeCountsAll = aggregate.causeCounts || {};
@@ -394,6 +426,15 @@ function summarizeRelevantMistakes(match, memory = {}) {
     directionMisses: aggregate.directionMisses || 0,
     scoreMisses: aggregate.scoreMisses || 0,
     exactHits: aggregate.exactHits || 0,
+    scorelineProfile: {
+      sampleSize: scoredReviews,
+      averageTotalGoals: scoredReviews ? Number((totalGoals / scoredReviews).toFixed(2)) : null,
+      highEventRate: scoredReviews ? Number((highEvent / scoredReviews).toFixed(3)) : null,
+      lowEventRate: scoredReviews ? Number((lowEvent / scoredReviews).toFixed(3)) : null,
+      topScores: topCountEntries(scoreCounts),
+      totalGoalCounts: topCountEntries(totalCounts, 10),
+      marginCounts: topCountEntries(marginCounts, 8)
+    },
     topGlobalCauses,
     averageCalibration: averageCalibrationTotals(aggregate.calibrationTotals, aggregate.total || 0),
     teams: relevant.map((item) => ({

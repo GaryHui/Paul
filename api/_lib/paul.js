@@ -78,7 +78,7 @@ function poissonProbabilities(aLambda, bLambda, allowDraw) {
   return {
     probabilities: normalize3Way({ home, draw, away }),
     predictedScore: bestScore,
-    topScorelines: scorelines.sort((a, b) => b.probability - a.probability).slice(0, 12),
+    topScorelines: scorelines.sort((a, b) => b.probability - a.probability).slice(0, 24),
     expectedGoals: {
       home: Number(aLambda.toFixed(2)),
       away: Number(bLambda.toFixed(2))
@@ -815,7 +815,9 @@ function scoreShapeContext(evidence = {}, adjustment = {}, pickSide = null, pick
   const marketPickProbability = Number(sideProbability(market, pickSide) || 0);
   const marketDraw = Number(market.draw || 0);
   const learningProfile = evidence.learning?.profile || evidence.mistakeEngine?.learningProfile || {};
+  const scorelineProfile = evidence.mistakeEngine?.summary?.scorelineProfile || {};
   const scoreMissRate = Number(learningProfile.scoreMissRate || 0);
+  const probabilityWeight = scoreMissRate >= 0.8 ? 0.72 : scoreMissRate >= 0.65 ? 0.84 : 1;
   const favoriteSide = evidence.baselines?.marketFavorite?.side || evidence.baselines?.blendedFavorite?.side || null;
   const favoriteProbability = Math.max(
     Number(sideProbability(market, favoriteSide) || 0),
@@ -848,11 +850,13 @@ function scoreShapeContext(evidence = {}, adjustment = {}, pickSide = null, pick
     marketPickProbability,
     scoreMissRate,
     scorePriorWeight,
+    probabilityWeight,
     compressed,
     strongFavorite,
     upsetPick,
     highEventBias,
-    lowEventBias
+    lowEventBias,
+    scorelineProfile
   };
 }
 
@@ -861,7 +865,25 @@ function scoreCandidateRank(item, context = {}) {
   if (!parts) return -Infinity;
   const total = parts.home + parts.away;
   const margin = Math.abs(parts.home - parts.away);
-  let rank = Number(item.probability || 0) + commonScorePrior(item.score) * Number(context.scorePriorWeight ?? 1);
+  let rank = Number(item.probability || 0) * Number(context.probabilityWeight ?? 1) + commonScorePrior(item.score) * Number(context.scorePriorWeight ?? 1);
+  const profile = context.scorelineProfile || {};
+  const profileSample = Number(profile.sampleSize || 0);
+  if (profileSample >= 8) {
+    const topScores = Array.isArray(profile.topScores) ? profile.topScores : [];
+    const totalCounts = Array.isArray(profile.totalGoalCounts) ? profile.totalGoalCounts : [];
+    const marginCounts = Array.isArray(profile.marginCounts) ? profile.marginCounts : [];
+    const exactSeen = topScores.find((entry) => String(entry.key) === item.score);
+    const totalSeen = totalCounts.find((entry) => Number(entry.key) === total);
+    const marginSeen = marginCounts.find((entry) => Number(entry.key) === margin);
+    if (exactSeen) rank += Math.min(0.035, Number(exactSeen.count || 0) / profileSample * 0.14);
+    if (totalSeen) rank += Math.min(0.025, Number(totalSeen.count || 0) / profileSample * 0.075);
+    if (marginSeen) rank += Math.min(0.018, Number(marginSeen.count || 0) / profileSample * 0.05);
+    const averageTotalGoals = Number(profile.averageTotalGoals || 0);
+    if (averageTotalGoals >= 3.2 && total >= 3) rank += 0.012;
+    if (averageTotalGoals <= 2.4 && total <= 2) rank += 0.012;
+    if (Number(profile.highEventRate || 0) >= 0.38 && total >= 4) rank += 0.014;
+    if (Number(profile.lowEventRate || 0) >= 0.55 && total <= 2) rank += 0.014;
+  }
   if (context.pickSide && scoreSide(parts) === context.pickSide) rank += 0.02;
   if (context.expectedTotal !== null && Number.isFinite(context.expectedTotal)) {
     rank -= Math.abs(total - context.expectedTotal) * 0.004;
@@ -948,6 +970,31 @@ function calibratedPredictedScore(evidence, adjustment = {}, pickSide = null, pi
     })?.score || base;
   }
   return base;
+}
+
+function calibratedScoreScenarios(evidence, adjustment = {}, pickSide = null, pickProbability = 0, limit = 5) {
+  const scenarios = Array.isArray(evidence.poisson?.topScorelines) ? evidence.poisson.topScorelines : [];
+  if (!scenarios.length) return [];
+  const base = evidence.poisson?.predictedScore || scenarios[0]?.score || null;
+  const baseParts = scoreParts(base);
+  const baseTotal = baseParts ? baseParts.home + baseParts.away : null;
+  const goalDelta = Number(adjustment.goalVolatilityDelta || 0);
+  const shape = scoreShapeContext(evidence, adjustment, pickSide, pickProbability);
+  return scenarios
+    .filter((item) => scoreParts(item.score))
+    .map((item) => ({
+      ...item,
+      rank: Number(scoreCandidateRank(item, {
+        ...shape,
+        pickSide,
+        pickProbability,
+        targetTotal: baseTotal,
+        baseTotal,
+        goalDelta
+      }).toFixed(6))
+    }))
+    .sort((a, b) => b.rank - a.rank)
+    .slice(0, limit);
 }
 
 function applyMistakeCalibration(payload, evidence, baseProbabilities) {
@@ -1067,11 +1114,13 @@ function deterministicAnalysis(payload, evidence) {
   const marketPickProbability = Number(sideProbability(evidence.market?.probabilities, side) || 0);
   const confidenceAdjustment = Number(evidence.mistakeEngine?.calibrationAdjustment?.scoreConfidenceDelta || 0) * 100;
   const confidence = clamp(Math.round(Math.max(pickProbability, marketPickProbability) * 100 + confidenceAdjustment), 50, 88);
+  const scoreScenarios = calibratedScoreScenarios(evidence, evidence.mistakeEngine?.calibrationAdjustment, side, pickProbability, 5);
   return {
     winnerCode: pick.code,
     winnerName: pick.name,
     confidence,
-    predictedScore: calibratedPredictedScore(evidence, evidence.mistakeEngine?.calibrationAdjustment, side, pickProbability) || null,
+    predictedScore: scoreScenarios[0]?.score || calibratedPredictedScore(evidence, evidence.mistakeEngine?.calibrationAdjustment, side, pickProbability) || null,
+    scoreScenarios,
     probabilities: probabilitiesToPercentages(baseProbabilities),
     evidenceUsed: defaultEvidenceUsed(evidence),
     marketBaseline: evidence.baselines?.marketFavorite
@@ -1107,6 +1156,7 @@ function mergeAnalysisWithEvidence(payload, evidence, analysis = {}) {
     winnerName: anchored.winnerName,
     confidence: anchored.confidence,
     predictedScore: anchored.predictedScore,
+    scoreScenarios: anchored.scoreScenarios,
     probabilities: finalProbabilities,
     evidenceUsed: finalEvidenceUsed,
     marketBaseline: analysis.marketBaseline || anchored.marketBaseline,
@@ -1182,5 +1232,6 @@ module.exports = {
   callPaul,
   collectPredictionEvidence,
   calibratedPredictedScore,
+  calibratedScoreScenarios,
   loadSnapshot
 };

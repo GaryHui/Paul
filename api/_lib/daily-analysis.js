@@ -66,8 +66,11 @@ function buildLabSnapshot(match, result) {
   const evidence = result.evidence || {};
   const analysis = result.analysis || {};
   const probabilities = analysis.probabilities || {};
-  const scoreScenarios = Array.isArray(evidence.poisson?.topScorelines)
-    ? evidence.poisson.topScorelines.slice(0, 5).map((item) => ({
+  const scenarioSource = Array.isArray(analysis.scoreScenarios) && analysis.scoreScenarios.length
+    ? analysis.scoreScenarios
+    : evidence.poisson?.topScorelines;
+  const scoreScenarios = Array.isArray(scenarioSource)
+    ? scenarioSource.slice(0, 5).map((item) => ({
         score: item.score,
         probability: normalizeProbability(Number(item.probability || 0) * 100)
       }))
