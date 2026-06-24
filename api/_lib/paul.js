@@ -666,6 +666,9 @@ function buildPrompt(payload, evidence) {
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
     "Use evidence.universal as PAUL's historical Universal gate, distilled from broad backtests. It may permit a market override only when universal.override is true; PAUL's live news and KV learning layer still have final authority.",
     "Use evidence.learning as PAUL's adaptive learning layer. It turns post-match KV corrections into bounded model-weight changes before each prediction, so explain when learning weights materially affect the read.",
+    "Use evidence.mistakeEngine.summary.marketEdgeProfile to decide whether PAUL has earned permission to leave the market. If marketOnlyCorrect is ahead of paulOnlyCorrect, require stronger Universal/news/lineup support before overriding the market favorite.",
+    "Use evidence.mistakeEngine.summary.shadowABProfile as the strict A/B judge for KV learning. A positive directionLift means KV is helping; a negative lift means future KV deltas should be treated cautiously.",
+    "For predictedScore, optimize both the single main score and the Top3/Top5 scoreScenarios. If exact score has been weak, preserve common football score priors and explain when scoreline learning moves the top path.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
     "When evidence.preLockRehearsal.upsetPreview.recommendation says the upset probability is live enough, spend extra effort on underdog news, lineup absences, set pieces, pressing/transition routes, xG/xGA, and market movement before deciding whether to slightly lift the upset/draw probability.",
     "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
@@ -816,6 +819,8 @@ function scoreShapeContext(evidence = {}, adjustment = {}, pickSide = null, pick
   const marketDraw = Number(market.draw || 0);
   const learningProfile = evidence.learning?.profile || evidence.mistakeEngine?.learningProfile || {};
   const scorelineProfile = evidence.mistakeEngine?.summary?.scorelineProfile || {};
+  const marketEdgeProfile = evidence.mistakeEngine?.summary?.marketEdgeProfile || {};
+  const shadowABProfile = evidence.mistakeEngine?.summary?.shadowABProfile || {};
   const scoreMissRate = Number(learningProfile.scoreMissRate || 0);
   const probabilityWeight = scoreMissRate >= 0.8 ? 0.72 : scoreMissRate >= 0.65 ? 0.84 : 1;
   const favoriteSide = evidence.baselines?.marketFavorite?.side || evidence.baselines?.blendedFavorite?.side || null;
@@ -856,6 +861,8 @@ function scoreShapeContext(evidence = {}, adjustment = {}, pickSide = null, pick
     upsetPick,
     highEventBias,
     lowEventBias,
+    marketEdgeProfile,
+    shadowABProfile,
     scorelineProfile
   };
 }
@@ -883,6 +890,8 @@ function scoreCandidateRank(item, context = {}) {
     if (averageTotalGoals <= 2.4 && total <= 2) rank += 0.012;
     if (Number(profile.highEventRate || 0) >= 0.38 && total >= 4) rank += 0.014;
     if (Number(profile.lowEventRate || 0) >= 0.55 && total <= 2) rank += 0.014;
+    if (Number(profile.top3HitRate || 0) < 0.18 && commonScorePrior(item.score)) rank += commonScorePrior(item.score) * 0.7;
+    if (Number(profile.top5HitRate || 0) < 0.28 && total <= 3 && margin <= 2) rank += 0.006;
   }
   if (context.pickSide && scoreSide(parts) === context.pickSide) rank += 0.02;
   if (context.expectedTotal !== null && Number.isFinite(context.expectedTotal)) {
@@ -916,6 +925,8 @@ function scoreCandidateRank(item, context = {}) {
   if (context.lowEventBias && total <= Math.max(1, context.baseTotal)) rank += 0.01;
   if (context.goalDelta < -0.006 && total <= context.baseTotal) rank += 0.008;
   if (context.goalDelta > 0.006 && total >= context.baseTotal + 1) rank += 0.008;
+  if (Number(context.shadowABProfile?.scoreLift || 0) < 0 && total >= 4) rank -= 0.006;
+  if (Number(context.marketEdgeProfile?.netEdge || 0) < 0 && context.upsetPick && margin >= 2) rank -= 0.008;
   return rank;
 }
 
@@ -1023,6 +1034,12 @@ function applyMistakeCalibration(payload, evidence, baseProbabilities) {
     probabilities = blendToward(probabilities, evidence.market.probabilities, marketFactor * 3.5);
     notes.push(`market shrink ${marketFactor.toFixed(3)}`);
   }
+  if (Number(adjustment.marketEdgeDelta || 0) !== 0) {
+    notes.push(`market edge delta ${Number(adjustment.marketEdgeDelta || 0).toFixed(3)}`);
+  }
+  if (Number(adjustment.shadowDirectionDelta || 0) !== 0) {
+    notes.push(`shadow A/B direction delta ${Number(adjustment.shadowDirectionDelta || 0).toFixed(3)}`);
+  }
   if (allowDraw && Number(adjustment.drawRiskDelta || 0) !== 0) {
     probabilities = rebalanceDraw(probabilities, Number(adjustment.drawRiskDelta || 0), allowDraw);
     notes.push(`draw risk ${Number(adjustment.drawRiskDelta || 0).toFixed(3)}`);
@@ -1052,7 +1069,9 @@ function applyMistakeCalibration(payload, evidence, baseProbabilities) {
         drawRiskDelta: Number(adjustment.drawRiskDelta || 0),
         upsetSensitivityDelta: Number(adjustment.upsetSensitivityDelta || 0),
         scoreConfidenceDelta: Number(adjustment.scoreConfidenceDelta || 0),
-        goalVolatilityDelta: Number(adjustment.goalVolatilityDelta || 0)
+        goalVolatilityDelta: Number(adjustment.goalVolatilityDelta || 0),
+        marketEdgeDelta: Number(adjustment.marketEdgeDelta || 0),
+        shadowDirectionDelta: Number(adjustment.shadowDirectionDelta || 0)
       },
       before: probabilitiesToPercentages(baseProbabilities),
       after: probabilitiesToPercentages(normalize3Way(probabilities)),
@@ -1094,7 +1113,15 @@ function deterministicAnalysis(payload, evidence) {
     "home";
   if (allowDraw && evidence.paulEdge?.drawSqueeze) {
     side = "draw";
-  } else if (evidence.universal?.override && evidence.universal?.pickSide) {
+  } else if (
+    evidence.universal?.override &&
+    evidence.universal?.pickSide &&
+    !(
+      Number(evidence.mistakeEngine?.summary?.marketEdgeProfile?.graded || 0) >= 12 &&
+      Number(evidence.mistakeEngine?.summary?.marketEdgeProfile?.netEdge || 0) < 0 &&
+      Number(evidence.universal?.edge || 0) < 0.055
+    )
+  ) {
     side = evidence.universal.pickSide;
   } else if (evidence.paulEdge?.conservativeOverride && Number(evidence.paulEdge?.upsetScore || 0) >= 55) {
     side = evidence.baselines?.blendedFavorite?.side || side;
@@ -1168,6 +1195,78 @@ function mergeAnalysisWithEvidence(payload, evidence, analysis = {}) {
   };
 }
 
+function compactShadowEvidence(evidence = {}) {
+  return {
+    generatedAt: evidence.generatedAt || null,
+    marketFavorite: evidence.baselines?.marketFavorite || null,
+    ratingFavorite: evidence.baselines?.ratingFavorite || null,
+    poissonFavorite: evidence.baselines?.poissonFavorite || null,
+    blendedFavorite: evidence.baselines?.blendedFavorite || null,
+    modelBlend: evidence.modelBlend || null,
+    learning: evidence.learning
+      ? {
+          applied: Boolean(evidence.learning.applied),
+          modelWeights: evidence.learning.modelWeights || null,
+          sampleSize: evidence.learning.modelWeights?.sampleSize || evidence.learning.profile?.sampleSize || 0
+        }
+      : null,
+    mistakeEngine: evidence.mistakeEngine
+      ? {
+          usable: Boolean(evidence.mistakeEngine.usable),
+          updatedAt: evidence.mistakeEngine.updatedAt || null,
+          calibrationAdjustment: evidence.mistakeEngine.calibrationAdjustment || null,
+          marketEdgeProfile: evidence.mistakeEngine.summary?.marketEdgeProfile || null,
+          shadowABProfile: evidence.mistakeEngine.summary?.shadowABProfile || null,
+          scorelineProfile: evidence.mistakeEngine.summary?.scorelineProfile || null
+        }
+      : null
+  };
+}
+
+function compactShadowAnalysis(analysis = {}) {
+  return {
+    winnerCode: analysis.winnerCode || null,
+    winnerName: analysis.winnerName || null,
+    confidence: analysis.confidence || null,
+    predictedScore: analysis.predictedScore || null,
+    probabilities: analysis.probabilities || null,
+    scoreScenarios: Array.isArray(analysis.scoreScenarios)
+      ? analysis.scoreScenarios.slice(0, 5).map((item) => ({
+          score: item.score || null,
+          probability: item.probability || null,
+          rank: item.rank || null
+        }))
+      : []
+  };
+}
+
+function buildShadowEvaluation({ rawEvidence, rawAnalysis, kvEvidence, kvAnalysis }) {
+  const raw = compactShadowAnalysis(rawAnalysis);
+  const kv = compactShadowAnalysis(kvAnalysis);
+  return {
+    version: "paul-shadow-ab-v1",
+    createdAt: new Date().toISOString(),
+    purpose: "Stores the no-KV baseline and the KV-calibrated pick at lock time so post-match review can measure KV contribution without hindsight.",
+    rawNoKv: {
+      label: "A: no KV memory",
+      evidence: compactShadowEvidence(rawEvidence),
+      analysis: raw
+    },
+    kvCalibrated: {
+      label: "B: KV calibrated official layer",
+      evidence: compactShadowEvidence(kvEvidence),
+      analysis: kv
+    },
+    delta: {
+      winnerChanged: Boolean(raw.winnerCode && kv.winnerCode && String(raw.winnerCode).toUpperCase() !== String(kv.winnerCode).toUpperCase()),
+      scoreChanged: Boolean(raw.predictedScore && kv.predictedScore && raw.predictedScore !== kv.predictedScore),
+      confidenceDelta: Number.isFinite(Number(raw.confidence)) && Number.isFinite(Number(kv.confidence))
+        ? Number((Number(kv.confidence) - Number(raw.confidence)).toFixed(2))
+        : null
+    }
+  };
+}
+
 async function callPaul(payload, options = {}) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
@@ -1176,6 +1275,10 @@ async function callPaul(payload, options = {}) {
     throw error;
   }
   const evidence = await collectPredictionEvidence(payload);
+  const rawEvidence = evidence.mistakeEngine?.usable
+    ? await collectPredictionEvidence(payload, { cache: true, liveOdds: false, mistakeMemory: false })
+    : null;
+  const rawShadowAnalysis = rawEvidence ? deterministicAnalysis(payload, rawEvidence) : null;
   const useSearchFallback = (
     !evidence.market ||
     !evidence.hasPrimaryEvidence ||
@@ -1220,6 +1323,14 @@ async function callPaul(payload, options = {}) {
   }
   analysis = mergeAnalysisWithEvidence(payload, evidence, analysis);
   analysis = preventKnockoutDraw(payload, analysis);
+  if (rawEvidence && rawShadowAnalysis) {
+    evidence.shadowEvaluation = buildShadowEvaluation({
+      rawEvidence,
+      rawAnalysis: preventKnockoutDraw(payload, rawShadowAnalysis),
+      kvEvidence: evidence,
+      kvAnalysis: analysis
+    });
+  }
   evidence.calibrationLayer = analysis.calibrationLayer || null;
   return { model: "PAUL Edge Engine v4.1 + KV Calibration", evidence, analysis };
 }

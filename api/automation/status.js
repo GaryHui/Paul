@@ -385,6 +385,11 @@ module.exports = async function handler(req, res) {
       directionMisses: globalMistakeContext.summary?.directionMisses || 0,
       scoreMisses: globalMistakeContext.summary?.scoreMisses || 0,
       exactHits: globalMistakeContext.summary?.exactHits || 0,
+      scoreTop3Hits: globalMistakeContext.summary?.scoreTop3Hits || 0,
+      scoreTop5Hits: globalMistakeContext.summary?.scoreTop5Hits || 0,
+      marketEdgeProfile: globalMistakeContext.summary?.marketEdgeProfile || null,
+      shadowABProfile: globalMistakeContext.summary?.shadowABProfile || null,
+      scorelineProfile: globalMistakeContext.summary?.scorelineProfile || null,
       calibrationAdjustment: globalMistakeContext.calibrationAdjustment || null,
       learningProfile: globalMistakeContext.learningProfile || null
     },

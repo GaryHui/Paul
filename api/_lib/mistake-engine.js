@@ -21,6 +21,10 @@ function scoreKey(parts) {
   return parts ? `${parts.home}-${parts.away}` : null;
 }
 
+function winnerFromAnalysis(analysis) {
+  return String(analysis?.winnerCode || analysis?.winner || "").toUpperCase();
+}
+
 function topCountEntries(counts = {}, limit = 8) {
   return Object.entries(counts)
     .sort((a, b) => Number(b[1] || 0) - Number(a[1] || 0))
@@ -95,9 +99,14 @@ function classifyReview({ match, result, analysis, evidence }) {
   const predictedWinner = String(analysis?.winnerCode || analysis?.winner || "").toUpperCase();
   const actualWinner = winnerForResult(match, result);
   const predictedScore = scoreParts(analysis?.predictedScore || analysis?.score);
+  const scoreScenarios = Array.isArray(analysis?.scoreScenarios) ? analysis.scoreScenarios : [];
   const actualScore = { home: Number(result.homeScore), away: Number(result.awayScore) };
+  const actualScoreKey = scoreKey(actualScore);
   const directionHit = Boolean(predictedWinner && actualWinner && predictedWinner === actualWinner);
   const scoreHit = Boolean(predictedScore && predictedScore.home === actualScore.home && predictedScore.away === actualScore.away);
+  const scorePathKeys = scoreScenarios.map((item) => scoreKey(scoreParts(item?.score || item?.scoreline))).filter(Boolean);
+  const scoreTop3Hit = Boolean(actualScoreKey && scorePathKeys.slice(0, 3).includes(actualScoreKey));
+  const scoreTop5Hit = Boolean(actualScoreKey && scorePathKeys.slice(0, 5).includes(actualScoreKey));
   const predictedSide = sideForCode(match, predictedWinner);
   const actualSide = sideForCode(match, actualWinner);
   const market = marketFavorite(evidence);
@@ -121,10 +130,14 @@ function classifyReview({ match, result, analysis, evidence }) {
     if (marketHit === true) causes.push("market_anchor_underweighted");
     if (marketHit === false && marketCode) causes.push("market_missed_too");
     if (actualMarketProbability !== null && actualMarketProbability < 0.28) causes.push("upset_underestimated");
+  } else if (marketHit === false && marketCode) {
+    causes.push("paul_outperformed_market");
   }
 
   if (directionHit && !scoreHit) causes.push("score_miss");
   if (predictedScore && !scoreHit) {
+    if (scoreTop3Hit) causes.push("score_top3_hit");
+    else if (scoreTop5Hit) causes.push("score_top5_hit");
     if (totalGoalDiff !== null && totalGoalDiff >= 2) causes.push("pace_or_finishing_underestimated");
     if (totalGoalDiff !== null && totalGoalDiff <= -2) causes.push("low_event_game_underestimated");
     if (goalDiff !== null && goalDiff <= 1) causes.push("minor_score_variance");
@@ -137,6 +150,8 @@ function classifyReview({ match, result, analysis, evidence }) {
   return {
     directionHit,
     scoreHit,
+    scoreTop3Hit,
+    scoreTop5Hit,
     goalDiff,
     predictedWinner,
     actualWinner,
@@ -144,6 +159,12 @@ function classifyReview({ match, result, analysis, evidence }) {
     actualScore: `${result.homeScore}-${result.awayScore}`,
     marketFavorite: marketCode || null,
     marketHit,
+    marketEdgeOutcome: marketCode
+      ? directionHit && marketHit ? "both_correct"
+        : directionHit && !marketHit ? "paul_only_correct"
+          : !directionHit && marketHit ? "market_only_correct"
+            : "both_missed"
+      : "no_market",
     paulProbability,
     marketProbability,
     actualMarketProbability,
@@ -157,8 +178,8 @@ function calibrationHints(classification) {
     keepPredictionModel: true,
     adjustOnlyCalibration: true,
     edgeTrustDelta: classification.directionHit ? (classification.scoreHit ? 0.012 : 0.004) : -0.022,
-    scoreModelDelta: classification.scoreHit ? 0.018 : misses.includes("minor_score_variance") ? -0.004 : -0.012,
-    marketShrinkDelta: misses.includes("market_anchor_underweighted") ? 0.035 : misses.includes("market_missed_too") ? -0.025 : 0,
+    scoreModelDelta: classification.scoreHit ? 0.018 : classification.scoreTop3Hit ? 0.006 : classification.scoreTop5Hit ? 0.002 : misses.includes("minor_score_variance") ? -0.004 : -0.012,
+    marketShrinkDelta: misses.includes("market_anchor_underweighted") ? 0.045 : misses.includes("paul_outperformed_market") ? -0.035 : misses.includes("market_missed_too") ? -0.015 : 0,
     drawRiskDelta: misses.includes("draw_underestimated") ? 0.025 : misses.includes("false_draw_squeeze") ? -0.018 : 0,
     upsetSensitivityDelta: misses.includes("upset_underestimated") ? 0.02 : misses.includes("false_upset_override") ? -0.025 : 0,
     goalVolatilityDelta: misses.includes("pace_or_finishing_underestimated") ? 0.018 : misses.includes("low_event_game_underestimated") ? -0.012 : 0
@@ -275,9 +296,72 @@ function emptyAggregate() {
     directionMisses: 0,
     scoreMisses: 0,
     exactHits: 0,
+    scoreTop3Hits: 0,
+    scoreTop5Hits: 0,
     causeCounts: {},
     calibrationTotals: emptyCalibrationTotals(),
+    marketEdge: {
+      graded: 0,
+      paulOnlyCorrect: 0,
+      marketOnlyCorrect: 0,
+      bothCorrect: 0,
+      bothMissed: 0
+    },
+    shadowAB: {
+      graded: 0,
+      rawDirectionCorrect: 0,
+      kvDirectionCorrect: 0,
+      rawScoreExact: 0,
+      kvScoreExact: 0,
+      rawOnlyDirectionCorrect: 0,
+      kvOnlyDirectionCorrect: 0,
+      bothDirectionCorrect: 0,
+      bothDirectionMissed: 0
+    },
     teamMemory: {}
+  };
+}
+
+function evaluateShadowAB(match, result, prediction) {
+  const shadow = prediction?.evidence?.shadowEvaluation || prediction?.proof?.payload?.evidence?.shadowEvaluation || null;
+  const raw = shadow?.rawNoKv?.analysis || shadow?.rawNoKv || null;
+  const kv = shadow?.kvCalibrated?.analysis || shadow?.kvCalibrated || predictionAnalysis(prediction);
+  if (!raw || !kv) return null;
+  const actualWinner = winnerForResult(match, result);
+  const actualScore = `${result.homeScore}-${result.awayScore}`;
+  const rawScore = scoreKey(scoreParts(raw.predictedScore || raw.score));
+  const kvScore = scoreKey(scoreParts(kv.predictedScore || kv.score));
+  const rawWinner = winnerFromAnalysis(raw);
+  const kvWinner = winnerFromAnalysis(kv);
+  const rawDirectionHit = Boolean(rawWinner && rawWinner === actualWinner);
+  const kvDirectionHit = Boolean(kvWinner && kvWinner === actualWinner);
+  return {
+    version: shadow?.version || "paul-shadow-ab-v1",
+    rawNoKv: {
+      winnerCode: rawWinner || null,
+      confidence: raw.confidence || null,
+      predictedScore: raw.predictedScore || raw.score || null,
+      directionHit: rawDirectionHit,
+      scoreHit: Boolean(rawScore && rawScore === actualScore)
+    },
+    kvCalibrated: {
+      winnerCode: kvWinner || null,
+      confidence: kv.confidence || null,
+      predictedScore: kv.predictedScore || kv.score || null,
+      directionHit: kvDirectionHit,
+      scoreHit: Boolean(kvScore && kvScore === actualScore)
+    },
+    contribution: kvDirectionHit && !rawDirectionHit
+      ? "kv_helped_direction"
+      : !kvDirectionHit && rawDirectionHit
+        ? "kv_hurt_direction"
+        : kvScore === actualScore && rawScore !== actualScore
+          ? "kv_helped_score"
+          : rawScore === actualScore && kvScore !== actualScore
+            ? "kv_hurt_score"
+            : "neutral",
+    actualWinner,
+    actualScore
   };
 }
 
@@ -287,6 +371,38 @@ function addReviewToAggregate(aggregate, review) {
   if (!review.directionHit) aggregate.directionMisses += 1;
   if (!review.scoreHit) aggregate.scoreMisses += 1;
   if (review.directionHit && review.scoreHit) aggregate.exactHits += 1;
+  if (review.scoreTop3Hit) aggregate.scoreTop3Hits += 1;
+  if (review.scoreTop5Hit) aggregate.scoreTop5Hits += 1;
+  const marketOutcome = review.marketEdgeOutcome || (
+    review.marketFavorite
+      ? review.directionHit && review.marketHit ? "both_correct"
+        : review.directionHit && !review.marketHit ? "paul_only_correct"
+          : !review.directionHit && review.marketHit ? "market_only_correct"
+            : "both_missed"
+      : "no_market"
+  );
+  if (marketOutcome !== "no_market") {
+    aggregate.marketEdge ||= emptyAggregate().marketEdge;
+    aggregate.marketEdge.graded += 1;
+    if (marketOutcome === "paul_only_correct") aggregate.marketEdge.paulOnlyCorrect += 1;
+    else if (marketOutcome === "market_only_correct") aggregate.marketEdge.marketOnlyCorrect += 1;
+    else if (marketOutcome === "both_correct") aggregate.marketEdge.bothCorrect += 1;
+    else if (marketOutcome === "both_missed") aggregate.marketEdge.bothMissed += 1;
+  }
+  if (review.shadowAB) {
+    aggregate.shadowAB ||= emptyAggregate().shadowAB;
+    aggregate.shadowAB.graded += 1;
+    if (review.shadowAB.rawNoKv?.directionHit) aggregate.shadowAB.rawDirectionCorrect += 1;
+    if (review.shadowAB.kvCalibrated?.directionHit) aggregate.shadowAB.kvDirectionCorrect += 1;
+    if (review.shadowAB.rawNoKv?.scoreHit) aggregate.shadowAB.rawScoreExact += 1;
+    if (review.shadowAB.kvCalibrated?.scoreHit) aggregate.shadowAB.kvScoreExact += 1;
+    const rawHit = Boolean(review.shadowAB.rawNoKv?.directionHit);
+    const kvHit = Boolean(review.shadowAB.kvCalibrated?.directionHit);
+    if (rawHit && kvHit) aggregate.shadowAB.bothDirectionCorrect += 1;
+    else if (rawHit && !kvHit) aggregate.shadowAB.rawOnlyDirectionCorrect += 1;
+    else if (!rawHit && kvHit) aggregate.shadowAB.kvOnlyDirectionCorrect += 1;
+    else aggregate.shadowAB.bothDirectionMissed += 1;
+  }
   Object.entries(causeCounts(review.causeTags || [])).forEach(([cause, count]) => {
     aggregate.causeCounts[cause] = (aggregate.causeCounts[cause] || 0) + count;
   });
@@ -303,6 +419,8 @@ function addReviewToAggregate(aggregate, review) {
     team.matches += 1;
     if (!review.directionHit) team.directionMisses += 1;
     if (!review.scoreHit) team.scoreMisses += 1;
+    if (review.scoreTop3Hit) team.scoreTop3Hits = Number(team.scoreTop3Hits || 0) + 1;
+    if (review.scoreTop5Hit) team.scoreTop5Hits = Number(team.scoreTop5Hits || 0) + 1;
     addCalibrationTotals(team.calibrationTotals, review.calibrationHints);
     Object.entries(causeCounts(review.causeTags || [])).forEach(([cause, count]) => {
       team.causes[cause] = (team.causes[cause] || 0) + count;
@@ -320,10 +438,65 @@ function aggregateForMemory(memory = {}) {
   const matches = memory.matches || {};
   const matchCount = Object.keys(matches).length;
   const aggregateTotal = Number(memory.aggregate?.total || 0);
-  if (memory.aggregate && aggregateTotal >= matchCount) return memory.aggregate;
+  if (
+    memory.aggregate &&
+    aggregateTotal >= matchCount &&
+    memory.aggregate.marketEdge &&
+    memory.aggregate.shadowAB &&
+    Object.prototype.hasOwnProperty.call(memory.aggregate, "scoreTop3Hits")
+  ) {
+    return memory.aggregate;
+  }
   const aggregate = emptyAggregate();
   Object.values(matches).forEach((review) => addReviewToAggregate(aggregate, review));
   return aggregate;
+}
+
+function marketEdgeProfile(aggregate = {}) {
+  const edge = aggregate.marketEdge || {};
+  const graded = Number(edge.graded || 0);
+  const paulOnlyCorrect = Number(edge.paulOnlyCorrect || 0);
+  const marketOnlyCorrect = Number(edge.marketOnlyCorrect || 0);
+  const bothCorrect = Number(edge.bothCorrect || 0);
+  const bothMissed = Number(edge.bothMissed || 0);
+  const netEdge = paulOnlyCorrect - marketOnlyCorrect;
+  return {
+    graded,
+    paulOnlyCorrect,
+    marketOnlyCorrect,
+    bothCorrect,
+    bothMissed,
+    netEdge,
+    paulOnlyRate: graded ? Number((paulOnlyCorrect / graded).toFixed(3)) : 0,
+    marketOnlyRate: graded ? Number((marketOnlyCorrect / graded).toFixed(3)) : 0,
+    bothCorrectRate: graded ? Number((bothCorrect / graded).toFixed(3)) : 0,
+    recommendation: graded < 12
+      ? "seed: keep market as anchor until enough PAUL-vs-market evidence exists"
+      : netEdge > 0
+        ? "PAUL has shown some independent edge; allow bounded non-market overrides when universal/news support agrees"
+        : netEdge < 0
+          ? "market is still winning the head-to-head; shrink weak PAUL deviations back toward market"
+          : "PAUL and market are tied; require strong evidence before moving away from market"
+  };
+}
+
+function shadowABProfile(aggregate = {}) {
+  const shadow = aggregate.shadowAB || {};
+  const graded = Number(shadow.graded || 0);
+  return {
+    graded,
+    rawDirectionCorrect: Number(shadow.rawDirectionCorrect || 0),
+    kvDirectionCorrect: Number(shadow.kvDirectionCorrect || 0),
+    rawScoreExact: Number(shadow.rawScoreExact || 0),
+    kvScoreExact: Number(shadow.kvScoreExact || 0),
+    rawOnlyDirectionCorrect: Number(shadow.rawOnlyDirectionCorrect || 0),
+    kvOnlyDirectionCorrect: Number(shadow.kvOnlyDirectionCorrect || 0),
+    bothDirectionCorrect: Number(shadow.bothDirectionCorrect || 0),
+    bothDirectionMissed: Number(shadow.bothDirectionMissed || 0),
+    directionLift: Number(shadow.kvDirectionCorrect || 0) - Number(shadow.rawDirectionCorrect || 0),
+    scoreLift: Number(shadow.kvScoreExact || 0) - Number(shadow.rawScoreExact || 0),
+    status: graded ? "active" : "pending-next-locked-match"
+  };
 }
 
 async function recordMistakeReview({ match, result, prediction, evidence, baseReview = null }) {
@@ -347,6 +520,8 @@ async function recordMistakeReview({ match, result, prediction, evidence, baseRe
     actualScore: classification.actualScore,
     marketFavorite: classification.marketFavorite,
     marketHit: classification.marketHit,
+    marketEdgeOutcome: classification.marketEdgeOutcome,
+    shadowAB: evaluateShadowAB(match, result, prediction),
     causeTags: classification.causes,
     summaryZh: localSummary(classification),
     newsFindings: [],
@@ -426,8 +601,15 @@ function summarizeRelevantMistakes(match, memory = {}) {
     directionMisses: aggregate.directionMisses || 0,
     scoreMisses: aggregate.scoreMisses || 0,
     exactHits: aggregate.exactHits || 0,
+    scoreTop3Hits: aggregate.scoreTop3Hits || 0,
+    scoreTop5Hits: aggregate.scoreTop5Hits || 0,
+    marketEdgeProfile: marketEdgeProfile(aggregate),
+    shadowABProfile: shadowABProfile(aggregate),
     scorelineProfile: {
       sampleSize: scoredReviews,
+      exactHitRate: scoredReviews ? Number((Number(aggregate.exactHits || 0) / scoredReviews).toFixed(3)) : 0,
+      top3HitRate: scoredReviews ? Number((Number(aggregate.scoreTop3Hits || 0) / scoredReviews).toFixed(3)) : 0,
+      top5HitRate: scoredReviews ? Number((Number(aggregate.scoreTop5Hits || 0) / scoredReviews).toFixed(3)) : 0,
       averageTotalGoals: scoredReviews ? Number((totalGoals / scoredReviews).toFixed(2)) : null,
       highEventRate: scoredReviews ? Number((highEvent / scoredReviews).toFixed(3)) : null,
       lowEventRate: scoredReviews ? Number((lowEvent / scoredReviews).toFixed(3)) : null,
@@ -471,19 +653,29 @@ function mistakeAdjustmentFromMemory(summary = {}) {
   if (!total) return null;
   const globalAverage = summary.averageCalibration || {};
   const teamAverage = weightedTeamCalibration(summary) || {};
+  const marketEdge = summary.marketEdgeProfile || {};
+  const shadow = summary.shadowABProfile || {};
   const blend = (key, fallback = 0) => {
     const globalValue = Number(globalAverage?.[key] || 0);
     const teamValue = Number(teamAverage?.[key] || 0);
     const combined = globalValue * 0.65 + teamValue * 0.35;
     return Number.isFinite(combined) && combined !== 0 ? combined : fallback;
   };
+  const marketEdgeDelta = Number(marketEdge.graded || 0) >= 12
+    ? clamp((Number(marketEdge.marketOnlyCorrect || 0) - Number(marketEdge.paulOnlyCorrect || 0)) / Math.max(1, Number(marketEdge.graded || 0)) * 0.08, -0.025, 0.025)
+    : 0;
+  const shadowDirectionDelta = Number(shadow.graded || 0) >= 8
+    ? clamp(Number(shadow.directionLift || 0) / Math.max(1, Number(shadow.graded || 0)) * 0.035, -0.018, 0.018)
+    : 0;
   return {
-    edgeTrustDelta: Number(clamp(blend("edgeTrustDelta"), -0.04, 0.02).toFixed(3)),
+    edgeTrustDelta: Number(clamp(blend("edgeTrustDelta") + shadowDirectionDelta, -0.04, 0.025).toFixed(3)),
     scoreConfidenceDelta: Number(clamp(blend("scoreModelDelta"), -0.035, 0.018).toFixed(3)),
-    marketShrinkDelta: Number(clamp(blend("marketShrinkDelta"), -0.02, 0.05).toFixed(3)),
+    marketShrinkDelta: Number(clamp(blend("marketShrinkDelta") + marketEdgeDelta, -0.025, 0.055).toFixed(3)),
     drawRiskDelta: Number(clamp(blend("drawRiskDelta"), -0.02, 0.03).toFixed(3)),
     upsetSensitivityDelta: Number(clamp(blend("upsetSensitivityDelta"), -0.03, 0.03).toFixed(3)),
     goalVolatilityDelta: Number(clamp(blend("goalVolatilityDelta"), -0.02, 0.02).toFixed(3)),
+    marketEdgeDelta: Number(marketEdgeDelta.toFixed(3)),
+    shadowDirectionDelta: Number(shadowDirectionDelta.toFixed(3)),
     sampleSize: total
   };
 }
@@ -522,6 +714,10 @@ function learningProfileFromMemory(summary = {}, adjustment = null) {
   const currentBias = [];
   if (topCauses.includes("market_anchor_underweighted")) currentBias.push("increase market anchor after PAUL-only misses");
   if (topCauses.includes("market_missed_too")) currentBias.push("allow more non-market edge when market misses too");
+  if (summary.marketEdgeProfile?.netEdge < 0) currentBias.push("market currently beats PAUL head-to-head; require stronger non-market evidence");
+  if (summary.marketEdgeProfile?.netEdge > 0) currentBias.push("PAUL has positive market edge; preserve bounded independent overrides");
+  if (summary.shadowABProfile?.directionLift > 0) currentBias.push("KV shadow layer is adding direction value");
+  if (summary.shadowABProfile?.directionLift < 0) currentBias.push("KV shadow layer is hurting direction value; shrink future KV deltas");
   if (topCauses.includes("draw_underestimated")) currentBias.push("raise draw-risk sensitivity in compressed group matches");
   if (topCauses.includes("upset_underestimated")) currentBias.push("raise upset sensitivity when underdog evidence is confirmed");
   if (topCauses.includes("pace_or_finishing_underestimated")) currentBias.push("lift high-event score paths");

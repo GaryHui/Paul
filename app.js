@@ -2266,6 +2266,18 @@ function currentKvCalibrationDetails({ includeUpdated = true } = {}) {
     lines.push(`<p>Next-read calibration: edge ${escapeHtml(String(adjustment.edgeTrustDelta ?? 0))} · market ${escapeHtml(String(adjustment.marketShrinkDelta ?? 0))} · draw ${escapeHtml(String(adjustment.drawRiskDelta ?? 0))} · upset ${escapeHtml(String(adjustment.upsetSensitivityDelta ?? 0))}</p>`);
     lines.push(`<p>Score layer: confidence ${escapeHtml(String(adjustment.scoreConfidenceDelta ?? 0))} · goals ${escapeHtml(String(adjustment.goalVolatilityDelta ?? 0))} · sample ${escapeHtml(String(adjustment.sampleSize || total))}</p>`);
   }
+  const marketEdge = memory.marketEdgeProfile || {};
+  if (Number(marketEdge.graded || 0)) {
+    lines.push(`<p>Market edge learning: PAUL-only ${escapeHtml(String(marketEdge.paulOnlyCorrect || 0))} / market-only ${escapeHtml(String(marketEdge.marketOnlyCorrect || 0))} / net ${escapeHtml(String(marketEdge.netEdge || 0))}</p>`);
+  }
+  const shadow = memory.shadowABProfile || {};
+  if (shadow.status || Number(shadow.graded || 0)) {
+    lines.push(`<p>A/B shadow: ${escapeHtml(shadow.status || "pending-next-locked-match")} / raw ${escapeHtml(String(shadow.rawDirectionCorrect || 0))}/${escapeHtml(String(shadow.graded || 0))} / KV ${escapeHtml(String(shadow.kvDirectionCorrect || 0))}/${escapeHtml(String(shadow.graded || 0))} / lift ${escapeHtml(String(shadow.directionLift || 0))}</p>`);
+  }
+  const scoreline = memory.scorelineProfile || {};
+  if (Number(scoreline.sampleSize || 0)) {
+    lines.push(`<p>Score path learning: exact ${escapeHtml(String(scoreline.exactHitRate ?? "n/a"))} / Top3 ${escapeHtml(String(scoreline.top3HitRate ?? "n/a"))} / Top5 ${escapeHtml(String(scoreline.top5HitRate ?? "n/a"))}</p>`);
+  }
   if (Array.isArray(profile.currentBias) && profile.currentBias.length) {
     lines.push(`<p>Learning bias: ${escapeHtml(profile.currentBias.slice(0, 3).join(" / "))}</p>`);
   }
