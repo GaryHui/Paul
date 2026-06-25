@@ -3,9 +3,9 @@ const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
 const { parseMatchTime } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
-const { getEvidenceCache, getMistakeMemory, recordQwenUsage, setEvidenceEntry } = require("./store");
+const { getEvidenceCache, getMistakeMemory, getQwenUsage, recordQwenUsage, setEvidenceEntry } = require("./store");
 const { universalPickForPaul } = require("./universal-model");
-const { chooseQwenModel, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
+const { chooseQwenModel, qwenBudgetDecision, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -1303,6 +1303,21 @@ async function callPaul(payload, options = {}) {
     upsetScore: evidence.paulEdge?.upsetScore,
     missingPrimaryEvidence: !evidence.hasPrimaryEvidence
   });
+  const source = options.source || "paul-lock";
+  let budget;
+  try {
+    budget = qwenBudgetDecision(source, await getQwenUsage());
+  } catch {
+    budget = { allowed: true, reason: "budget-ledger-unavailable" };
+  }
+  evidence.qwenBudget = budget;
+  if (!budget.allowed) {
+    const error = new Error(`Qwen budget reached for ${source}: ${budget.reason}.`);
+    error.status = 429;
+    error.code = "QWEN_BUDGET_REACHED";
+    error.detail = budget;
+    throw error;
+  }
   evidence.qwenRoute = route;
   const requestBody = {
     model: route.model,
@@ -1311,7 +1326,7 @@ async function callPaul(payload, options = {}) {
       { role: "user", content: buildPrompt(payload, evidence) }
     ],
     temperature: 0.35,
-    max_tokens: qwenMaxTokens(options.source || "paul-lock"),
+    max_tokens: qwenMaxTokens(source),
     response_format: { type: "json_object" }
   };
   if (useSearchFallback) {
@@ -1335,8 +1350,8 @@ async function callPaul(payload, options = {}) {
   if (qwenUsage.totalTokens) {
     try {
       await recordQwenUsage({
-        id: `${new Date().toISOString()}:${options.source || "paul-lock"}:${payload.id}`,
-        source: options.source || "paul-lock",
+        id: `${new Date().toISOString()}:${source}:${payload.id}`,
+        source,
         matchId: payload.id,
         model: route.model,
         usage: data.usage || qwenUsage
@@ -1364,7 +1379,7 @@ async function callPaul(payload, options = {}) {
   }
   evidence.calibrationLayer = analysis.calibrationLayer || null;
   evidence.qwenUsage = {
-    source: options.source || "paul-lock",
+    source,
     model: route.model,
     tier: route.tier,
     routeReason: route.reason,

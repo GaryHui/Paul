@@ -423,8 +423,8 @@ module.exports = async function handler(req, res) {
       nextDailyAnalysisDue,
       cronOddsRefreshMaxMatches: Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12),
       cronDailyAnalysisMaxMatches: Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 4),
-      dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8),
-      dailyAnalysisProtectedMaxMatches: Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 4),
+      dailyAnalysisMaxMatches: Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 4),
+      dailyAnalysisProtectedMaxMatches: Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 2),
       dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
       dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36),
       firstMatchEvidence: first

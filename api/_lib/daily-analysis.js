@@ -3,10 +3,10 @@ const { parseMatchTime } = require("./bracket");
 const { getDailyAnalysis, getPredictions, setDailyAnalysisEntry } = require("./store");
 
 const defaultHorizonDays = Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45);
-const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
+const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 4);
 const defaultDueGraceMinutes = Number(process.env.DAILY_ANALYSIS_DUE_GRACE_MINUTES || 90);
 const defaultPostKickoffHours = Number(process.env.DAILY_ANALYSIS_POST_KICKOFF_HOURS || 3);
-const defaultProtectedMaxMatches = Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 4);
+const defaultProtectedMaxMatches = Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 2);
 const defaultForceSearchHours = Number(process.env.QWEN_DAILY_SEARCH_HOURS || 24);
 const defaultPriorityWindowHours = Number(
   process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS ||

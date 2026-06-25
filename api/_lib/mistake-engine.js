@@ -1,5 +1,5 @@
-const { getMistakeMemory, recordQwenUsage, setMistakeMemory } = require("./store");
-const { chooseQwenModel, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
+const { getMistakeMemory, getQwenUsage, recordQwenUsage, setMistakeMemory } = require("./store");
+const { chooseQwenModel, qwenBudgetDecision, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -254,6 +254,13 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
     `Evidence: ${JSON.stringify(compactEvidence(evidence))}`
   ].join("\n");
   const route = chooseQwenModel({ source: "mistake-review" });
+  let budget;
+  try {
+    budget = qwenBudgetDecision("mistake-review", await getQwenUsage());
+  } catch {
+    budget = { allowed: true, reason: "budget-ledger-unavailable" };
+  }
+  if (!budget.allowed) return null;
   const requestBody = {
     model: route.model,
     messages: [

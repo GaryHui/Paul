@@ -26,6 +26,49 @@ function qwenMaxTokens(source = "paul-lock") {
   return numberEnv("QWEN_MAX_OUTPUT_TOKENS", 1400);
 }
 
+function todayKey(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+function qwenBudgetDecision(source = "qwen", ledger = {}, now = new Date()) {
+  if (process.env.QWEN_BUDGET_DISABLED === "1") return { allowed: true, reason: "budget-disabled" };
+  const key = todayKey(now);
+  const today = ledger.byDate?.[key] || {};
+  const sources = today.sources || {};
+  const sourceToday = sources[source] || {};
+  const criticalSources = new Set(["official-lock", "manual-lock", "shadow-lock"]);
+  if (criticalSources.has(source) && process.env.QWEN_BLOCK_CRITICAL_ON_BUDGET !== "1") {
+    return { allowed: true, reason: "critical-source-bypasses-budget", todayKey: key };
+  }
+
+  const totalCalls = Number(today.calls || 0);
+  const totalTokens = Number(today.totalTokens || 0);
+  const sourceCalls = Number(sourceToday.calls || 0);
+  const sourceTokens = Number(sourceToday.totalTokens || 0);
+  const totalCallCap = numberEnv("QWEN_TOTAL_MAX_CALLS_PER_DAY", 30);
+  const totalTokenCap = numberEnv("QWEN_TOTAL_MAX_TOKENS_PER_DAY", 250000);
+  const dailyCallCap = numberEnv("QWEN_DAILY_READ_MAX_CALLS_PER_DAY", 12);
+  const dailyTokenCap = numberEnv("QWEN_DAILY_READ_MAX_TOKENS_PER_DAY", 120000);
+  const reviewCallCap = numberEnv("QWEN_MISTAKE_MAX_CALLS_PER_DAY", 6);
+
+  if (totalCalls >= totalCallCap) {
+    return { allowed: false, reason: `total-call-budget-${totalCalls}/${totalCallCap}`, todayKey: key };
+  }
+  if (totalTokens >= totalTokenCap) {
+    return { allowed: false, reason: `total-token-budget-${Math.round(totalTokens)}/${totalTokenCap}`, todayKey: key };
+  }
+  if (source === "daily-read" && sourceCalls >= dailyCallCap) {
+    return { allowed: false, reason: `daily-read-call-budget-${sourceCalls}/${dailyCallCap}`, todayKey: key };
+  }
+  if (source === "daily-read" && sourceTokens >= dailyTokenCap) {
+    return { allowed: false, reason: `daily-read-token-budget-${Math.round(sourceTokens)}/${dailyTokenCap}`, todayKey: key };
+  }
+  if (source === "mistake-review" && sourceCalls >= reviewCallCap) {
+    return { allowed: false, reason: `mistake-review-call-budget-${sourceCalls}/${reviewCallCap}`, todayKey: key };
+  }
+  return { allowed: true, reason: "within-budget", todayKey: key };
+}
+
 function chooseQwenModel(context = {}) {
   const { strongModel, fastModel } = configuredModels();
   if (process.env.QWEN_ROUTER_DISABLED === "1") {
@@ -79,6 +122,7 @@ function chooseQwenModel(context = {}) {
 
 module.exports = {
   chooseQwenModel,
+  qwenBudgetDecision,
   qwenEndpoint,
   qwenMaxTokens
 };
