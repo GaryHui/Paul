@@ -161,9 +161,13 @@ function renderSummary(data) {
   const qwenUsage = data.qwenUsage || {};
   const qwenToday = qwenUsage.today || {};
   const qwenSources = qwenToday.sources || {};
+  const qwenModels = qwenToday.models || {};
   const qwenSourceLines = Object.entries(qwenSources).length
     ? Object.entries(qwenSources).map(([source, item]) => `${source}: ${item.calls || 0} calls / ${tokens(item.totalTokens)} tokens`)
     : ["No tracked Qwen calls today yet."];
+  const qwenModelLines = Object.entries(qwenModels).length
+    ? Object.entries(qwenModels).map(([model, item]) => `${model}: ${item.calls || 0} calls / ${tokens(item.totalTokens)} tokens`)
+    : [];
   const exactMatchLines = Array.isArray(liveExactPaul.matches) && liveExactPaul.matches.length
     ? liveExactPaul.matches.slice(0, 12).map((item) => `#${item.matchId}: ${item.predictedScore} = ${item.actualScore}`)
     : ["No official exact-score matches listed yet."];
@@ -173,6 +177,7 @@ function renderSummary(data) {
       `Date: ${qwenUsage.todayKey || "N/A"}.`,
       `Prompt/input: ${tokens(qwenToday.promptTokens)} tokens.`,
       `Completion/output: ${tokens(qwenToday.completionTokens)} tokens.`,
+      ...qwenModelLines,
       ...qwenSourceLines,
       qwenUsage.updatedAt ? `Updated: ${dateTime(qwenUsage.updatedAt)}.` : "Usage starts tracking after deployment."
     ]),

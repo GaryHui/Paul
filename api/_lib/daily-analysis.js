@@ -287,7 +287,8 @@ async function refreshDailyAnalysis(matches, options = {}) {
     try {
       const result = await callPaul(match, {
         forceSearch: options.forceSearch !== false,
-        source: "daily-read"
+        source: "daily-read",
+        hoursToKickoff: state.priority?.hoursToKickoff ?? state.hoursToKickoff ?? null
       });
       const record = compactDailyRead(match, result);
       await setDailyAnalysisEntry(match.id, record);

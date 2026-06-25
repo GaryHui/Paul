@@ -217,8 +217,10 @@ async function recordQwenUsage(entry = {}) {
   ledger.events = Array.isArray(ledger.events) ? ledger.events.filter((item) => item.id !== record.id).slice(-999) : [];
   ledger.events.push(record);
   ledger.byDate ||= {};
-  ledger.byDate[date] ||= { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
+  ledger.byDate[date] ||= { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {}, models: {} };
   const day = ledger.byDate[date];
+  day.sources ||= {};
+  day.models ||= {};
   day.calls += 1;
   day.promptTokens += record.promptTokens;
   day.completionTokens += record.completionTokens;
@@ -228,6 +230,12 @@ async function recordQwenUsage(entry = {}) {
   day.sources[record.source].promptTokens += record.promptTokens;
   day.sources[record.source].completionTokens += record.completionTokens;
   day.sources[record.source].totalTokens += record.totalTokens;
+  const modelKey = record.model || "unknown";
+  day.models[modelKey] ||= { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  day.models[modelKey].calls += 1;
+  day.models[modelKey].promptTokens += record.promptTokens;
+  day.models[modelKey].completionTokens += record.completionTokens;
+  day.models[modelKey].totalTokens += record.totalTokens;
   await redisCommand(["SET", qwenUsageKey, JSON.stringify(ledger)]);
   return true;
 }

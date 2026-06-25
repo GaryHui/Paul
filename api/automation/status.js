@@ -328,7 +328,9 @@ module.exports = async function handler(req, res) {
     .sort()
     .at(-1) || null;
   const todayKey = new Date().toISOString().slice(0, 10);
-  const qwenUsageToday = qwenUsageLedger.byDate?.[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
+  const qwenUsageToday = qwenUsageLedger.byDate?.[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {}, models: {} };
+  qwenUsageToday.sources ||= {};
+  qwenUsageToday.models ||= {};
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
   const dailyQueue = dailyAnalysisQueue(resolvedMatches, dailyAnalysis, predictions, {

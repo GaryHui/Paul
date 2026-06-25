@@ -606,7 +606,9 @@ function reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy
 function summarizeQwenUsage(ledger = {}, now = new Date()) {
   const todayKey = now.toISOString().slice(0, 10);
   const byDate = ledger.byDate || {};
-  const today = byDate[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
+  const today = byDate[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {}, models: {} };
+  today.sources ||= {};
+  today.models ||= {};
   const events = Array.isArray(ledger.events) ? ledger.events : [];
   const totals = events.reduce((sum, event) => ({
     calls: sum.calls + 1,

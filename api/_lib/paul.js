@@ -5,12 +5,10 @@ const { parseMatchTime } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
 const { getEvidenceCache, getMistakeMemory, recordQwenUsage, setEvidenceEntry } = require("./store");
 const { universalPickForPaul } = require("./universal-model");
+const { chooseQwenModel, qwenEndpoint } = require("./qwen-router");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
-const qwenEndpoint = process.env.QWEN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
-const qwenModel = process.env.QWEN_MODEL || "qwen-plus";
-
 function readJson(file, fallback) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -1299,8 +1297,15 @@ async function callPaul(payload, options = {}) {
   );
   evidence.searchFallback = useSearchFallback;
   evidence.searchMode = options.forceSearch ? "forced-live-news-refresh" : (useSearchFallback ? "conditional-search" : "local-evidence-first");
+  const route = chooseQwenModel({
+    source: options.source || "paul-lock",
+    hoursToKickoff: options.hoursToKickoff ?? hoursToKickoff(payload),
+    upsetScore: evidence.paulEdge?.upsetScore,
+    missingPrimaryEvidence: !evidence.hasPrimaryEvidence
+  });
+  evidence.qwenRoute = route;
   const requestBody = {
-    model: qwenModel,
+    model: route.model,
     messages: [
       { role: "system", content: "Return compact JSON only. Do not use markdown." },
       { role: "user", content: buildPrompt(payload, evidence) }
@@ -1312,7 +1317,7 @@ async function callPaul(payload, options = {}) {
     requestBody.enable_search = true;
     requestBody.search_options = { forced_search: true, search_strategy: "max" };
   }
-  const response = await fetch(`${qwenEndpoint.replace(/\/$/, "")}/chat/completions`, {
+  const response = await fetch(`${qwenEndpoint().replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify(requestBody)
@@ -1332,7 +1337,7 @@ async function callPaul(payload, options = {}) {
         id: `${new Date().toISOString()}:${options.source || "paul-lock"}:${payload.id}`,
         source: options.source || "paul-lock",
         matchId: payload.id,
-        model: qwenModel,
+        model: route.model,
         usage: data.usage || qwenUsage
       });
     } catch {
@@ -1359,7 +1364,9 @@ async function callPaul(payload, options = {}) {
   evidence.calibrationLayer = analysis.calibrationLayer || null;
   evidence.qwenUsage = {
     source: options.source || "paul-lock",
-    model: qwenModel,
+    model: route.model,
+    tier: route.tier,
+    routeReason: route.reason,
     ...qwenUsage
   };
   return { model: "PAUL Edge Engine v4.1 + KV Calibration", evidence, analysis };

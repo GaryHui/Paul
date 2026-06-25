@@ -1,7 +1,5 @@
 const { getMistakeMemory, recordQwenUsage, setMistakeMemory } = require("./store");
-
-const qwenEndpoint = process.env.QWEN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
-const qwenModel = process.env.QWEN_MODEL || "qwen-plus";
+const { chooseQwenModel, qwenEndpoint } = require("./qwen-router");
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -255,8 +253,9 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
     `Base review: ${JSON.stringify(baseReview)}`,
     `Evidence: ${JSON.stringify(compactEvidence(evidence))}`
   ].join("\n");
+  const route = chooseQwenModel({ source: "mistake-review" });
   const requestBody = {
-    model: qwenModel,
+    model: route.model,
     messages: [
       { role: "system", content: "Return compact JSON only. Do not use markdown." },
       { role: "user", content: prompt }
@@ -266,7 +265,7 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
     enable_search: true,
     search_options: { forced_search: true, search_strategy: "max" }
   };
-  const response = await fetch(`${qwenEndpoint.replace(/\/$/, "")}/chat/completions`, {
+  const response = await fetch(`${qwenEndpoint().replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify(requestBody)
@@ -280,7 +279,7 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
         id: `${new Date().toISOString()}:mistake-review:${match.id}`,
         source: "mistake-review",
         matchId: match.id,
-        model: qwenModel,
+        model: route.model,
         usage: payload.usage
       });
     } catch {
