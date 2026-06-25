@@ -95,6 +95,16 @@ function tokens(value) {
   return new Intl.NumberFormat("zh-CN").format(Number(value || 0));
 }
 
+function qwenUsageLine(data = {}) {
+  const usage = data.qwenUsage || {};
+  const today = usage.today || {};
+  const models = today.models || {};
+  const modelText = Object.entries(models).length
+    ? Object.entries(models).map(([model, item]) => `${model} ${item.calls || 0}/${tokens(item.totalTokens)}`).join("; ")
+    : "no model calls yet";
+  return `Qwen today: ${today.calls || 0} calls / ${tokens(today.totalTokens)} tokens; ${modelText}.`;
+}
+
 function dateTime(value) {
   if (!value) return "时间待定";
   return new Intl.DateTimeFormat("zh-CN", {
@@ -648,6 +658,7 @@ async function loadQuantBoard() {
       ? `失误引擎 KV 已复盘 ${mistakeEngine.totalReviewed} 场。`
       : "失误引擎 KV 暂无复盘样本。";
     statusBox.textContent = `更新时间：${dateTime(data.generatedAt)}。历史回测 ${reliability.historicalComparison?.paul?.correct || 0}/${reliability.historicalComparison?.paul?.graded || 0} 是胜平负/晋级方向命中，不是比分命中；正式赛果方向 ${reliability.live?.correct || 0}/${reliability.live?.graded || 0}，比分全中 ${reliability.live?.exactScore || 0}/${reliability.live?.exactScoreGraded || 0}。${mistakeText}实验室只调整校准和仓位，不改 PAUL 预测模型。`;
+    statusBox.textContent = `${qwenUsageLine(data)} ${statusBox.textContent}`;
   } catch (error) {
     statusBox.textContent = error.message;
     table.hidden = true;
