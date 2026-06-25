@@ -6,7 +6,7 @@ const { accuracySnapshot, nextPredictionDue, resolveMatches, stageAccuracySnapsh
 const { dailyAnalysisQueue } = require("../_lib/daily-analysis");
 const { hasResultsProvider, providerName } = require("../_lib/results");
 const { buildMistakeContext } = require("../_lib/mistake-engine");
-const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults, isSharedStoreConfigured } = require("../_lib/store");
+const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getQwenUsage, getResults, isSharedStoreConfigured } = require("../_lib/store");
 
 function sideFromMarket(probabilities = {}, allowDraw = true) {
   const sides = allowDraw ? ["home", "draw", "away"] : ["home", "away"];
@@ -313,6 +313,7 @@ module.exports = async function handler(req, res) {
   const evidenceCache = await getEvidenceCache();
   const dailyAnalysis = await getDailyAnalysis();
   const mistakeMemory = await getMistakeMemory();
+  const qwenUsageLedger = await getQwenUsage();
   const globalMistakeContext = buildMistakeContext({ teamA: {}, teamB: {} }, mistakeMemory);
   const evidenceEntries = Object.values(evidenceCache || {});
   const dailyEntries = Object.values(dailyAnalysis || {});
@@ -326,6 +327,8 @@ module.exports = async function handler(req, res) {
     .filter(Boolean)
     .sort()
     .at(-1) || null;
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const qwenUsageToday = qwenUsageLedger.byDate?.[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
   const dataDir = path.join(__dirname, "..", "..", "data");
   const resolvedMatches = resolveMatches(snapshot.matches, results);
   const dailyQueue = dailyAnalysisQueue(resolvedMatches, dailyAnalysis, predictions, {
@@ -423,6 +426,11 @@ module.exports = async function handler(req, res) {
       dailyAnalysisHorizonDays: Number(process.env.DAILY_ANALYSIS_HORIZON_DAYS || 45),
       dailyAnalysisPriorityWindowHours: Number(process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS || process.env.PREDICTION_LEAD_HOURS || 36),
       firstMatchEvidence: first
+    },
+    qwenUsage: {
+      updatedAt: qwenUsageLedger.updatedAt || null,
+      todayKey,
+      today: qwenUsageToday
     },
     hasQwenKey: Boolean(process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY),
     hasResultsApi: hasResultsProvider(),

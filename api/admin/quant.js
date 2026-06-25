@@ -1,7 +1,7 @@
 const { parseMatchTime, resolveMatches } = require("../_lib/bracket");
 const { buildMistakeContext } = require("../_lib/mistake-engine");
 const { calibratedPredictedScore, loadSnapshot } = require("../_lib/paul");
-const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getResults } = require("../_lib/store");
+const { getDailyAnalysis, getEvidenceCache, getMistakeMemory, getPredictions, getQwenUsage, getResults } = require("../_lib/store");
 
 const HISTORICAL_BACKTEST = {
   correct: 972,
@@ -603,6 +603,27 @@ function reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy
   };
 }
 
+function summarizeQwenUsage(ledger = {}, now = new Date()) {
+  const todayKey = now.toISOString().slice(0, 10);
+  const byDate = ledger.byDate || {};
+  const today = byDate[todayKey] || { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
+  const events = Array.isArray(ledger.events) ? ledger.events : [];
+  const totals = events.reduce((sum, event) => ({
+    calls: sum.calls + 1,
+    promptTokens: sum.promptTokens + Number(event.promptTokens || 0),
+    completionTokens: sum.completionTokens + Number(event.completionTokens || 0),
+    totalTokens: sum.totalTokens + Number(event.totalTokens || 0)
+  }), { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 });
+  const recent = events.slice(-12).reverse();
+  return {
+    updatedAt: ledger.updatedAt || null,
+    todayKey,
+    today,
+    totals,
+    recent
+  };
+}
+
 function calibratedKellyProbability(paulProbability, impliedProbability, edgeTrust) {
   if (paulProbability === null || paulProbability === undefined || impliedProbability === null || impliedProbability === undefined) return null;
   if (!Number.isFinite(Number(paulProbability)) || !Number.isFinite(Number(impliedProbability))) return null;
@@ -1035,17 +1056,19 @@ module.exports = async function handler(req, res) {
     const strategy = url.searchParams.get("strategy") === "value" ? "value" : "paul-follow";
 
     const snapshot = loadSnapshot();
-    const [predictions, results, dailyAnalysis, evidenceCache, mistakeMemory] = await Promise.all([
+    const [predictions, results, dailyAnalysis, evidenceCache, mistakeMemory, qwenUsageLedger] = await Promise.all([
       getPredictions(),
       getResults(),
       getDailyAnalysis(),
       getEvidenceCache(),
-      getMistakeMemory()
+      getMistakeMemory(),
+      getQwenUsage()
     ]);
     const reliability = reliabilityProfile({ predictions, results, mistakeMemory, modelAccuracy, priorWeight });
     const labMistakeContext = buildMistakeContext({ teamA: {}, teamB: {} }, mistakeMemory);
     const resolvedMatches = resolveMatches(snapshot.matches || [], results);
     const now = new Date();
+    const qwenUsage = summarizeQwenUsage(qwenUsageLedger, now);
     const rows = resolvedMatches
       .filter((match) => match.teamA?.code && match.teamB?.code)
       .sort(sortMatches)
@@ -1468,6 +1491,7 @@ module.exports = async function handler(req, res) {
           accuracy: Number((reliability.combined.accuracy * 100).toFixed(2))
         }
       },
+      qwenUsage,
       summary: {
         matches: rows.length,
         bettable: finalBetRows.length,

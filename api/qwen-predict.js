@@ -14,7 +14,7 @@ module.exports = async function handler(req, res) {
       res.status(200).json({ ...predictions[payload.id], locked: true, persisted: true });
       return;
     }
-    const result = await callPaul(payload);
+    const result = await callPaul(payload, { source: "manual-lock" });
     const record = await attachAuditProof(payload, {
       matchId: payload.id,
       generatedAt: new Date().toISOString(),

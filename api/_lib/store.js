@@ -4,6 +4,7 @@ const auditKey = "paul:audit:v1";
 const evidenceKey = "paul:evidence:v1";
 const dailyAnalysisKey = "paul:daily-analysis:v1";
 const mistakeMemoryKey = "paul:mistake-memory:v1";
+const qwenUsageKey = "paul:qwen-usage:v1";
 const pollKey = "paul:polls:v1";
 const rateLimitPrefix = "paul:rate:";
 
@@ -176,6 +177,61 @@ async function setMistakeEntry(matchId, review) {
   return true;
 }
 
+async function getQwenUsage() {
+  if (!isSharedStoreConfigured()) return { version: "paul-qwen-usage-v1", events: [], byDate: {} };
+  const value = await redisCommand(["GET", qwenUsageKey]);
+  if (!value) return { version: "paul-qwen-usage-v1", events: [], byDate: {} };
+  if (typeof value === "object") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return { version: "paul-qwen-usage-v1", events: [], byDate: {} };
+  }
+}
+
+function numericUsage(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+async function recordQwenUsage(entry = {}) {
+  if (!isSharedStoreConfigured()) return false;
+  const usage = entry.usage || {};
+  const createdAt = entry.createdAt || new Date().toISOString();
+  const date = createdAt.slice(0, 10);
+  const record = {
+    id: entry.id || `${createdAt}:${entry.source || "qwen"}:${entry.matchId || "na"}`,
+    createdAt,
+    date,
+    source: entry.source || "qwen",
+    matchId: entry.matchId || null,
+    model: entry.model || null,
+    promptTokens: numericUsage(usage.prompt_tokens ?? usage.promptTokens ?? usage.input_tokens ?? usage.inputTokens),
+    completionTokens: numericUsage(usage.completion_tokens ?? usage.completionTokens ?? usage.output_tokens ?? usage.outputTokens),
+    totalTokens: numericUsage(usage.total_tokens ?? usage.totalTokens ?? usage.total)
+  };
+  if (!record.totalTokens) record.totalTokens = record.promptTokens + record.completionTokens;
+  const ledger = await getQwenUsage();
+  ledger.version = "paul-qwen-usage-v1";
+  ledger.updatedAt = new Date().toISOString();
+  ledger.events = Array.isArray(ledger.events) ? ledger.events.filter((item) => item.id !== record.id).slice(-999) : [];
+  ledger.events.push(record);
+  ledger.byDate ||= {};
+  ledger.byDate[date] ||= { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0, sources: {} };
+  const day = ledger.byDate[date];
+  day.calls += 1;
+  day.promptTokens += record.promptTokens;
+  day.completionTokens += record.completionTokens;
+  day.totalTokens += record.totalTokens;
+  day.sources[record.source] ||= { calls: 0, promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+  day.sources[record.source].calls += 1;
+  day.sources[record.source].promptTokens += record.promptTokens;
+  day.sources[record.source].completionTokens += record.completionTokens;
+  day.sources[record.source].totalTokens += record.totalTokens;
+  await redisCommand(["SET", qwenUsageKey, JSON.stringify(ledger)]);
+  return true;
+}
+
 async function getPolls() {
   if (!isSharedStoreConfigured()) return {};
   const value = await redisCommand(["GET", pollKey]);
@@ -248,6 +304,7 @@ module.exports = {
   getEvidenceCache,
   getMistakeMemory,
   getPoll,
+  getQwenUsage,
   getRateLimit,
   getAuditLog,
   getPredictions,
@@ -260,6 +317,7 @@ module.exports = {
   setMistakeMemory,
   setPollVote,
   setPrediction,
+  recordQwenUsage,
   setRateLimit,
   setResult
 };

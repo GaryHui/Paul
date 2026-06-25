@@ -91,6 +91,10 @@ function odds(value) {
   return Number(value).toFixed(2);
 }
 
+function tokens(value) {
+  return new Intl.NumberFormat("zh-CN").format(Number(value || 0));
+}
+
 function dateTime(value) {
   if (!value) return "时间待定";
   return new Intl.DateTimeFormat("zh-CN", {
@@ -154,11 +158,24 @@ function renderSummary(data) {
   const liveDirectionPaul = liveComparison.direction?.paul || {};
   const liveDirectionMarket = liveComparison.direction?.market || {};
   const liveExactPaul = liveComparison.exactScore?.paul || {};
+  const qwenUsage = data.qwenUsage || {};
+  const qwenToday = qwenUsage.today || {};
+  const qwenSources = qwenToday.sources || {};
+  const qwenSourceLines = Object.entries(qwenSources).length
+    ? Object.entries(qwenSources).map(([source, item]) => `${source}: ${item.calls || 0} calls / ${tokens(item.totalTokens)} tokens`)
+    : ["No tracked Qwen calls today yet."];
   const exactMatchLines = Array.isArray(liveExactPaul.matches) && liveExactPaul.matches.length
     ? liveExactPaul.matches.slice(0, 12).map((item) => `#${item.matchId}: ${item.predictedScore} = ${item.actualScore}`)
     : ["No official exact-score matches listed yet."];
   summary.hidden = false;
   summary.innerHTML = [
+    metric("Qwen tokens today", `${qwenToday.calls || 0} / ${tokens(qwenToday.totalTokens)}`, [
+      `Date: ${qwenUsage.todayKey || "N/A"}.`,
+      `Prompt/input: ${tokens(qwenToday.promptTokens)} tokens.`,
+      `Completion/output: ${tokens(qwenToday.completionTokens)} tokens.`,
+      ...qwenSourceLines,
+      qwenUsage.updatedAt ? `Updated: ${dateTime(qwenUsage.updatedAt)}.` : "Usage starts tracking after deployment."
+    ]),
     metric("历史回测方向", `${pct(historicalPaul.accuracy)} · ${historicalPaul.correct || 0}/${historicalPaul.graded || 0}`, [
       "这是 PAUL 之前一千多场回测的胜平负/晋级方向命中率，不是比分命中率。",
       `PAUL：${historicalPaul.correct || 0}/${historicalPaul.graded || 0} = ${pct(historicalPaul.accuracy)}。`,

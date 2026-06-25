@@ -172,7 +172,7 @@ module.exports = async function handler(req, res) {
           const record = await attachAuditProof(sourceMatch, {
             matchId: sourceMatch.id,
             generatedAt: now.toISOString(),
-            ...await callPaul(sourceMatch)
+            ...await callPaul(sourceMatch, { source: "official-lock" })
           });
           predictions[sourceMatch.id] = record;
           await setPrediction(sourceMatch.id, record);

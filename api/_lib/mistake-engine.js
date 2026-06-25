@@ -1,4 +1,4 @@
-const { getMistakeMemory, setMistakeMemory } = require("./store");
+const { getMistakeMemory, recordQwenUsage, setMistakeMemory } = require("./store");
 
 const qwenEndpoint = process.env.QWEN_BASE_URL || "https://dashscope.aliyuncs.com/compatible-mode/v1";
 const qwenModel = process.env.QWEN_MODEL || "qwen-plus";
@@ -273,7 +273,21 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
   });
   const text = await response.text();
   if (!response.ok) throw new Error(`Mistake Engine AI failed with status ${response.status}: ${text.slice(0, 240)}`);
-  const content = JSON.parse(text).choices?.[0]?.message?.content || "{}";
+  const payload = JSON.parse(text);
+  if (payload.usage) {
+    try {
+      await recordQwenUsage({
+        id: `${new Date().toISOString()}:mistake-review:${match.id}`,
+        source: "mistake-review",
+        matchId: match.id,
+        model: qwenModel,
+        usage: payload.usage
+      });
+    } catch {
+      // Usage tracking must not block post-match review.
+    }
+  }
+  const content = payload.choices?.[0]?.message?.content || "{}";
   return JSON.parse(content);
 }
 

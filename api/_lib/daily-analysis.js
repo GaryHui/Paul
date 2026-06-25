@@ -249,7 +249,8 @@ function compactDailyRead(match, result) {
       evidenceGeneratedAt: result.evidence?.generatedAt || null,
       searchFallback: Boolean(result.evidence?.searchFallback),
       marketUpdatedAt: result.evidence?.market?.updatedAt || null
-    }
+    },
+    qwenUsage: result.evidence?.qwenUsage || null
   };
 }
 
@@ -285,7 +286,8 @@ async function refreshDailyAnalysis(matches, options = {}) {
   for (const { match, state } of candidates) {
     try {
       const result = await callPaul(match, {
-        forceSearch: options.forceSearch !== false
+        forceSearch: options.forceSearch !== false,
+        source: "daily-read"
       });
       const record = compactDailyRead(match, result);
       await setDailyAnalysisEntry(match.id, record);

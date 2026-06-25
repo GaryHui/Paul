@@ -3,7 +3,7 @@ const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
 const { parseMatchTime } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
-const { getEvidenceCache, getMistakeMemory, setEvidenceEntry } = require("./store");
+const { getEvidenceCache, getMistakeMemory, recordQwenUsage, setEvidenceEntry } = require("./store");
 const { universalPickForPaul } = require("./universal-model");
 
 const root = path.join(__dirname, "..", "..");
@@ -1267,6 +1267,17 @@ function buildShadowEvaluation({ rawEvidence, rawAnalysis, kvEvidence, kvAnalysi
   };
 }
 
+function compactQwenUsage(usage = {}) {
+  const promptTokens = Number(usage.prompt_tokens ?? usage.promptTokens ?? usage.input_tokens ?? usage.inputTokens ?? 0);
+  const completionTokens = Number(usage.completion_tokens ?? usage.completionTokens ?? usage.output_tokens ?? usage.outputTokens ?? 0);
+  const totalTokens = Number(usage.total_tokens ?? usage.totalTokens ?? usage.total ?? (promptTokens + completionTokens));
+  return {
+    promptTokens: Number.isFinite(promptTokens) ? promptTokens : 0,
+    completionTokens: Number.isFinite(completionTokens) ? completionTokens : 0,
+    totalTokens: Number.isFinite(totalTokens) ? totalTokens : 0
+  };
+}
+
 async function callPaul(payload, options = {}) {
   const apiKey = process.env.DASHSCOPE_API_KEY || process.env.QWEN_API_KEY;
   if (!apiKey) {
@@ -1314,6 +1325,20 @@ async function callPaul(payload, options = {}) {
     throw error;
   }
   const data = JSON.parse(text);
+  const qwenUsage = compactQwenUsage(data.usage || {});
+  if (qwenUsage.totalTokens) {
+    try {
+      await recordQwenUsage({
+        id: `${new Date().toISOString()}:${options.source || "paul-lock"}:${payload.id}`,
+        source: options.source || "paul-lock",
+        matchId: payload.id,
+        model: qwenModel,
+        usage: data.usage || qwenUsage
+      });
+    } catch {
+      // Token usage should never block a prediction.
+    }
+  }
   const content = data.choices?.[0]?.message?.content || "{}";
   let analysis;
   try {
@@ -1332,6 +1357,11 @@ async function callPaul(payload, options = {}) {
     });
   }
   evidence.calibrationLayer = analysis.calibrationLayer || null;
+  evidence.qwenUsage = {
+    source: options.source || "paul-lock",
+    model: qwenModel,
+    ...qwenUsage
+  };
   return { model: "PAUL Edge Engine v4.1 + KV Calibration", evidence, analysis };
 }
 
