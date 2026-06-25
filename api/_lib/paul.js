@@ -5,7 +5,7 @@ const { parseMatchTime } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
 const { getEvidenceCache, getMistakeMemory, recordQwenUsage, setEvidenceEntry } = require("./store");
 const { universalPickForPaul } = require("./universal-model");
-const { chooseQwenModel, qwenEndpoint } = require("./qwen-router");
+const { chooseQwenModel, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
 
 const root = path.join(__dirname, "..", "..");
 const dataDir = path.join(root, "data");
@@ -1311,6 +1311,7 @@ async function callPaul(payload, options = {}) {
       { role: "user", content: buildPrompt(payload, evidence) }
     ],
     temperature: 0.35,
+    max_tokens: qwenMaxTokens(options.source || "paul-lock"),
     response_format: { type: "json_object" }
   };
   if (useSearchFallback) {

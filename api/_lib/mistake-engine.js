@@ -1,5 +1,5 @@
 const { getMistakeMemory, recordQwenUsage, setMistakeMemory } = require("./store");
-const { chooseQwenModel, qwenEndpoint } = require("./qwen-router");
+const { chooseQwenModel, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -261,6 +261,7 @@ async function callAiMistakeReview({ match, result, analysis, evidence, classifi
       { role: "user", content: prompt }
     ],
     temperature: 0.2,
+    max_tokens: qwenMaxTokens("mistake-review"),
     response_format: { type: "json_object" },
     enable_search: true,
     search_options: { forced_search: true, search_strategy: "max" }

@@ -7,11 +7,19 @@ const defaultLimit = Number(process.env.DAILY_ANALYSIS_MAX_MATCHES || 8);
 const defaultDueGraceMinutes = Number(process.env.DAILY_ANALYSIS_DUE_GRACE_MINUTES || 90);
 const defaultPostKickoffHours = Number(process.env.DAILY_ANALYSIS_POST_KICKOFF_HOURS || 3);
 const defaultProtectedMaxMatches = Number(process.env.DAILY_ANALYSIS_PROTECTED_MAX_MATCHES || 4);
+const defaultForceSearchHours = Number(process.env.QWEN_DAILY_SEARCH_HOURS || 24);
 const defaultPriorityWindowHours = Number(
   process.env.DAILY_ANALYSIS_PRIORITY_WINDOW_HOURS ||
   process.env.PREDICTION_LEAD_HOURS ||
   72
 );
+
+function shouldForceDailySearch(state = {}, options = {}) {
+  if (options.forceSearch === true) return true;
+  if (options.forceSearch === false) return false;
+  const hoursToKickoff = Number(state.priority?.hoursToKickoff ?? state.hoursToKickoff);
+  return Number.isFinite(hoursToKickoff) && hoursToKickoff >= 0 && hoursToKickoff <= defaultForceSearchHours;
+}
 
 function eligibleForDailyAnalysis(match, now = new Date(), horizonDays = defaultHorizonDays, options = {}) {
   if (!match?.teamA?.code || !match?.teamB?.code) return false;
@@ -285,8 +293,9 @@ async function refreshDailyAnalysis(matches, options = {}) {
 
   for (const { match, state } of candidates) {
     try {
+      const forceSearch = shouldForceDailySearch(state, options);
       const result = await callPaul(match, {
-        forceSearch: options.forceSearch !== false,
+        forceSearch,
         source: "daily-read",
         hoursToKickoff: state.priority?.hoursToKickoff ?? state.hoursToKickoff ?? null
       });
@@ -299,6 +308,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
         winnerCode: record.pick.winnerCode,
         confidence: record.pick.confidence,
         searchFallback: record.freshness.searchFallback,
+        forceSearch,
         lockedRefresh: Boolean(state.locked),
         cadence: state.cadence,
         cadenceHours: state.cadenceHours
@@ -327,6 +337,7 @@ async function refreshDailyAnalysis(matches, options = {}) {
     limit,
     protectedMaxMatches,
     priorityWindowHours,
+    forceSearchHours: defaultForceSearchHours,
     events
   };
 }

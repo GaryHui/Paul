@@ -15,6 +15,17 @@ function configuredModels() {
   return { strongModel, fastModel };
 }
 
+function qwenMaxTokens(source = "paul-lock") {
+  const sourceKey = String(source || "").toLowerCase();
+  if (sourceKey.includes("mistake") || sourceKey.includes("review")) {
+    return numberEnv("QWEN_MISTAKE_MAX_OUTPUT_TOKENS", numberEnv("QWEN_MAX_OUTPUT_TOKENS", 1200));
+  }
+  if (sourceKey.includes("daily")) {
+    return numberEnv("QWEN_DAILY_MAX_OUTPUT_TOKENS", numberEnv("QWEN_MAX_OUTPUT_TOKENS", 1200));
+  }
+  return numberEnv("QWEN_MAX_OUTPUT_TOKENS", 1400);
+}
+
 function chooseQwenModel(context = {}) {
   const { strongModel, fastModel } = configuredModels();
   if (process.env.QWEN_ROUTER_DISABLED === "1") {
@@ -68,5 +79,6 @@ function chooseQwenModel(context = {}) {
 
 module.exports = {
   chooseQwenModel,
-  qwenEndpoint
+  qwenEndpoint,
+  qwenMaxTokens
 };

@@ -99,10 +99,11 @@ function qwenUsageLine(data = {}) {
   const usage = data.qwenUsage || {};
   const today = usage.today || {};
   const models = today.models || {};
+  const avgTokens = today.calls ? Math.round(Number(today.totalTokens || 0) / Number(today.calls || 1)) : 0;
   const modelText = Object.entries(models).length
     ? Object.entries(models).map(([model, item]) => `${model} ${item.calls || 0}/${tokens(item.totalTokens)}`).join("; ")
     : "no model calls yet";
-  return `Qwen today: ${today.calls || 0} calls / ${tokens(today.totalTokens)} tokens; ${modelText}.`;
+  return `Qwen today: ${today.calls || 0} calls / ${tokens(today.totalTokens)} tokens; avg ${tokens(avgTokens)}; ${modelText}.`;
 }
 
 function dateTime(value) {
