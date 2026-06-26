@@ -1,9 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const { fetchRemoteMarketOdds, oddsToProbabilities } = require("../../lib/odds");
-const { parseMatchTime } = require("./bracket");
+const { parseMatchTime, qualificationContext } = require("./bracket");
 const { buildMistakeContext } = require("./mistake-engine");
-const { getEvidenceCache, getMistakeMemory, getQwenUsage, recordQwenUsage, setEvidenceEntry } = require("./store");
+const { getEvidenceCache, getMistakeMemory, getQwenUsage, getResults, recordQwenUsage, setEvidenceEntry } = require("./store");
 const { universalPickForPaul } = require("./universal-model");
 const { chooseQwenModel, qwenBudgetDecision, qwenEndpoint, qwenMaxTokens } = require("./qwen-router");
 
@@ -429,7 +429,24 @@ function buildPreLockRehearsal(match, evidence) {
     focus.push("upset path validation");
     focus.push("underdog press/transition/set-piece route");
   }
+  if (evidence.qualificationContext?.lockedTopTwoCount || match.round !== "Group Stage") {
+    focus.push("qualified-team bracket path");
+    focus.push("rotation and rest incentives");
+  }
+  if (Array.isArray(evidence.recentMissFactors) && evidence.recentMissFactors.length) {
+    focus.push("draw or low-event qualification pressure");
+    focus.push("host/regional finishing variance");
+  }
   if (!focus.length) focus.push("late-breaking availability");
+  const slotLabel = [
+    evidence.qualificationContext?.slotContext?.aSlot?.label,
+    evidence.qualificationContext?.slotContext?.bSlot?.label
+  ].filter(Boolean).join(" vs ");
+  const qualifiedNames = (evidence.qualificationContext?.lockedTopTwo || [])
+    .slice(0, 8)
+    .map((team) => team.name)
+    .filter(Boolean)
+    .join(" ");
   return {
     status: searchReasons.length ? "needs-fresh-rehearsal" : "locally-covered",
     hoursToKickoff: hours === null ? null : Number(hours.toFixed(2)),
@@ -499,8 +516,10 @@ function buildPreLockRehearsal(match, evidence) {
         `${match.teamA.name} vs ${match.teamB.name} team news injuries suspension likely lineup preview`,
         `${match.teamA.name} vs ${match.teamB.name} Opta prediction xG xGA shots preview`,
         `${match.teamA.name} vs ${match.teamB.name} upset preview tactical analysis underdog news`,
-        `${match.teamA.name} vs ${match.teamB.name} set pieces pressing transition xG preview`
-      ]
+        `${match.teamA.name} vs ${match.teamB.name} set pieces pressing transition xG preview`,
+        slotLabel ? `${match.teamA.name} ${match.teamB.name} ${slotLabel} bracket path qualified teams rotation rest preview` : null,
+        qualifiedNames ? `${match.teamA.name} ${match.teamB.name} qualified teams ${qualifiedNames} knockout path preview` : null
+      ].filter(Boolean)
     }
   };
 }
@@ -547,6 +566,26 @@ function findTeamRecord(collection, code) {
   return collection[code] || null;
 }
 
+function recentMissFactors(match, qualification) {
+  return [
+    {
+      key: "draw_or_low_event_qualification_pressure",
+      applies: match.round === "Group Stage" || Boolean(qualification?.slotContext),
+      note: "Recent misses showed PAUL can underrate a team that only needs a draw or can progress through conservative low-event game management. Stress-test 0-0, 1-1, and late-risk-avoidance paths."
+    },
+    {
+      key: "rebound_after_poor_form",
+      applies: true,
+      note: "Do not simply extrapolate a team's long slump. Check whether tactical reset, opponent matchup, or qualification pressure creates a rebound or draw-protection setup."
+    },
+    {
+      key: "host_regional_finishing_variance",
+      applies: true,
+      note: "Recent misses also came from underestimating host/regional comfort, crowd/travel effects, and finishing/tempo volatility. Recheck xG, shot quality, set pieces, and transition chances before trusting the base favorite."
+    }
+  ].filter((item) => item.applies);
+}
+
 async function collectPredictionEvidence(match, options = {}) {
   const oddsFile = path.join(dataDir, "market-odds.json");
   const ratingsFile = path.join(dataDir, "team-ratings.json");
@@ -554,6 +593,16 @@ async function collectPredictionEvidence(match, options = {}) {
   const allOdds = readJson(oddsFile, {});
   const allRatings = readJson(ratingsFile, {});
   const allForm = readJson(formFile, {});
+  const snapshot = readJson(path.join(dataDir, "match-snapshot.json"), { matches: [] });
+  let results = options.results || {};
+  if (!options.results) {
+    try {
+      results = await getResults();
+    } catch {
+      results = {};
+    }
+  }
+  const qualification = qualificationContext(snapshot.matches || [], results || {}, match);
   const evidenceCache = options.cache === false ? {} : await getEvidenceCache();
   const mistakeMemory = options.mistakeMemory === false || process.env.MISTAKE_ENGINE_DISABLED === "1" ? {} : await getMistakeMemory();
   const cachedEvidence = findByMatchId(evidenceCache, match.id);
@@ -635,6 +684,8 @@ async function collectPredictionEvidence(match, options = {}) {
       applied: Boolean(mistakeContext.usable),
       note: "Learning weights are recalculated from post-match KV memory before every PAUL read."
     },
+    qualificationContext: qualification,
+    recentMissFactors: recentMissFactors(match, qualification),
     poisson,
     modelBlend,
     baselines: {
@@ -664,11 +715,14 @@ function buildPrompt(payload, evidence) {
     "Use evidence.paulEdge as PAUL's proprietary edge layer. If upsetScore is high and conservativeOverride is true, explain the upset path; otherwise stay close to the market/blended consensus.",
     "Use evidence.universal as PAUL's historical Universal gate, distilled from broad backtests. It may permit a market override only when universal.override is true; PAUL's live news and KV learning layer still have final authority.",
     "Use evidence.learning as PAUL's adaptive learning layer. It turns post-match KV corrections into bounded model-weight changes before each prediction, so explain when learning weights materially affect the read.",
+    "Use evidence.qualificationContext to understand current group tables, already-qualified teams, completed groups, best-third candidates, and unresolved bracket slots. For knockout or late group matches, news analysis must consider opponent-pool strength, rotation/rest incentives, suspension risk, travel path, and whether a team has already qualified or still needs points.",
+    "Use evidence.recentMissFactors as mandatory checks from recent PAUL misses: draw/low-event qualification pressure, rebound after poor form, and host/regional finishing variance. If any factor is relevant, explain whether it changes the pick, confidence, or score paths.",
     "Use evidence.mistakeEngine.summary.marketEdgeProfile to decide whether PAUL has earned permission to leave the market. If marketOnlyCorrect is ahead of paulOnlyCorrect, require stronger Universal/news/lineup support before overriding the market favorite.",
     "Use evidence.mistakeEngine.summary.shadowABProfile as the strict A/B judge for KV learning. A positive directionLift means KV is helping; a negative lift means future KV deltas should be treated cautiously.",
     "For predictedScore, optimize both the single main score and the Top3/Top5 scoreScenarios. If exact score has been weak, preserve common football score priors and explain when scoreline learning moves the top path.",
     "Before finalizing the locked pick, use evidence.preLockRehearsal as a replay-room checklist: verify fresh team news, likely lineups, Opta-style preview data (xG, xGA, shots, set pieces, pressing/field tilt when publicly available), and whether the upset path still holds.",
     "When evidence.preLockRehearsal.upsetPreview.recommendation says the upset probability is live enough, spend extra effort on underdog news, lineup absences, set pieces, pressing/transition routes, xG/xGA, and market movement before deciding whether to slightly lift the upset/draw probability.",
+    "When searching news for future knockout matches, include the currently qualified teams and slot context from evidence.qualificationContext rather than treating the match as isolated.",
     "Recent results have shown more upsets than the base market anchor expected, so stress-test favorites harder when team news, Opta-style metrics, form, travel/rest, or tactical matchup support the underdog or draw.",
     "evidence.mistakeEngine is an automatic KV calibration layer built from post-match reviews. It already adjusts trust, draw risk, upset sensitivity, score volatility, and adaptive model weights before your wording. Explain it when relevant, but do not invent facts.",
     knockout

@@ -153,6 +153,88 @@ function resolveMatches(matches, results) {
   return matches.map((match) => resolveMatch(match, context));
 }
 
+function compactStandingRow(row, teams, extra = {}) {
+  if (!row) return null;
+  const team = teams[row.code] || {};
+  return {
+    code: row.code,
+    name: team.name || row.code,
+    group: team.group || null,
+    rank: extra.rank || null,
+    status: extra.status || null,
+    played: row.p,
+    points: row.pts,
+    goalDifference: row.gd,
+    goalsFor: row.gf
+  };
+}
+
+function qualificationContext(matches, results, focusMatch = null) {
+  const teams = buildTeamMap(matches);
+  const standings = groupStandings(matches, results, teams);
+  const groupNames = Object.keys(standings).sort();
+  const completeGroups = groupNames.filter((group) => groupIsComplete(matches, results, group));
+  const groupSnapshots = groupNames.map((group) => ({
+    group,
+    complete: completeGroups.includes(group),
+    rows: (standings[group] || []).slice(0, 4).map((row, index) =>
+      compactStandingRow(row, teams, {
+        rank: index + 1,
+        status: completeGroups.includes(group)
+          ? index < 2 ? "locked-top-two" : index === 2 ? "third-place-candidate" : "eliminated"
+          : "live-table"
+      })
+    )
+  }));
+  const lockedTopTwo = completeGroups.flatMap((group) =>
+    (standings[group] || []).slice(0, 2).map((row, index) =>
+      compactStandingRow(row, teams, { rank: index + 1, status: "locked-top-two" })
+    )
+  ).filter(Boolean);
+  const thirdCandidates = completeGroups
+    .map((group) => compactStandingRow(standings[group]?.[2], teams, { rank: 3, status: allGroupsComplete(matches, results) ? "best-third-final" : "best-third-candidate" }))
+    .filter(Boolean)
+    .sort((a, b) => b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor);
+  const context = { matches, results, teams, standings, thirdAssignments: {} };
+  context.thirdAssignments = thirdPlaceAssignments(matches, results, standings, teams);
+  const describeSlot = (slot) => {
+    if (!slot) return null;
+    const code = resolveSlot(slot, context);
+    const team = code ? teams[code] : null;
+    return {
+      label: slot.label || null,
+      type: slot.type || null,
+      group: slot.group || null,
+      rank: slot.rank || null,
+      groups: slot.groups || null,
+      matchId: slot.matchId || null,
+      resolvedCode: code || null,
+      resolvedName: team?.name || null
+    };
+  };
+  const slotContext = focusMatch
+    ? {
+        round: focusMatch.round || null,
+        matchId: focusMatch.id || null,
+        teamA: focusMatch.teamA?.code || null,
+        teamB: focusMatch.teamB?.code || null,
+        aSlot: describeSlot(focusMatch.aSlot),
+        bSlot: describeSlot(focusMatch.bSlot)
+      }
+    : null;
+  return {
+    version: "qualification-context-v1",
+    completeGroups,
+    groupSnapshots,
+    lockedTopTwoCount: lockedTopTwo.length,
+    lockedTopTwo: lockedTopTwo.slice(0, 32),
+    thirdPlacePoolStatus: allGroupsComplete(matches, results) ? "final" : "partial",
+    thirdPlaceCandidates: thirdCandidates.slice(0, 12),
+    slotContext,
+    note: "Use locked qualifiers and current bracket slots to judge rotation, motivation, rest, matchup path, and knockout opponent-pool strength."
+  };
+}
+
 function nextPredictionDue(matches, predictions, results, now = new Date()) {
   return resolveMatches(matches, results)
     .map((match) => {
@@ -472,6 +554,7 @@ module.exports = {
   accuracySnapshot,
   nextPredictionDue,
   parseMatchTime,
+  qualificationContext,
   resolveMatches,
   resultWinnerCode,
   stageAccuracySnapshot
