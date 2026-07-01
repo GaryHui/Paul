@@ -3004,7 +3004,6 @@ function officialAnalysisMarkup(official, match) {
   const analysis = official?.analysis || {};
   const reasoning = analysis.reasoning || analysis.calibrationNote || tr("lockedWithoutDetails");
   const currentKv = currentKvMemoryMarkup();
-  const lockVsLive = match ? lockVsLiveMarkup(match) : "";
   const scorePaths = match ? scoreScenariosFor(match, official, dailyReadFor(match)) : [];
   const scorePathsMarkup = match ? scoreScenarioMarkup(scorePaths, officialResult(match)) : "";
   return `
@@ -3033,7 +3032,6 @@ function officialAnalysisMarkup(official, match) {
             ${currentKvCalibrationDetails({ includeUpdated: true })}
           `}
       </div>
-      ${lockVsLive}
       ${scorePathsMarkup}
       ${currentKv}
       ${officialEvidenceMarkup(analysis)}
@@ -3215,8 +3213,10 @@ function renderPK() {
     const resultCopy = finalResult?.status === "final"
       ? `${tr("final")}: ${teams[resolved.aCode]?.name || slotLabel(match, "a")} ${finalResult.homeScore}-${finalResult.awayScore} ${teams[resolved.bCode]?.name || slotLabel(match, "b")}. ${predictionStatus(match)}.`
       : tr("finalScorePending");
+    const lockVsLive = lockVsLiveMarkup(match);
     document.getElementById("predictionCopy").innerHTML = `
       <p><strong>${verdict}</strong> · ${tr("predictedScore")}: <strong>${official.analysis?.predictedScore || official.analysis?.score || "N/A"}</strong>.</p>
+      ${lockVsLive}
       ${officialAnalysisMarkup(official, match)}
       <p>${resultCopy}</p>
     `;
