@@ -61,10 +61,10 @@ const teams = {
 };
 
 const groupOrder = "ABCDEFGHIJKL".split("");
-const defaultRoundFilter = "Recent";
-const roundOptions = [defaultRoundFilter, "All", "Group Stage", "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
+const defaultRoundFilter = "Focus";
+const roundOptions = [defaultRoundFilter, "Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final", "Group Stage", "All"];
 const roundLabels = {
-  Recent: "Recent matches",
+  Focus: "Focus",
   All: "All",
   "Group Stage": "Group Stage"
 };
@@ -87,8 +87,8 @@ const languageOptions = [
 const languageCopy = {
   en: {
     languageLabel: "Language", navPredictions: "Predictions", navTrace: "Trace", navAutomation: "Automation", navProof: "Proof", navGroups: "Groups",
-    heroEyebrow: "2026 FIFA World Cup AI Prediction Lab", heroTitle: "PAUL predicts every match, then enters Knockout Oracle Mode.",
-    heroLede: "Group-stage picks build the public record from day one. Once the Round of 32 begins, PAUL shifts into knockout focus with upset signals, proof-locked picks, and bracket paths.",
+    heroEyebrow: "2026 FIFA World Cup AI Prediction Lab", heroTitle: "PAUL follows the tournament stage automatically.",
+    heroLede: "The main view follows the live fixture state: group-stage record first, then knockout paths as soon as the bracket resolves.",
     openPredictor: "Open Predictor", viewTeams: "View 48 Teams", groupAccuracy: "Group-stage accuracy", knockoutAccuracy: "Knockout accuracy", upsetCallsHit: "Upset calls hit", proofVerifiedPicks: "Proof-verified picks",
     traceEyebrow: "2026 Match Trace", traceTitle: "Follow PAUL against the market, match by match.", traceCopy: "This public trace shows the current PAUL read, market reference when available, final result after sync, and the match-by-match impact versus the market favorite.",
     playableFixtures: "Playable fixtures", officialLocks: "Official PAUL locks", dailyReads: "Daily PAUL reads", marketReferences: "Market references", finalResults: "Final results",
@@ -114,7 +114,7 @@ Object.assign(languageCopy.en, {
   entertainmentNoticeTitle: "Entertainment only", entertainmentNoticeCopy: "This site is for entertainment and reference only. PAUL predictions are not betting or financial advice.",
   recordEyebrow: "PAUL Record", recordTitle: "Public accuracy, tracked match by match.", recordCopy: "Every locked pick is counted after the final score. The record stays public, proof-linked, and consistent for every visitor.",
   publicFavorite: "Market favorite accuracy", teamRead: "Team model accuracy", paulGain: "PAUL over market", calibration: "Accuracy / confidence", referenceRecord: "Reference record.", extraCorrectPicks: "Extra correct picks.", actualVsConfidence: "Actual accuracy vs confidence.",
-  predictorEyebrow: "PK Predictor", predictorTitle: "Group-stage record first, knockout oracle after qualification.", predictorCopy: "PAUL still predicts every playable match before kickoff, including the group stage. The public showpiece begins when the Round of 32 bracket is resolved and every pick becomes a win-or-go-home call.",
+  predictorEyebrow: "PK Predictor", predictorTitle: "Tournament focus follows the live bracket.", predictorCopy: "PAUL keeps the group-stage record available, then automatically moves the main view to Round of 32 and later knockout paths when they become playable.",
   round: "Round", group: "Group", groupLabel: "Group", search: "Search", searchPlaceholder: "Team, country, match number...",
   automationEyebrow: "Automation Engine", automationTitle: "Daily odds refresh, result sync, bracket advancement, and pre-match predictions.", automationCopy: "Vercel Cron refreshes market odds snapshots, checks for final scores, records winners, fills the next knockout round, locks PAUL predictions before each playable match, and keeps the public accuracy record consistent for every visitor.",
   lockedPredictions: "Locked predictions", syncedResults: "Synced results", predictionAccuracy: "Prediction accuracy", nextScheduledPick: "Next scheduled pick", runDueTasks: "Run Due Tasks", loadingAutomation: "Loading automation status...",
@@ -424,8 +424,106 @@ function currentLocale() {
   return languageOptions.find((item) => item[0] === currentLanguage)?.[2] || "en-US";
 }
 
+function currentStageMode() {
+  const matches = Array.isArray(tournament?.matches) ? tournament.matches : [];
+  const hasKnockoutFixture = matches.some((match) => {
+    if (match.round === "Group Stage") return false;
+    const resolved = resolvedTeams(match);
+    return Boolean(resolved.aCode && resolved.bCode);
+  });
+  const hasKnockoutRecord = matches.some((match) =>
+    match.round !== "Group Stage" && (officialPredictionRecord(match) || officialResult(match))
+  );
+  return hasKnockoutFixture || hasKnockoutRecord ? "knockout" : "group";
+}
+
+function currentFocusRound() {
+  if (currentStageMode() !== "knockout") return null;
+  const order = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
+  let latestResolvedRound = null;
+  for (const round of order) {
+    const fixtures = tournament.matches.filter((match) => match.round === round);
+    if (!fixtures.length) continue;
+    const resolvedFixtures = fixtures.filter((match) => {
+      const resolved = resolvedTeams(match);
+      return resolved.aCode && resolved.bCode;
+    });
+    if (!resolvedFixtures.length) continue;
+    latestResolvedRound = round;
+    const allFixturesSettled = resolvedFixtures.length === fixtures.length
+      && resolvedFixtures.every((match) => officialResult(match)?.winnerCode);
+    if (!allFixturesSettled) return round;
+  }
+  return latestResolvedRound || "Round of 32";
+}
+
+function stageNarrativeCopy() {
+  const zh = currentLanguage === "zh";
+  const knockout = currentStageMode() === "knockout";
+  const focusRound = roundLabel(currentFocusRound() || "Round of 32");
+  if (knockout) {
+    return zh ? {
+      heroTitle: "PAUL 自动切到淘汰赛主视图。",
+      heroLede: `小组赛已经收进公开战绩档案。主视图现在聚焦 ${focusRound}，继续显示锁定预测、实时飘移和冷门风险。`,
+      predictorTitle: `当前焦点：${focusRound}。`,
+      predictorCopy: "PAUL 会按真实签表自动聚焦当前未完成的淘汰轮次；小组赛预测仍可从轮次筛选里查看。"
+    } : {
+      heroTitle: "PAUL has shifted to knockout focus.",
+      heroLede: `The group-stage record is archived in the public ledger. The main view now follows ${focusRound} with locked picks, live drift, and upset signals.`,
+      predictorTitle: `Current focus: ${focusRound}.`,
+      predictorCopy: "PAUL automatically focuses the current unfinished knockout round. Group-stage picks remain available from the round filter."
+    };
+  }
+  return zh ? {
+    heroTitle: "PAUL 跟随赛程自动切换预测视图。",
+    heroLede: "小组赛阶段优先积累公开战绩；淘汰赛席位产生后，主视图会自动切到晋级路径。",
+    predictorTitle: "当前阶段优先，历史记录自动收起。",
+    predictorCopy: "页面会按真实赛程切换焦点：先展示小组赛记录，淘汰赛对阵确定后自动聚焦 32 强及后续轮次。"
+  } : {
+    heroTitle: "PAUL follows the tournament stage automatically.",
+    heroLede: "The main view follows the live fixture state: group-stage record first, then knockout paths as soon as the bracket resolves.",
+    predictorTitle: "Tournament focus follows the live bracket.",
+    predictorCopy: "PAUL keeps the group-stage record available, then automatically moves the main view to Round of 32 and later knockout paths when they become playable."
+  };
+}
+
+function syncStageNarrative() {
+  const copy = stageNarrativeCopy();
+  Object.entries(copy).forEach(([key, value]) => {
+    document.querySelectorAll(`[data-i18n="${key}"]`).forEach((element) => {
+      element.textContent = value;
+    });
+  });
+}
+
+function currentFixtureLabel() {
+  if (currentStageMode() !== "knockout") return tr("playableFixtures");
+  const focusRound = roundLabel(currentFocusRound() || "Round of 32");
+  return currentLanguage === "zh" ? `${focusRound} 比赛` : `${focusRound} fixtures`;
+}
+
+function groupArchiveSummary(count) {
+  return currentLanguage === "zh"
+    ? `小组赛档案已收起 · ${count} 条记录`
+    : `Group-stage archive hidden · ${count} records`;
+}
+
+function groupArchiveHint() {
+  return currentLanguage === "zh"
+    ? "在预测器轮次筛选中选择“小组赛”，即可查看完整历史战绩。"
+    : "Select “Group Stage” in the predictor round filter to review the full historical record.";
+}
+
 function roundLabel(round) {
   const labels = {
+    Focus: {
+      en: currentStageMode() === "knockout" ? "Knockout focus" : "Current focus",
+      es: currentStageMode() === "knockout" ? "Eliminatorias" : "Foco actual",
+      fr: currentStageMode() === "knockout" ? "Élimination" : "Focus actuel",
+      de: currentStageMode() === "knockout" ? "K.o.-Fokus" : "Aktueller Fokus",
+      pt: currentStageMode() === "knockout" ? "Mata-mata" : "Foco atual",
+      zh: currentStageMode() === "knockout" ? "淘汰赛焦点" : "当前焦点"
+    },
     Recent: {
       en: "Recent matches",
       es: "Partidos recientes",
@@ -1762,6 +1860,7 @@ function applyLanguage() {
     proofRoundFilter.value = current;
   }
   syncLanguageSensitiveStats();
+  syncStageNarrative();
 }
 
 function escapeHtml(value) {
@@ -2653,13 +2752,17 @@ function renderPublicTraceUnsafe() {
       return { match, official, daily, market, paul, result };
     });
 
-  const officialCount = rows.filter((row) => row.official).length;
-  const dailyCount = rows.filter((row) => row.daily).length || Object.keys(automationState.dailyAnalysis || {}).length;
-  const marketCount = rows.filter((row) => row.market).length;
-  const resultCount = rows.filter((row) => row.result.winnerCode).length;
+  const stageMode = currentStageMode();
+  const focusRound = currentFocusRound();
+  const visibleRows = stageMode === "knockout" && focusRound ? rows.filter((row) => row.match.round === focusRound) : rows;
+  const archivedGroupRows = stageMode === "knockout" ? rows.filter((row) => row.match.round === "Group Stage") : [];
+  const officialCount = visibleRows.filter((row) => row.official).length;
+  const dailyCount = visibleRows.filter((row) => row.daily).length;
+  const marketCount = visibleRows.filter((row) => row.market).length;
+  const resultCount = visibleRows.filter((row) => row.result.winnerCode).length;
   if (summary) {
     summary.innerHTML = `
-      <article><strong>${rows.length}</strong><span>${tr("playableFixtures")}</span></article>
+      <article><strong>${visibleRows.length}</strong><span>${currentFixtureLabel()}</span></article>
       <article><strong>${officialCount}</strong><span>${tr("officialLocks")}</span></article>
       <article><strong>${dailyCount}</strong><span>${tr("dailyReads")}</span></article>
       <article><strong>${marketCount}</strong><span>${tr("marketReferences")}</span></article>
@@ -2676,7 +2779,7 @@ function renderPublicTraceUnsafe() {
         <span>${tr("result")}</span>
         <span>${tr("impact")}</span>
       </div>
-      ${rows.map(({ match, market, paul, result, daily, official }) => {
+      ${visibleRows.map(({ match, market, paul, result, daily, official }) => {
         const resolved = resolvedTeams(match);
         const matchName = `${teams[resolved.aCode]?.name || slotLabel(match, "a")} vs ${teams[resolved.bCode]?.name || slotLabel(match, "b")}`;
         const marketName = market?.favoriteName || teamNameForCode(market?.favoriteCode, match);
@@ -2731,6 +2834,12 @@ function renderPublicTraceUnsafe() {
         `;
       }).join("")}
     </div>
+    ${archivedGroupRows.length ? `
+      <details class="trace-archive">
+        <summary>${groupArchiveSummary(archivedGroupRows.length)}</summary>
+        <p>${groupArchiveHint()}</p>
+      </details>
+    ` : ""}
   `;
 }
 
@@ -2991,15 +3100,20 @@ function renderMatchList() {
   const query = document.getElementById("searchBox").value.trim().toLowerCase();
   const list = document.getElementById("matchList");
   const now = new Date();
+  const stageMode = currentStageMode();
+  const focusRound = currentFocusRound();
 
   let filtered = tournament.matches.filter((match) => {
     const resolved = resolvedTeams(match);
     const aLabel = resolved.aCode ? teams[resolved.aCode].name : slotLabel(match, "a");
     const bLabel = resolved.bCode ? teams[resolved.bCode].name : slotLabel(match, "b");
     const haystack = `${match.id} ${match.round} ${match.group || ""} ${aLabel} ${bLabel} ${match.venue}`.toLowerCase();
-    const isRecent = round === defaultRoundFilter;
+    const isFocus = round === defaultRoundFilter;
     const resolvedPlayable = Boolean(resolved.aCode && resolved.bCode && !Number.isNaN(matchKickoffTime(match).getTime()));
-    return (isRecent ? resolvedPlayable : (round === "All" || match.round === round))
+    const focusMatch = stageMode === "knockout"
+      ? match.round === focusRound && !Number.isNaN(matchKickoffTime(match).getTime())
+      : resolvedPlayable;
+    return (isFocus ? focusMatch : (round === "All" || match.round === round))
       && (group === "All" || match.group === group)
       && (!query || haystack.includes(query));
   });
@@ -3353,6 +3467,8 @@ async function loadAutomationStatus() {
       setText("paulEdgeStat", `${traceEdge.edge >= 0 ? "+" : ""}${traceEdge.edge}`);
     }
     updateChampionLabel();
+    refreshFilterOptions();
+    syncStageNarrative();
     renderMatchList();
     renderPK();
     renderPublicTrace();
