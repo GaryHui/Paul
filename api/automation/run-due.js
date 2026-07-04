@@ -9,10 +9,10 @@ const { getEvidenceCache, getPredictions, getResults, setPrediction, setResult }
 
 const predictionLeadHours = Number(process.env.PREDICTION_LEAD_HOURS || 36);
 const resultSyncDelayHours = Number(process.env.RESULT_SYNC_DELAY_HOURS || 2.17);
-const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 12);
-const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 4);
-const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 8);
-const cronResultSyncMaxMatches = Number(process.env.CRON_RESULT_SYNC_MAX_MATCHES || 12);
+const cronOddsRefreshMaxMatches = Number(process.env.CRON_ODDS_REFRESH_MAX_MATCHES || 0);
+const cronDailyAnalysisMaxMatches = Number(process.env.CRON_DAILY_ANALYSIS_MAX_MATCHES || 0);
+const cronPredictionMaxMatches = Number(process.env.CRON_PREDICTION_MAX_MATCHES || 2);
+const cronResultSyncMaxMatches = Number(process.env.CRON_RESULT_SYNC_MAX_MATCHES || 4);
 
 function requestToken(req) {
   const auth = req.headers?.authorization || "";
@@ -112,6 +112,45 @@ module.exports = async function handler(req, res) {
     const events = [];
     const cronRun = req.method === "GET" && !force;
     const resolvedMatches = resolveMatches(snapshot.matches, results);
+    let predictionAttempts = 0;
+    let resultAttempts = 0;
+
+    for (const sourceMatch of resolvedMatches) {
+      const matchTime = storedKickoffAt(sourceMatch, predictions, evidenceCache);
+      const prediction = predictions[sourceMatch.id] || predictions[String(sourceMatch.id)] || null;
+      if (!matchTime || !sourceMatch.teamA?.code || !sourceMatch.teamB?.code) {
+        if (sourceMatch.round !== "Group Stage") {
+          events.push({ type: "bracket", matchId: sourceMatch.id, status: "waiting", reason: "slot not resolved" });
+        }
+        continue;
+      }
+
+      const predictAt = new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000);
+      const shouldPredict = force || (now >= predictAt && now < matchTime);
+      if (!shouldPredict || prediction) continue;
+      if (!force && predictionAttempts >= cronPredictionMaxMatches) {
+        events.push({ type: "prediction", matchId: sourceMatch.id, status: "skipped", reason: "prediction limit reached", dueAt: predictAt.toISOString() });
+        continue;
+      }
+
+      predictionAttempts += 1;
+      try {
+        const record = await attachAuditProof(sourceMatch, {
+          matchId: sourceMatch.id,
+          generatedAt: now.toISOString(),
+          ...await callPaul(sourceMatch, {
+            source: "official-lock",
+            hoursToKickoff: (matchTime.getTime() - now.getTime()) / (60 * 60 * 1000)
+          })
+        });
+        predictions[sourceMatch.id] = record;
+        await setPrediction(sourceMatch.id, record);
+        events.push({ type: "prediction", matchId: sourceMatch.id, status: "ok" });
+      } catch (error) {
+        events.push({ type: "prediction", matchId: sourceMatch.id, status: "error", error: error.message });
+      }
+    }
+
     const evidenceRefresh = process.env.ODDS_REFRESH_DISABLED === "1"
       ? { checked: 0, eligible: 0, skipped: 0, ok: 0, missing: 0, errors: 0, disabled: true, events: [] }
       : await refreshMarketEvidence(resolvedMatches, {
@@ -148,9 +187,6 @@ module.exports = async function handler(req, res) {
       disabled: Boolean(dailyAnalysis.disabled)
     });
 
-    let predictionAttempts = 0;
-    let resultAttempts = 0;
-
     for (const sourceMatch of resolvedMatches) {
       const matchTime = storedKickoffAt(sourceMatch, predictions, evidenceCache);
       const prediction = predictions[sourceMatch.id] || predictions[String(sourceMatch.id)] || null;
@@ -161,25 +197,6 @@ module.exports = async function handler(req, res) {
           events.push({ type: "bracket", matchId: sourceMatch.id, status: "waiting", reason: "slot not resolved" });
         }
         continue;
-      }
-
-      const predictAt = new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000);
-      const shouldPredict = force || (now >= predictAt && now < matchTime);
-      const canAttemptPrediction = force || predictionAttempts < cronPredictionMaxMatches;
-      if (shouldPredict && !predictions[sourceMatch.id] && canAttemptPrediction) {
-        predictionAttempts += 1;
-        try {
-          const record = await attachAuditProof(sourceMatch, {
-            matchId: sourceMatch.id,
-            generatedAt: now.toISOString(),
-            ...await callPaul(sourceMatch, { source: "official-lock" })
-          });
-          predictions[sourceMatch.id] = record;
-          await setPrediction(sourceMatch.id, record);
-          events.push({ type: "prediction", matchId: sourceMatch.id, status: "ok" });
-        } catch (error) {
-          events.push({ type: "prediction", matchId: sourceMatch.id, status: "error", error: error.message });
-        }
       }
 
       const canAttemptReview = force || resultAttempts < cronResultSyncMaxMatches;

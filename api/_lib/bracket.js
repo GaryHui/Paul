@@ -240,14 +240,16 @@ function nextPredictionDue(matches, predictions, results, now = new Date()) {
     .map((match) => {
       const matchTime = parseMatchTime(match);
       if (!matchTime || predictions[match.id] || results[match.id]?.status === "final" || !match.teamA?.code || !match.teamB?.code) return null;
+      if (matchTime <= now) return null;
       return {
         id: match.id,
         label: `${match.teamA.name} vs ${match.teamB.name}`,
-        dueAt: new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000).toISOString()
+        dueAt: new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000).toISOString(),
+        kickoffAt: matchTime.toISOString(),
+        overdue: now >= new Date(matchTime.getTime() - predictionLeadHours * 60 * 60 * 1000)
       };
     })
     .filter(Boolean)
-    .filter((item) => new Date(item.dueAt) >= now)
     .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))[0] || null;
 }
 
