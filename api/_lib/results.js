@@ -79,12 +79,18 @@ function normalizeFinished(value) {
   return value === true || normalized === "true" || normalized === "finished" || normalized === "completed" || normalized === "ft" || normalized === "ft_pen";
 }
 
-function scoreResult(match, homeScore, awayScore, direct, source, providerMatchId) {
+function scoreResult(match, homeScore, awayScore, direct, source, providerMatchId, winnerCodeOverride = null) {
   if (!Number.isFinite(homeScore) || !Number.isFinite(awayScore)) return null;
   const aScore = direct ? homeScore : awayScore;
   const bScore = direct ? awayScore : homeScore;
-  const winnerCode = aScore === bScore ? null : aScore > bScore ? match.teamA.code : match.teamB.code;
-  const loserCode = aScore === bScore ? null : aScore > bScore ? match.teamB.code : match.teamA.code;
+  const override = String(winnerCodeOverride || "").toUpperCase();
+  const validOverride = override === match.teamA.code || override === match.teamB.code;
+  const winnerCode = aScore === bScore
+    ? validOverride ? override : null
+    : aScore > bScore ? match.teamA.code : match.teamB.code;
+  const loserCode = winnerCode
+    ? winnerCode === match.teamA.code ? match.teamB.code : match.teamA.code
+    : null;
   return {
     matchId: match.id,
     aCode: match.teamA.code,
@@ -134,17 +140,44 @@ async function fetchFootballDataResult(match) {
   return null;
 }
 
-function parseWorldcup26Score(apiMatch, match) {
+function inferWorldcup26KnockoutWinner(apiMatch, games, match) {
+  if (match.round === "Group Stage") return null;
+  const providerId = Number(apiMatch.id || apiMatch._id || 0);
+  if (!providerId) return null;
+  const futureGames = games
+    .filter((game) => Number(game.id || game._id || 0) > providerId)
+    .sort((a, b) => Number(a.id || a._id || 0) - Number(b.id || b._id || 0));
+  const aAliases = teamAliases(match.teamA);
+  const bAliases = teamAliases(match.teamB);
+  for (const game of futureGames) {
+    const futureTeams = [
+      normalizeName(game.home_team_name_en),
+      normalizeName(game.away_team_name_en)
+    ].filter(Boolean);
+    const aContinues = futureTeams.some((name) => aAliases.includes(name));
+    const bContinues = futureTeams.some((name) => bAliases.includes(name));
+    if (aContinues !== bContinues) return aContinues ? match.teamA.code : match.teamB.code;
+  }
+  return null;
+}
+
+function parseWorldcup26Score(apiMatch, match, games = []) {
   if (!normalizeFinished(apiMatch.finished)) return null;
   const { direct, matched } = teamsMatch(apiMatch.home_team_name_en, apiMatch.away_team_name_en, match);
   if (!matched) return null;
+  const homeScore = Number(apiMatch.home_score);
+  const awayScore = Number(apiMatch.away_score);
+  const winnerCode = homeScore === awayScore
+    ? inferWorldcup26KnockoutWinner(apiMatch, games, match)
+    : null;
   return scoreResult(
     match,
-    Number(apiMatch.home_score),
-    Number(apiMatch.away_score),
+    homeScore,
+    awayScore,
     direct,
     "worldcup26.ir",
-    apiMatch.id || apiMatch._id
+    apiMatch.id || apiMatch._id,
+    winnerCode
   );
 }
 
@@ -154,7 +187,7 @@ async function fetchWorldcup26Result(match) {
   const data = await response.json();
   const games = data.games || data.data || [];
   for (const apiMatch of games) {
-    const result = parseWorldcup26Score(apiMatch, match);
+    const result = parseWorldcup26Score(apiMatch, match, games);
     if (result) return result;
   }
   return null;

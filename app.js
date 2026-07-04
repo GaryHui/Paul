@@ -1445,8 +1445,45 @@ function loserSlot(matchId) {
   return { type: "loser", matchId, label: `Loser Match ${matchId}` };
 }
 
+const officialKnockoutFixtures = {
+  73: ["RSA", "CAN"],
+  74: ["GER", "PAR"],
+  75: ["NED", "MAR"],
+  76: ["BRA", "JPN"],
+  77: ["FRA", "SWE"],
+  78: ["CIV", "NOR"],
+  79: ["MEX", "ECU"],
+  80: ["ENG", "COD"],
+  81: ["USA", "BIH"],
+  82: ["BEL", "SEN"],
+  83: ["POR", "CRO"],
+  84: ["ESP", "AUT"],
+  85: ["SUI", "ALG"],
+  86: ["ARG", "CPV"],
+  87: ["COL", "GHA"],
+  88: ["AUS", "EGY"],
+  89: ["PAR", "FRA"],
+  90: ["CAN", "MAR"],
+  91: ["BRA", "NOR"],
+  92: ["MEX", "ENG"],
+  93: ["POR", "ESP"],
+  94: ["USA", "BEL"],
+  95: ["ARG", "EGY"],
+  96: ["SUI", "COL"]
+};
+
 function knockoutMatch(id, round, date, venue, leftSlot, rightSlot) {
-  return { id, round, date, venue, aSlot: leftSlot, bSlot: rightSlot, slot: round };
+  const fixture = officialKnockoutFixtures[id];
+  return {
+    id,
+    round,
+    date,
+    venue,
+    aSlot: leftSlot,
+    bSlot: rightSlot,
+    slot: round,
+    ...(fixture ? { aCode: fixture[0], bCode: fixture[1], fixtureSource: "worldcup26.ir official knockout fixture" } : {})
+  };
 }
 
 function buildKnockoutMatches() {

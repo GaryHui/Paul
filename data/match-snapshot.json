@@ -5135,7 +5135,32 @@
       "venueLocalTime": "12:00 p.m. UTC−7",
       "officialMatchId": 73,
       "officialVenue": "SoFi Stadium, Inglewood",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "RSA",
+        "name": "South Africa",
+        "group": "A",
+        "languages": "Zulu, Xhosa, Afrikaans, English + official languages",
+        "power": 68,
+        "attack": 67,
+        "defense": 69,
+        "form": 3,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "aCode": "RSA",
+      "bCode": "CAN",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 74,
@@ -5164,7 +5189,32 @@
       "venueLocalTime": "12:00 p.m. UTC−5",
       "officialMatchId": 74,
       "officialVenue": "NRG Stadium, Houston",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "GER",
+        "name": "Germany",
+        "group": "E",
+        "languages": "German",
+        "power": 89,
+        "attack": 88,
+        "defense": 86,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "PAR",
+        "name": "Paraguay",
+        "group": "D",
+        "languages": "Spanish, Guarani",
+        "power": 75,
+        "attack": 73,
+        "defense": 77,
+        "form": 4,
+        "confed": "CONMEBOL"
+      },
+      "aCode": "GER",
+      "bCode": "PAR",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 75,
@@ -5188,7 +5238,32 @@
       "venueLocalTime": "4:30 p.m. UTC−4",
       "officialMatchId": 75,
       "officialVenue": "Gillette Stadium, Foxborough",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "NED",
+        "name": "Netherlands",
+        "group": "F",
+        "languages": "Dutch",
+        "power": 88,
+        "attack": 87,
+        "defense": 87,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "aCode": "NED",
+      "bCode": "MAR",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 76,
@@ -5212,7 +5287,32 @@
       "venueLocalTime": "7:00 p.m. UTC−6",
       "officialMatchId": 76,
       "officialVenue": "Estadio BBVA, Guadalupe",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "JPN",
+        "name": "Japan",
+        "group": "F",
+        "languages": "Japanese",
+        "power": 83,
+        "attack": 84,
+        "defense": 81,
+        "form": 7,
+        "confed": "AFC"
+      },
+      "aCode": "BRA",
+      "bCode": "JPN",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 77,
@@ -5241,7 +5341,32 @@
       "venueLocalTime": "12:00 p.m. UTC−5",
       "officialMatchId": 77,
       "officialVenue": "AT&T Stadium, Arlington",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SWE",
+        "name": "Sweden",
+        "group": "F",
+        "languages": "Swedish",
+        "power": 77,
+        "attack": 76,
+        "defense": 78,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "aCode": "FRA",
+      "bCode": "SWE",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 78,
@@ -5265,7 +5390,32 @@
       "venueLocalTime": "5:00 p.m. UTC−4",
       "officialMatchId": 78,
       "officialVenue": "MetLife Stadium, East Rutherford",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "CIV",
+        "name": "Cote d'Ivoire",
+        "group": "E",
+        "languages": "French",
+        "power": 78,
+        "attack": 79,
+        "defense": 76,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "teamB": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "aCode": "CIV",
+      "bCode": "NOR",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 79,
@@ -5294,7 +5444,32 @@
       "venueLocalTime": "7:00 p.m. UTC−6",
       "officialMatchId": 79,
       "officialVenue": "Estadio Azteca, Mexico City",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "ECU",
+        "name": "Ecuador",
+        "group": "E",
+        "languages": "Spanish, Kichwa, Shuar",
+        "power": 82,
+        "attack": 80,
+        "defense": 83,
+        "form": 6,
+        "confed": "CONMEBOL"
+      },
+      "aCode": "MEX",
+      "bCode": "ECU",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 80,
@@ -5323,7 +5498,32 @@
       "venueLocalTime": "12:00 p.m. UTC−4",
       "officialMatchId": 80,
       "officialVenue": "Mercedes-Benz Stadium, Atlanta",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "COD",
+        "name": "DR Congo",
+        "group": "K",
+        "languages": "French, Lingala, Kikongo, Swahili, Tshiluba",
+        "power": 72,
+        "attack": 73,
+        "defense": 71,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "aCode": "ENG",
+      "bCode": "COD",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 81,
@@ -5352,7 +5552,32 @@
       "venueLocalTime": "1:00 p.m. UTC−7",
       "officialMatchId": 81,
       "officialVenue": "Lumen Field, Seattle",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "BIH",
+        "name": "Bosnia and Herzegovina",
+        "group": "B",
+        "languages": "Bosnian, Croatian, Serbian",
+        "power": 73,
+        "attack": 73,
+        "defense": 72,
+        "form": 4,
+        "confed": "UEFA"
+      },
+      "aCode": "USA",
+      "bCode": "BIH",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 82,
@@ -5381,7 +5606,32 @@
       "venueLocalTime": "5:00 p.m. UTC−7",
       "officialMatchId": 82,
       "officialVenue": "Levi's Stadium, Santa Clara",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "SEN",
+        "name": "Senegal",
+        "group": "I",
+        "languages": "French, Wolof",
+        "power": 80,
+        "attack": 79,
+        "defense": 81,
+        "form": 6,
+        "confed": "CAF"
+      },
+      "aCode": "BEL",
+      "bCode": "SEN",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 83,
@@ -5405,7 +5655,32 @@
       "venueLocalTime": "12:00 p.m. UTC−7",
       "officialMatchId": 83,
       "officialVenue": "SoFi Stadium, Inglewood",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "CRO",
+        "name": "Croatia",
+        "group": "L",
+        "languages": "Croatian",
+        "power": 83,
+        "attack": 81,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "aCode": "POR",
+      "bCode": "CRO",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 84,
@@ -5429,7 +5704,32 @@
       "venueLocalTime": "7:00 p.m. UTC−4",
       "officialMatchId": 84,
       "officialVenue": "BMO Field, Toronto",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "AUT",
+        "name": "Austria",
+        "group": "J",
+        "languages": "German",
+        "power": 81,
+        "attack": 80,
+        "defense": 81,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "aCode": "ESP",
+      "bCode": "AUT",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 85,
@@ -5458,7 +5758,32 @@
       "venueLocalTime": "8:00 p.m. UTC−7",
       "officialMatchId": 85,
       "officialVenue": "BC Place, Vancouver",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "ALG",
+        "name": "Algeria",
+        "group": "J",
+        "languages": "Arabic, Tamazight",
+        "power": 76,
+        "attack": 77,
+        "defense": 74,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "aCode": "SUI",
+      "bCode": "ALG",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 86,
@@ -5482,7 +5807,32 @@
       "venueLocalTime": "1:00 p.m. UTC−5",
       "officialMatchId": 86,
       "officialVenue": "AT&T Stadium, Arlington",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "CPV",
+        "name": "Cape Verde",
+        "group": "H",
+        "languages": "Portuguese, Cape Verdean Creole",
+        "power": 69,
+        "attack": 70,
+        "defense": 67,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "aCode": "ARG",
+      "bCode": "CPV",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 87,
@@ -5511,7 +5861,32 @@
       "venueLocalTime": "6:00 p.m. UTC−4",
       "officialMatchId": 87,
       "officialVenue": "Hard Rock Stadium, Miami Gardens",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "GHA",
+        "name": "Ghana",
+        "group": "L",
+        "languages": "English, Akan, Ewe, Ga, Dagbani",
+        "power": 75,
+        "attack": 76,
+        "defense": 73,
+        "form": 4,
+        "confed": "CAF"
+      },
+      "aCode": "COL",
+      "bCode": "GHA",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 88,
@@ -5535,7 +5910,32 @@
       "venueLocalTime": "8:30 p.m. UTC−5",
       "officialMatchId": 88,
       "officialVenue": "Arrowhead Stadium, Kansas City",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "AUS",
+        "name": "Australia",
+        "group": "D",
+        "languages": "English",
+        "power": 74,
+        "attack": 73,
+        "defense": 75,
+        "form": 4,
+        "confed": "AFC"
+      },
+      "teamB": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "aCode": "AUS",
+      "bCode": "EGY",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 89,
@@ -5557,7 +5957,32 @@
       "venueLocalTime": "12:00 p.m. UTC−5",
       "officialMatchId": 89,
       "officialVenue": "NRG Stadium, Houston",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "PAR",
+        "name": "Paraguay",
+        "group": "D",
+        "languages": "Spanish, Guarani",
+        "power": 75,
+        "attack": 73,
+        "defense": 77,
+        "form": 4,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "FRA",
+        "name": "France",
+        "group": "I",
+        "languages": "French",
+        "power": 93,
+        "attack": 94,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "aCode": "PAR",
+      "bCode": "FRA",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 90,
@@ -5579,7 +6004,32 @@
       "venueLocalTime": "5:00 p.m. UTC−4",
       "officialMatchId": 90,
       "officialVenue": "Lincoln Financial Field, Philadelphia",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "CAN",
+        "name": "Canada",
+        "group": "B",
+        "languages": "English, French",
+        "power": 77,
+        "attack": 78,
+        "defense": 74,
+        "form": 5,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "MAR",
+        "name": "Morocco",
+        "group": "C",
+        "languages": "Arabic, Amazigh",
+        "power": 84,
+        "attack": 82,
+        "defense": 86,
+        "form": 7,
+        "confed": "CAF"
+      },
+      "aCode": "CAN",
+      "bCode": "MAR",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 91,
@@ -5601,7 +6051,32 @@
       "venueLocalTime": "4:00 p.m. UTC−4",
       "officialMatchId": 91,
       "officialVenue": "MetLife Stadium, East Rutherford",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "BRA",
+        "name": "Brazil",
+        "group": "C",
+        "languages": "Portuguese",
+        "power": 91,
+        "attack": 92,
+        "defense": 87,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "NOR",
+        "name": "Norway",
+        "group": "I",
+        "languages": "Norwegian",
+        "power": 82,
+        "attack": 86,
+        "defense": 77,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "aCode": "BRA",
+      "bCode": "NOR",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 92,
@@ -5623,7 +6098,32 @@
       "venueLocalTime": "6:00 p.m. UTC−6",
       "officialMatchId": 92,
       "officialVenue": "Estadio Azteca, Mexico City",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "MEX",
+        "name": "Mexico",
+        "group": "A",
+        "languages": "Spanish",
+        "power": 80,
+        "attack": 79,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "ENG",
+        "name": "England",
+        "group": "L",
+        "languages": "English",
+        "power": 90,
+        "attack": 90,
+        "defense": 88,
+        "form": 7,
+        "confed": "UEFA"
+      },
+      "aCode": "MEX",
+      "bCode": "ENG",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 93,
@@ -5645,7 +6145,32 @@
       "venueLocalTime": "2:00 p.m. UTC−5",
       "officialMatchId": 93,
       "officialVenue": "AT&T Stadium, Arlington",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "POR",
+        "name": "Portugal",
+        "group": "K",
+        "languages": "Portuguese",
+        "power": 90,
+        "attack": 91,
+        "defense": 86,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "ESP",
+        "name": "Spain",
+        "group": "H",
+        "languages": "Spanish",
+        "power": 92,
+        "attack": 91,
+        "defense": 90,
+        "form": 8,
+        "confed": "UEFA"
+      },
+      "aCode": "POR",
+      "bCode": "ESP",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 94,
@@ -5667,7 +6192,32 @@
       "venueLocalTime": "5:00 p.m. UTC−7",
       "officialMatchId": 94,
       "officialVenue": "Lumen Field, Seattle",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "USA",
+        "name": "United States",
+        "group": "D",
+        "languages": "English",
+        "power": 81,
+        "attack": 82,
+        "defense": 78,
+        "form": 6,
+        "confed": "CONCACAF"
+      },
+      "teamB": {
+        "code": "BEL",
+        "name": "Belgium",
+        "group": "G",
+        "languages": "Dutch, French, German",
+        "power": 85,
+        "attack": 86,
+        "defense": 82,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "aCode": "USA",
+      "bCode": "BEL",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 95,
@@ -5689,7 +6239,32 @@
       "venueLocalTime": "12:00 p.m. UTC−4",
       "officialMatchId": 95,
       "officialVenue": "Mercedes-Benz Stadium, Atlanta",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "ARG",
+        "name": "Argentina",
+        "group": "J",
+        "languages": "Spanish",
+        "power": 94,
+        "attack": 93,
+        "defense": 91,
+        "form": 9,
+        "confed": "CONMEBOL"
+      },
+      "teamB": {
+        "code": "EGY",
+        "name": "Egypt",
+        "group": "G",
+        "languages": "Arabic",
+        "power": 77,
+        "attack": 78,
+        "defense": 75,
+        "form": 5,
+        "confed": "CAF"
+      },
+      "aCode": "ARG",
+      "bCode": "EGY",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 96,
@@ -5711,7 +6286,32 @@
       "venueLocalTime": "1:00 p.m. UTC−7",
       "officialMatchId": 96,
       "officialVenue": "BC Place, Vancouver",
-      "timeSource": "FIFA/Wikipedia schedule, all times local"
+      "timeSource": "FIFA/Wikipedia schedule, all times local",
+      "teamA": {
+        "code": "SUI",
+        "name": "Switzerland",
+        "group": "B",
+        "languages": "German, French, Italian, Romansh",
+        "power": 82,
+        "attack": 80,
+        "defense": 84,
+        "form": 6,
+        "confed": "UEFA"
+      },
+      "teamB": {
+        "code": "COL",
+        "name": "Colombia",
+        "group": "K",
+        "languages": "Spanish",
+        "power": 84,
+        "attack": 84,
+        "defense": 82,
+        "form": 7,
+        "confed": "CONMEBOL"
+      },
+      "aCode": "SUI",
+      "bCode": "COL",
+      "fixtureSource": "worldcup26.ir official knockout fixture"
     },
     {
       "id": 97,
