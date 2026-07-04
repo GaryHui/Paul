@@ -440,6 +440,7 @@ function currentStageMode() {
 function currentFocusRound() {
   if (currentStageMode() !== "knockout") return null;
   const order = ["Round of 32", "Round of 16", "Quarterfinal", "Semifinal", "Third Place", "Final"];
+  const now = new Date();
   let latestResolvedRound = null;
   for (const round of order) {
     const fixtures = tournament.matches.filter((match) => match.round === round);
@@ -452,7 +453,12 @@ function currentFocusRound() {
     latestResolvedRound = round;
     const allFixturesSettled = resolvedFixtures.length === fixtures.length
       && resolvedFixtures.every((match) => officialResult(match)?.winnerCode);
-    if (!allFixturesSettled) return round;
+    const roundWindowPassed = resolvedFixtures.length === fixtures.length
+      && resolvedFixtures.every((match) => {
+        const kickoff = matchKickoffTime(match);
+        return !Number.isNaN(kickoff.getTime()) && kickoff < now;
+      });
+    if (!allFixturesSettled && !roundWindowPassed) return round;
   }
   return latestResolvedRound || "Round of 32";
 }
@@ -1584,9 +1590,9 @@ function allGroupsComplete() {
 }
 
 function bestThirdTeams(standings) {
-  if (!allGroupsComplete()) return [];
+  const source = allGroupsComplete() ? standings : tournament.standings;
   return groupOrder
-    .map((group) => standings[group]?.[2])
+    .map((group) => source[group]?.[2])
     .filter(Boolean)
     .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || teams[b.code].power - teams[a.code].power)
     .slice(0, 8);
@@ -1614,7 +1620,17 @@ function thirdPlaceAssignments(standings) {
 
 function knockoutWinnerCode(match, wantLoser = false) {
   const result = officialResult(match);
-  if (result?.status !== "final") return null;
+  if (result?.status !== "final") {
+    const pick = officialPickCode(officialPredictionRecord(match)) || projectedPickCode(match);
+    if (!pick || pick === "DRAW") return null;
+    if (wantLoser) {
+      const resolved = resolvedTeams(match);
+      if (pick === resolved.aCode) return resolved.bCode || null;
+      if (pick === resolved.bCode) return resolved.aCode || null;
+      return null;
+    }
+    return pick;
+  }
   if (Number(result.homeScore) === Number(result.awayScore)) {
     return wantLoser ? result.loserCode || null : result.winnerCode || null;
   }
@@ -1627,8 +1643,8 @@ function resolveSlot(slot) {
   if (!slot) return null;
   const standings = actualStandingsFromResults();
   if (slot.type === "groupRank") {
-    if (!groupIsComplete(slot.group)) return null;
-    return standings[slot.group]?.[slot.rank - 1]?.code || null;
+    const source = groupIsComplete(slot.group) ? standings : tournament.standings;
+    return source[slot.group]?.[slot.rank - 1]?.code || null;
   }
   if (slot.type === "bestThird") {
     return thirdPlaceAssignments(standings)[slot.label] || null;
@@ -2066,7 +2082,19 @@ function slotMarkup(label) {
 }
 
 function officialPrediction(match) {
-  return automationState.predictions?.[match.id] || null;
+  return automationState.predictions?.[match.id] || loadStoredPredictions()[match.id] || null;
+}
+
+function applyResolvedMatches(resolvedMatches = []) {
+  if (!Array.isArray(resolvedMatches)) return;
+  const byId = new Map(resolvedMatches.map((match) => [Number(match.id), match]));
+  tournament.matches.forEach((match) => {
+    const resolved = byId.get(Number(match.id));
+    const aCode = resolved?.teamA?.code;
+    const bCode = resolved?.teamB?.code;
+    if (aCode && teams[aCode]) match.aCode = aCode;
+    if (bCode && teams[bCode]) match.bCode = bCode;
+  });
 }
 
 function proofPredictionRecord(match) {
@@ -2100,6 +2128,19 @@ function resultWinner(result) {
 function officialPickCode(record) {
   if (!record?.analysis) return null;
   return record.analysis.winnerCode || record.analysis.winner || null;
+}
+
+function projectedPrediction(match) {
+  if (!match) return null;
+  if (match.prediction) return match.prediction;
+  const resolved = resolvedTeams(match);
+  if (!resolved.aCode || !resolved.bCode) return null;
+  return predict(resolved.aCode, resolved.bCode, match.round);
+}
+
+function projectedPickCode(match) {
+  const projection = projectedPrediction(match);
+  return projection?.winner || null;
 }
 
 function officialPredictedScore(record) {
@@ -2968,6 +3009,7 @@ function predictionStatus(match) {
   }
   if (result?.status === "final") return tr("final");
   if (record) return tr("locked");
+  if (projectedPrediction(match)) return tr("liveEstimate");
   return tr("pending");
 }
 
@@ -2979,10 +3021,12 @@ function resultLabel(match) {
     return `${winnerName} ${result.homeScore}-${result.awayScore}`;
   }
   const record = officialPredictionRecord(match);
-  if (!record) return tr("pending");
-  const pick = officialPickCode(record);
-  if (!pick || pick === "DRAW") return tr("draw");
-  return teams[pick]?.name || record.analysis.winnerName || tr("locked");
+  const projection = !record ? projectedPrediction(match) : null;
+  const pick = record ? officialPickCode(record) : projection?.winner;
+  if (!pick) return tr("pending");
+  if (pick === "DRAW") return tr("draw");
+  const score = projection?.score ? ` · ${projection.score}` : "";
+  return `${teams[pick]?.name || record?.analysis?.winnerName || tr("locked")}${score}`;
 }
 
 function officialEvidenceMarkup(analysis) {
@@ -3221,10 +3265,20 @@ function renderPK() {
       <p>${resultCopy}</p>
     `;
   } else {
-    document.getElementById("predictionCopy").innerHTML = `
-      <p><strong>${resolved.aCode && resolved.bCode ? tr("officialPredictionNotLocked") : tr("bracketNotResolved")}</strong></p>
-      <p class="countdown-detail">${tr("kickoffCountdown")}: <strong>${countdownMarkup(match)}</strong></p>
-    `;
+    const projection = projectedPrediction(match);
+    if (projection && resolved.aCode && resolved.bCode) {
+      const pickName = projection.winner === "DRAW" ? tr("draw") : teams[projection.winner]?.name || projection.winner;
+      document.getElementById("predictionCopy").innerHTML = `
+        <p><strong>${tr("liveEstimate")}: ${escapeHtml(pickName)}</strong> · ${tr("predictedScore")}: <strong>${escapeHtml(projection.score || "N/A")}</strong>.</p>
+        <p>${tr("confidence")}: ${projection.confidence || "N/A"}%. ${tr("officialPredictionNotLocked")}</p>
+        <p class="countdown-detail">${tr("kickoffCountdown")}: <strong>${countdownMarkup(match)}</strong></p>
+      `;
+    } else {
+      document.getElementById("predictionCopy").innerHTML = `
+        <p><strong>${resolved.aCode && resolved.bCode ? tr("officialPredictionNotLocked") : tr("bracketNotResolved")}</strong></p>
+        <p class="countdown-detail">${tr("kickoffCountdown")}: <strong>${countdownMarkup(match)}</strong></p>
+      `;
+    }
   }
 
   const modelGrid = document.getElementById("modelGrid");
@@ -3422,6 +3476,7 @@ async function loadAutomationStatus() {
     const nextPrediction = nextPredictionFromMatches(mergedPredictions, status.predictionLeadHours || 36) || status.nextPrediction;
 
     const stageAccuracy = status.stageAccuracy || automationState.stageAccuracy;
+    applyResolvedMatches(status.resolvedMatches);
     setText("autoPredicted", Object.keys(mergedPredictions).length);
     setText("autoResults", status.resultCount || 0);
     setText("autoAccuracy", `${status.accuracy?.accuracy || 0}%`);
