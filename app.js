@@ -1745,6 +1745,7 @@ const pollState = {};
 let publicProofEntries = [];
 let proofLedgerExpanded = false;
 const proofLedgerLimit = 12;
+let automationStatusLoading = false;
 
 function loadStoredPredictions() {
   try {
@@ -3497,9 +3498,11 @@ formatNextPrediction = formatNextPredictionSynced;
 formatLocalizedNextPrediction = formatNextPredictionSynced;
 
 async function loadAutomationStatus() {
+  if (automationStatusLoading) return;
+  automationStatusLoading = true;
   const statusText = document.getElementById("automationStatus");
   try {
-    const response = await fetch("/api/automation/status");
+    const response = await fetch(`/api/automation/status?ts=${Date.now()}`, { cache: "no-store" });
     const rawStatus = await response.text();
     let status;
     try {
@@ -3594,6 +3597,8 @@ async function loadAutomationStatus() {
     if (trace) {
       trace.innerHTML = `<div class="empty-list">Match trace is temporarily unavailable: ${escapeHtml(error.message)}</div>`;
     }
+  } finally {
+    automationStatusLoading = false;
   }
 }
 
@@ -4742,6 +4747,7 @@ function init() {
   syncAutomationSnapshot().then(loadAutomationStatus);
   loadAuditProofs();
   window.setInterval(refreshCountdowns, 1000);
+  window.setInterval(loadAutomationStatus, 45000);
 }
 
 init();
